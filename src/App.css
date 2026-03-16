@@ -411,3 +411,138 @@ a {
     align-items: flex-start;
   }
 }
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.section-subtext {
+  margin: 8px 0 0;
+  color: var(--text-soft);
+  line-height: 1.7;
+}
+
+.tableau-wrap {
+  width: 100%;
+  min-height: 820px;
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(13, 45, 98, 0.02);
+}
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.section-subtext {
+  margin: 8px 0 0;
+  color: var(--text-soft);
+  line-height: 1.7;
+}
+
+.tableau-wrap {
+  width: 100%;
+  min-height: 850px;
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.data-preview-card {
+  margin-top: 28px;
+}
+
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  background: white;
+}
+
+.data-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.data-table thead {
+  background: #f3f7fb;
+}
+
+.data-table th {
+  padding: 14px 16px;
+  text-align: left;
+  color: var(--navy);
+  font-weight: 800;
+  border-bottom: 1px solid var(--border-soft);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(13, 45, 98, 0.06);
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+.data-table tbody tr:hover {
+  background: rgba(132, 198, 42, 0.06);
+}
+.info-section {
+  margin-top: 28px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.info-block {
+  padding: 20px;
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.info-block h4 {
+  margin: 0 0 10px;
+  color: var(--navy);
+  font-size: 1.05rem;
+}
+
+.info-block p {
+  margin: 0;
+  color: var(--text-soft);
+  line-height: 1.8;
+}
+
+.credits-list {
+  display: grid;
+  gap: 14px;
+}
+
+.credits-list p {
+  margin: 0;
+  color: var(--text-soft);
+  line-height: 1.8;
+}
+
+@media (max-width: 900px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
