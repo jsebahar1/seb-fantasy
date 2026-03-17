@@ -1,9 +1,11 @@
 import { useParams, Link } from 'react-router-dom';
+import { useState } from 'react';
 import { blogPosts } from '../data/blogPosts';
 
 export default function BlogPost() {
   const { slug } = useParams();
   const post = blogPosts.find((item) => item.slug === slug);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (!post) {
     return (
@@ -30,10 +32,60 @@ export default function BlogPost() {
           ))}
         </article>
 
+        {post.image && (
+          <section className="card image-viewer">
+            <div className="section-head">
+              <div>
+                <h3>Bracket Visualization</h3>
+                <p className="section-subtext">
+                  Click the image to enlarge it.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="image-button"
+              onClick={() => setIsModalOpen(true)}
+            >
+              <img
+                src={post.image}
+                alt="March Madness Bracket"
+                className="bracket-image"
+              />
+            </button>
+          </section>
+        )}
+
         <Link to="/blog" className="text-link">
           ← Back to blog
         </Link>
       </div>
+
+      {isModalOpen && post.image && (
+        <div className="image-modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div
+            className="image-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="image-modal-close"
+              onClick={() => setIsModalOpen(false)}
+            >
+              ×
+            </button>
+
+            <div className="image-modal-scroll">
+              <img
+                src={post.image}
+                alt="March Madness Bracket Large View"
+                className="bracket-image-large"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

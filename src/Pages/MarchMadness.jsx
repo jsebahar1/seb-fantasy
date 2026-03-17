@@ -77,7 +77,7 @@ export default function MarchMadness() {
     <main className="page">
       <div className="container">
         <p className="eyebrow">March Madness</p>
-        <h2 className="page-title">March Madness Ratings</h2>
+        <h2 className="page-title">March Madness Optimal Bracket</h2>
         <p className="page-text">
           Want to beat all your co-workers in the Bracket Challenge? <br />
           Our March Madness Advanced Leverage
@@ -132,7 +132,8 @@ export default function MarchMadness() {
             <div className="card">
               <h3>Graphic Notes</h3>
               <p>
-                Any team with very low leverage may not show up in the dashboard to prevent clutter. Download the spreadsheet to see all teams and metrics.
+                Any team with very low leverage may not show up in the dashboard to prevent clutter. Download the spreadsheet to see all teams and metrics.<br/>
+                For Reference: Round of 32 means the potential to make it to the Round of 32 and so on for the later rounds. <br/>
               </p>
             </div>
           </div>
