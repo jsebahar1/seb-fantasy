@@ -1,5 +1,18 @@
 export const blogPosts = [
   {
+  slug: '2026-march-madness-success',
+  title: 'Beating the Odds: How the SEB Fantasy Model Cracked the 2026 Bracket',
+  date: 'April 6, 2026',
+  excerpt:
+    'Ranking in the 96th percentile, the SEB Fantasy March Madness model proved its worth by correctly identifying Michigan as the champion and Illinois as a Final Four contender.',
+  content: [
+    'The 2026 tournament was a landmark year for the SEB Fantasy March Madness Advanced Leverage Model, finishing in the 96th percentile of all brackets.',
+    'Our strategy focused on identifying high-leverage spots where the public was misvaluing teams. By locking in Michigan as the champion and betting on Illinois to make a deep run to the Final Four, we secured a major analytical victory.',
+    'While we encountered a few setbacks along the way, this year was an overwhelming success. These results provide invaluable data that is already being used to refine the model for 2027.',
+    'We are excited to build on this momentum and continue pushing the boundaries of fantasy sports analytics.'
+  ]
+},
+  {
   slug: '2026-optimal-bracket',
   title: 'My 2026 Optimal March Madness Bracket',
   date: 'March 16, 2026',
