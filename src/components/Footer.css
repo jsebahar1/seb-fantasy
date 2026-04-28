@@ -1,0 +1,54 @@
+.footer {
+  background-color: #f8f9fa; /* Light gray for subtle contrast */
+  padding: 2rem 1rem;
+  margin-top: 3rem;
+  border-top: 1px solid #eaeaea;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.footer-section {
+  margin-bottom: 1rem;
+}
+
+.footer-section h4 {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-section a {
+  text-decoration: none;
+  color: #007bff;
+}
+/* FOOTER */
+.site-footer {
+  background: var(--navy);
+  color: white; /* This sets the base color */
+  margin-top: 80px;
+}
+
+/* Add these lines to force the titles and links to be white */
+.site-footer h3, 
+.site-footer h4 {
+  color: white;
+}
+
+.site-footer a {
+  color: #a8c7fa; /* A light blue/white shade for links so they remain readable */
+  text-decoration: underline;
+}
+
+.site-footer a:hover {
+  color: white;
+}

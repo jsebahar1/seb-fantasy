@@ -769,3 +769,32 @@ a {
   border-top: 1px solid rgba(255,255,255,0.18);
   opacity: 0.8;
 }
+/* --- MINIMAL FOOTER FIX --- */
+.site-footer {
+  margin-top: 80px;
+  background: var(--navy);
+  color: white;
+}
+
+.footer-inner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 42px 0 32px;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.site-footer h3, 
+.site-footer h4, 
+.site-footer p {
+  color: white;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding: 14px 0;
+  font-size: 0.85rem;
+  border-top: 1px solid rgba(255,255,255,0.18);
+  opacity: 0.8;
+}
