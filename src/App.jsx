@@ -7,6 +7,7 @@ import NflFantasy from './Pages/NflFantasy.jsx';
 import NcaaFootball from './Pages/NcaaFootball.jsx';
 import Blog from './Pages/Blog.jsx';
 import BlogPost from './Pages/BlogPost.jsx';
+import About from './Pages/About';
 
 export default function App() {
   const year = new Date().getFullYear();
@@ -59,6 +60,12 @@ export default function App() {
               isActive ? 'nav-link nav-link-active' : 'nav-link'
             }>
               NCAA Football
+            </NavLink>
+
+            <NavLink to="/about" className={({ isActive }) =>
+              isActive ? 'nav-link nav-link-active' : 'nav-link'
+            }>
+              About
             </NavLink>
           </nav>
 

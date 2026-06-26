@@ -16,6 +16,7 @@ export default function Header() {
           <Link to="/blog">Blog</Link>
           <Link to="/nfl-fantasy">NFL Fantasy</Link>
           <Link to="/ncaa-football">NCAA Football</Link>
+          <Link to="/about">About</Link>
         </nav>
 
       </div>

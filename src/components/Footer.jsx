@@ -1,44 +1,30 @@
-export default function Footer() {
-  const year = new Date().getFullYear();
+// src/components/Footer.jsx
+import React from 'react';
+import './Footer.css'; // Create this file for styling
 
+const Footer = () => {
   return (
-    <footer className="site-footer">
-      <div className="container footer-inner">
-
-        <div className="footer-left">
-          <h3>SEB Fantasy</h3>
-          <p>
-            Data driven fantasy sports analytics focused on identifying
-            leverage opportunities in March Madness, Fantasy Football,
-            and college football rankings.
-          </p>
+    <footer className="footer">
+      <div className="footer-content">
+        <div className="footer-section">
+          <h4>SEB Fantasy</h4>
+          <p>Analytical insights for sports and beyond.</p>
         </div>
-
-        <div className="footer-right">
-          <h4>Resources</h4>
-
-          <a
-            href="https://kenpom.substack.com/p/the-2026-ncaa-tournament-odds"
-            target="_blank"
-            rel="noreferrer"
-          >
-            KenPom Tournament Odds
-          </a>
-
-          <a
-            href="https://tournament.fantasysports.yahoo.com/mens-basketball-bracket/pickdistribution"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Yahoo Pick Distribution
-          </a>
+        <div className="footer-section">
+          <h4>Navigate</h4>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/march-madness">March Madness</a></li>
+            <li><a href="/blog">Blog</a></li>
+          </ul>
         </div>
-
-      </div>
-
-      <div className="footer-bottom">
-        <p>© {year} SEB Fantasy. All rights reserved.</p>
+        <div className="footer-section">
+          <h4>Connect</h4>
+          <p>© 2026 SEB Fantasy</p>
+        </div>
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;
