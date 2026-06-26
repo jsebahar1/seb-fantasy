@@ -1,30 +1,36 @@
-// src/components/Footer.jsx
-import React from 'react';
-import './Footer.css'; // Create this file for styling
+import { NavLink } from 'react-router-dom';
+import { siteConfig } from '../data/siteConfig';
 
-const Footer = () => {
+export default function Footer() {
+  const year = new Date().getFullYear();
+
   return (
-    <footer className="footer">
-      <div className="footer-content">
-        <div className="footer-section">
-          <h4>SEB Fantasy</h4>
-          <p>Analytical insights for sports and beyond.</p>
+    <footer className="site-footer">
+      <div className="container footer-inner">
+        <div className="footer-brand-wrap">
+          <img src={siteConfig.logo} alt={`${siteConfig.name} logo`} className="footer-logo" />
+          <div>
+            <p className="footer-brand">{siteConfig.name}</p>
+            <p className="footer-tagline">{siteConfig.description}</p>
+          </div>
         </div>
-        <div className="footer-section">
-          <h4>Navigate</h4>
-          <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/march-madness">March Madness</a></li>
-            <li><a href="/blog">Blog</a></li>
-          </ul>
-        </div>
-        <div className="footer-section">
-          <h4>Connect</h4>
-          <p>© 2026 SEB Fantasy</p>
-        </div>
+
+        <nav className="footer-links" aria-label="Footer navigation">
+          {siteConfig.footerLinks.map(({ label, path }) => (
+            <NavLink
+              key={path}
+              to={path}
+              className={({ isActive }) => (isActive ? 'footer-link active' : 'footer-link')}
+            >
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+      </div>
+
+      <div className="footer-bottom">
+        <p>© {year} {siteConfig.name}. All rights reserved.</p>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

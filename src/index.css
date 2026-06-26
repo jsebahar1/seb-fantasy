@@ -1,3 +1,78 @@
-body {
+/* ============================================================
+   GLOBAL DESIGN TOKENS
+   All CSS custom properties live here. Reference via var(--*)
+   everywhere else — never redeclare :root in other files.
+   ============================================================ */
+:root {
+  /* Brand colors */
+  --navy:          #0d2d62;
+  --navy-dark:     #09224c;
+  --green:         #84c62a;
+  --green-dark:    #72b11f;
+
+  /* Text */
+  --text-main:     #16304d;
+  --text-soft:     #5d7087;
+  --text-muted:    #8fa0b0;
+
+  /* Backgrounds */
+  --bg-main:       #f5f8fc;
+  --bg-panel:      rgba(255, 255, 255, 0.92);
+  --bg-glass:      rgba(255, 255, 255, 0.65);
+
+  /* Borders */
+  --border-soft:   rgba(13, 45, 98, 0.08);
+  --border-mid:    rgba(13, 45, 98, 0.14);
+
+  /* Shadows */
+  --shadow-sm:     0 2px 8px rgba(13, 45, 98, 0.06);
+  --shadow-md:     0 4px 12px rgba(20, 45, 80, 0.07);
+  --shadow-soft:   0 10px 30px rgba(20, 45, 80, 0.06);
+  --shadow-lg:     0 20px 40px rgba(20, 45, 80, 0.10);
+
+  /* Border radius */
+  --radius-sm:     8px;
+  --radius-md:     12px;
+  --radius-lg:     16px;
+  --radius-xl:     20px;
+
+  /* Spacing scale */
+  --space-xs:      8px;
+  --space-sm:      14px;
+  --space-md:      24px;
+  --space-lg:      36px;
+  --space-xl:      64px;
+
+  /* Transitions */
+  --transition-fast:   0.2s ease;
+  --transition-base:   0.3s ease;
+
+  /* Typography */
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', sans-serif;
+}
+
+/* ============================================================
+   BASE RESET
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
   margin: 0;
+  min-height: 100%;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg-main);
+  color: var(--text-main);
+}
+
+a {
+  text-decoration: none;
 }

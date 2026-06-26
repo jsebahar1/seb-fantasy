@@ -1,24 +1,30 @@
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { siteConfig } from '../data/siteConfig';
 
 export default function Header() {
   return (
     <header className="site-header">
       <div className="container header-inner">
+        <NavLink to="/" className="brand-wrap" aria-label={`${siteConfig.name} home`}>
+          <img src={siteConfig.logo} alt={`${siteConfig.name} logo`} className="brand-logo" />
+          <div>
+            <p className="brand-title">{siteConfig.name}</p>
+            <p className="brand-subtitle">{siteConfig.tagline}</p>
+          </div>
+        </NavLink>
 
-        <Link to="/" className="logo">
-          <img src="/logo.png" alt="SEB Fantasy Logo" />
-          <span>SEB Fantasy</span>
-        </Link>
-
-        <nav className="nav-links">
-          <Link to="/">Home</Link>
-          <Link to="/march-madness">March Madness</Link>
-          <Link to="/blog">Blog</Link>
-          <Link to="/nfl-fantasy">NFL Fantasy</Link>
-          <Link to="/ncaa-football">NCAA Football</Link>
-          <Link to="/about">About</Link>
+        <nav className="nav" aria-label="Main navigation">
+          {siteConfig.nav.map(({ label, path, end }) => (
+            <NavLink
+              key={path}
+              to={path}
+              end={end}
+              className={({ isActive }) => (isActive ? 'nav-link nav-link-active' : 'nav-link')}
+            >
+              {label}
+            </NavLink>
+          ))}
         </nav>
-
       </div>
     </header>
   );

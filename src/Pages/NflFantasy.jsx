@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import SEO from '../components/SEO';
 
 export default function NflFantasy() {
   const vizRef = useRef(null);
@@ -76,9 +77,14 @@ export default function NflFantasy() {
 
   return (
     <main className="page">
+      <SEO
+        title="NFL Fantasy Football Rankings"
+        path="/nfl-fantasy"
+        description="Advanced NFL Fantasy Football rankings and analytics from SEB Fantasy. Coming soon."
+      />
       <div className="container">
         <p className="eyebrow">NFL Fantasy</p>
-        <h2 className="page-title">NFL Fantasy Football Rankings</h2>
+        <h1 className="page-title">NFL Fantasy Football Rankings</h1>
         <p className="page-text">
           {/* TODO: add description */}
         </p>

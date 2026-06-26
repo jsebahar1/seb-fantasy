@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import SEO from '../components/SEO';
 
 export default function MarchMadness() {
   const vizRef = useRef(null);
@@ -75,9 +76,14 @@ export default function MarchMadness() {
 
   return (
     <main className="page">
+      <SEO
+        title="March Madness Optimal Bracket"
+        path="/march-madness"
+        description="The SEB Fantasy Advanced Leverage Model finds where the public misprices teams in March Madness. Free interactive Tableau dashboard and downloadable bracket spreadsheet."
+      />
       <div className="container">
         <p className="eyebrow">March Madness</p>
-        <h2 className="page-title">March Madness Optimal Bracket</h2>
+        <h1 className="page-title">March Madness Optimal Bracket</h1>
         <p className="page-text">
           Want to beat all your co-workers in the Bracket Challenge? <br />
           Our March Madness Advanced Leverage

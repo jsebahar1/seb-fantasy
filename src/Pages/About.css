@@ -1,0 +1,204 @@
+/* ============================================================
+   ABOUT PAGE — scoped styles (ab- prefix)
+   ============================================================ */
+
+.about {
+  /* each section controls its own vertical rhythm */
+}
+
+/* ============================================================
+   INTRO  (dark, full-bleed — mirrors home hero)
+   ============================================================ */
+.ab-intro {
+  background: linear-gradient(145deg, #06163a 0%, #0c2860 55%, #0e3270 100%);
+  position: relative;
+  overflow: hidden;
+  padding: 96px 0 100px;
+}
+
+/* Dot-grid texture */
+.ab-intro::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+/* Green glow — upper right */
+.ab-intro::after {
+  content: '';
+  position: absolute;
+  top: -160px;
+  right: -120px;
+  width: 640px;
+  height: 640px;
+  background: radial-gradient(circle, rgba(132, 198, 42, 0.12) 0%, transparent 62%);
+  pointer-events: none;
+}
+
+.ab-intro-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 64px;
+  align-items: center;
+}
+
+/* Override eyebrow for dark background */
+.ab-intro .eyebrow {
+  background: rgba(132, 198, 42, 0.14);
+  border-color: rgba(132, 198, 42, 0.28);
+  color: #a8e040;
+}
+
+.ab-intro-title {
+  font-size: clamp(2.8rem, 5.5vw, 4.8rem);
+  font-weight: 800;
+  color: white;
+  letter-spacing: -0.03em;
+  line-height: 0.97;
+  margin: 18px 0 22px;
+}
+
+.ab-intro-lead {
+  font-size: 1.12rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0 0 18px;
+  line-height: 1.55;
+  max-width: 460px;
+}
+
+.ab-intro-text {
+  color: rgba(255, 255, 255, 0.50);
+  font-size: 0.98rem;
+  line-height: 1.82;
+  margin: 0;
+  max-width: 460px;
+}
+
+/* ─── Photo frame ─── */
+.ab-photo-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.ab-photo-frame {
+  position: relative;
+  display: inline-block;
+}
+
+/* Green gradient border ring */
+.ab-photo-frame::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, #84c62a 0%, rgba(132, 198, 42, 0.4) 45%, rgba(13, 45, 98, 0.5) 100%);
+  z-index: 0;
+}
+
+/* Soft glow halo */
+.ab-photo-frame::after {
+  content: '';
+  position: absolute;
+  inset: -24px;
+  background: radial-gradient(circle, rgba(132, 198, 42, 0.15) 0%, transparent 68%);
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ab-photo {
+  display: block;
+  width: 300px;
+  height: 370px;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================
+   INFO CARDS  (light section)
+   ============================================================ */
+.ab-sections {
+  padding: 88px 0 96px;
+}
+
+.ab-section-head {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.ab-section-title {
+  font-size: clamp(1.75rem, 3vw, 2.4rem);
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -0.025em;
+  margin: 10px 0 12px;
+}
+
+.ab-section-sub {
+  color: var(--text-soft);
+  font-size: 1.02rem;
+  line-height: 1.75;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.ab-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* Card icon badge */
+.ab-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 16px;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .ab-intro {
+    padding: 72px 0 80px;
+  }
+
+  .ab-intro-grid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  .ab-photo-wrap {
+    justify-content: flex-start;
+  }
+
+  .ab-photo {
+    width: 240px;
+    height: 296px;
+  }
+
+  .ab-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .ab-sections {
+    padding: 64px 0 72px;
+  }
+}
