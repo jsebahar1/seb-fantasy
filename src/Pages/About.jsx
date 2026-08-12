@@ -74,7 +74,7 @@ export default function About() {
             <h2 className="ab-section-title">Analytics Meets Fandom</h2>
             <p className="ab-section-sub">
               A background in data, a love of sports, and one clear goal —
-              give every player a real statistical edge.
+              give my viewers a real statistical edge.
             </p>
           </div>
 
