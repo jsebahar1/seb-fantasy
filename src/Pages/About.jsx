@@ -28,7 +28,7 @@ export default function About() {
       <SEO
         title="About"
         path="/about"
-        description="Meet Jake Sebahar — the data analytics enthusiast and fantasy sports strategist behind SEB Fantasy's advanced models for March Madness, NFL Fantasy, and CFB."
+        description="Meet Jake Sebahar and Nick Sebahar— the data analytics enthusiasts and fantasy sports strategists behind SEB Fantasy's advanced models for March Madness, NFL Fantasy, and CFB."
         keywords={['Jake Sebahar', 'SEB Fantasy', 'sports analytics', 'data-driven fantasy sports', 'March Madness model creator']}
       />
 
