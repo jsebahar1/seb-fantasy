@@ -1,5 +1,29 @@
 export const blogPosts = [
   {
+    slug: 'Adding Nick Sebahar to the SEB Fantasy Team',
+    title: 'Introducing Nick Sebahar: The Newest Member of the SEB Fantasy Team',
+    date: 'August 14, 2026',
+    publishedDate: '2026-08-14',
+    excerpt:
+      'Meet Nick, the newest member of the SEB Fantasy team, bringing his expertise in data analytics and sports strategy to enhance our March Madness and NFL Fantasy models.',
+    metaDescription:
+      'How Nick Sebahar is joining the SEB Fantasy team to contribute his data analytics and sports strategy skills to improve our March Madness and NFL Fantasy models.',
+    keywords: [
+      'Nick Sebahar',
+      'SEB Fantasy team',
+      'data analytics',
+      'sports strategy',
+      'Fantasy rankings',
+      'NFL Fantasy model',
+    ],
+    content: [
+      'Meet Nick Sebahar, the newest member of the SEB Fantasy team. Nick brings a unique blend of data analytics and sports strategy that will enhance our March Madness and NFL Fantasy models.',
+      'Nick is studying data analytics and has a passion for sports, making him a perfect fit for our team. His insights will help refine our models and provide even more accurate predictions for our users.',
+      'Another awesome part of this new addition is that Nick is my younger brother! We are excited to collaborate and bring fresh perspectives to our analytics approach.',
+      'We are excited to build on this momentum and continue pushing the boundaries of fantasy sports analytics.',
+    ],
+  },
+  {
     slug: '2026-march-madness-success',
     title: 'Beating the Odds: How the SEB Fantasy Model Cracked the 2026 Bracket',
     date: 'April 6, 2026',
