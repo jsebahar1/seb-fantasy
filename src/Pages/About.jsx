@@ -5,20 +5,37 @@ const CARDS = [
   {
     icon: '📊',
     iconBg: 'linear-gradient(135deg, rgba(132,198,42,0.15) 0%, rgba(114,177,31,0.05) 100%)',
-    title: 'About Me',
-    body: "I'm a data analytics enthusiast with a strong background in statistics and machine learning. I started SEB Fantasy to apply rigorous analytical methods to the sports I love — and help others make smarter, more informed decisions at every stage of the fantasy season.",
+    title: 'About the Site',
+    body: "SEB Fantasy applies rigorous analytical methods to sports — helping you make smarter decisions at every stage of the fantasy season. Every model starts with the same question: where is the public wrong, and how can we profit from it?",
   },
   {
     icon: '🏀',
     iconBg: 'linear-gradient(135deg, rgba(13,45,98,0.12) 0%, rgba(13,45,98,0.04) 100%)',
     title: 'Sports Background',
-    body: "I'm a lifelong fan of basketball and football, with a deep interest in the statistical underpinnings of player performance. From dissecting March Madness seedings to evaluating fantasy football waiver wire pickups, I approach every game as a data problem worth solving.",
+    body: "Lifelong fans of basketball and football with a deep interest in the statistical underpinnings of player performance. From dissecting March Madness seedings to evaluating waiver wire pickups, we approach every game as a data problem worth solving.",
   },
   {
     icon: '🎯',
     iconBg: 'linear-gradient(135deg, rgba(220,85,10,0.12) 0%, rgba(220,85,10,0.04) 100%)',
     title: 'The Mission',
-    body: 'SEB Fantasy exists to make data-driven analytics accessible to every fantasy sports player — not just the ones with data science backgrounds. The models are built to give you a real, quantifiable edge over the public in every competition you enter.',
+    body: 'SEB Fantasy exists to make data-driven analytics accessible to every fantasy player — not just those with data science backgrounds. Our models are built to give you a real, quantifiable edge over the public in every competition you enter.',
+  },
+];
+
+const TEAM = [
+  {
+    name: 'Jake Sebahar',
+    role: 'Founder & Lead Analyst',
+    photo: '/Gradphoto.JPG',
+    photoAlt: 'Jake Sebahar',
+    bio: "Jake is the primary model builder behind SEB Fantasy, bringing a background in statistics and machine learning to every analysis. He translates complex data into actionable strategies that give fantasy players a real edge over the field.",
+  },
+  {
+    name: 'Nick Sebahar',
+    role: 'Sports Strategy & Analysis',
+    photo: null,
+    photoAlt: 'Nick Sebahar',
+    bio: "Nick brings deep sports knowledge and strategic insight to the team, contributing to game analysis, betting theory, and the overall direction of SEB Fantasy's models. His read on the game is the gut check behind every number.",
   },
 ];
 
@@ -28,8 +45,8 @@ export default function About() {
       <SEO
         title="About"
         path="/about"
-        description="Meet Jake Sebahar and Nick Sebahar— the data analytics enthusiasts and fantasy sports strategists behind SEB Fantasy's advanced models for March Madness, NFL Fantasy, and CFB."
-        keywords={['Jake Sebahar', 'SEB Fantasy', 'sports analytics', 'data-driven fantasy sports', 'March Madness model creator']}
+        description="Meet Jake and Nick Sebahar — the brothers behind SEB Fantasy's data-driven models for March Madness, NFL Fantasy, and NCAA Football."
+        keywords={['Jake Sebahar', 'Nick Sebahar', 'SEB Fantasy', 'sports analytics', 'data-driven fantasy sports', 'March Madness model']}
       />
 
       {/* ── INTRO (dark) ─────────────────────────────── */}
@@ -66,7 +83,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* ── CARDS (light) ───────────────────────────── */}
+      {/* ── STORY CARDS (light) ─────────────────────── */}
       <section className="ab-sections">
         <div className="container">
           <div className="ab-section-head">
@@ -74,7 +91,7 @@ export default function About() {
             <h2 className="ab-section-title">Analytics Meets Fandom</h2>
             <p className="ab-section-sub">
               A background in data, a love of sports, and one clear goal: to
-              give my viewers a real statistical edge.
+              give every viewer a real statistical edge.
             </p>
           </div>
 
@@ -90,6 +107,45 @@ export default function About() {
                 </div>
                 <h3>{card.title}</h3>
                 <p>{card.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── TEAM (dark) ──────────────────────────────── */}
+      <section className="ab-team">
+        <div className="container">
+          <div className="ab-team-head">
+            <p className="eyebrow ab-team-eyebrow">The Team</p>
+            <h2 className="ab-team-title">Meet the People Behind the Models</h2>
+            <p className="ab-team-sub">
+              Two brothers, one goal — give every fantasy player an analytical edge.
+            </p>
+          </div>
+
+          <div className="ab-team-grid">
+            {TEAM.map((member) => (
+              <div key={member.name} className="ab-member">
+                <div className="ab-member-photo-wrap">
+                  {member.photo ? (
+                    <img
+                      src={member.photo}
+                      alt={member.photoAlt}
+                      className="ab-member-photo"
+                    />
+                  ) : (
+                    <div className="ab-member-placeholder" aria-label={`${member.name} photo coming soon`}>
+                      <span className="ab-member-placeholder-icon" aria-hidden="true">📸</span>
+                      <p>Photo coming soon</p>
+                    </div>
+                  )}
+                </div>
+                <div className="ab-member-info">
+                  <h3 className="ab-member-name">{member.name}</h3>
+                  <p className="ab-member-role">{member.role}</p>
+                  <p className="ab-member-bio">{member.bio}</p>
+                </div>
               </div>
             ))}
           </div>

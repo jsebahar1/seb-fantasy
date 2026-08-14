@@ -26,15 +26,15 @@
   pointer-events: none;
 }
 
-/* Green glow — upper right */
+/* Green glow — upper right, positioned inside section so overflow:hidden doesn't kill it */
 .ab-intro::after {
   content: '';
   position: absolute;
-  top: -160px;
-  right: -120px;
-  width: 640px;
-  height: 640px;
-  background: radial-gradient(circle, rgba(132, 198, 42, 0.12) 0%, transparent 62%);
+  top: -60px;
+  right: -80px;
+  width: 560px;
+  height: 560px;
+  background: radial-gradient(circle, rgba(132, 198, 42, 0.14) 0%, transparent 62%);
   pointer-events: none;
 }
 
@@ -59,7 +59,7 @@
   font-weight: 800;
   color: white;
   letter-spacing: -0.03em;
-  line-height: 0.97;
+  line-height: 1.05;
   margin: 18px 0 22px;
 }
 
@@ -108,11 +108,10 @@
 .ab-photo-frame::after {
   content: '';
   position: absolute;
-  inset: -24px;
-  background: radial-gradient(circle, rgba(132, 198, 42, 0.15) 0%, transparent 68%);
-  z-index: -1;
-  border-radius: 50%;
+  inset: -20px;
+  background: radial-gradient(circle, rgba(132, 198, 42, 0.18) 0%, transparent 68%);
   pointer-events: none;
+  border-radius: 50%;
 }
 
 .ab-photo {
@@ -127,7 +126,7 @@
 }
 
 /* ============================================================
-   INFO CARDS  (light section)
+   STORY CARDS  (light section)
    ============================================================ */
 .ab-sections {
   padding: 88px 0 96px;
@@ -173,6 +172,170 @@
 }
 
 /* ============================================================
+   TEAM SECTION  (dark, full-bleed)
+   ============================================================ */
+.ab-team {
+  background: linear-gradient(145deg, #06163a 0%, #0c2860 55%, #0e3270 100%);
+  position: relative;
+  overflow: hidden;
+  padding: 88px 0 96px;
+}
+
+/* Dot-grid texture */
+.ab-team::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+/* Green glow — lower left */
+.ab-team::after {
+  content: '';
+  position: absolute;
+  bottom: -60px;
+  left: -80px;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(132, 198, 42, 0.11) 0%, transparent 62%);
+  pointer-events: none;
+}
+
+.ab-team-head {
+  text-align: center;
+  margin-bottom: 56px;
+  position: relative;
+  z-index: 1;
+}
+
+.ab-team-eyebrow {
+  background: rgba(132, 198, 42, 0.14) !important;
+  border-color: rgba(132, 198, 42, 0.28) !important;
+  color: #a8e040 !important;
+}
+
+.ab-team-title {
+  font-size: clamp(1.75rem, 3vw, 2.4rem);
+  font-weight: 800;
+  color: white;
+  letter-spacing: -0.025em;
+  margin: 10px 0 12px;
+}
+
+.ab-team-sub {
+  color: rgba(255, 255, 255, 0.50);
+  font-size: 1.02rem;
+  line-height: 1.75;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.ab-team-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.ab-member {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: var(--radius-lg);
+  padding: 36px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    transform var(--transition-base);
+}
+
+.ab-member:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(132, 198, 42, 0.28);
+  transform: translateY(-3px);
+}
+
+/* ─── Member photo ─── */
+.ab-member-photo-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.ab-member-photo {
+  width: 160px;
+  height: 196px;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(132, 198, 42, 0.40);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* Photo coming soon placeholder */
+.ab-member-placeholder {
+  width: 160px;
+  height: 196px;
+  border-radius: var(--radius-lg);
+  border: 2px dashed rgba(132, 198, 42, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(132, 198, 42, 0.05);
+}
+
+.ab-member-placeholder-icon {
+  font-size: 2rem;
+  opacity: 0.7;
+}
+
+.ab-member-placeholder p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.38);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Member text ─── */
+.ab-member-info {
+  text-align: center;
+}
+
+.ab-member-name {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: white;
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
+}
+
+.ab-member-role {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #a8e040;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0 0 14px;
+}
+
+.ab-member-bio {
+  font-size: 0.94rem;
+  color: rgba(255, 255, 255, 0.52);
+  line-height: 1.78;
+  margin: 0;
+}
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 900px) {
@@ -200,5 +363,13 @@
 
   .ab-sections {
     padding: 64px 0 72px;
+  }
+
+  .ab-team {
+    padding: 64px 0 72px;
+  }
+
+  .ab-team-grid {
+    grid-template-columns: 1fr;
   }
 }
