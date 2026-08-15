@@ -32,10 +32,10 @@ const TEAM = [
   },
   {
     name: 'Nick Sebahar',
-    role: 'Sports Strategy and Analysis',
-    photo: null,
+    role: 'Sports Analytics and Strategy',
+    photo: '/Nickphoto.png',
     photoAlt: 'Nick Sebahar',
-    bio: "Nick is Jake's younger brother and brings real sports instinct to the team. He contributes to game analysis and betting strategy, and is the gut check that keeps every model grounded in how games actually play out.",
+    bio: "Nick is Jake’s younger brother who brings real sports instincts to the team. He combines a passion for sports with a quantitative, data-driven approach to building smarter models and making more informed decisions.",
   },
 ];
 
@@ -68,7 +68,7 @@ export default function About() {
                     <img
                       src={member.photo}
                       alt={member.photoAlt}
-                      className="ab-member-photo"
+                      className={`ab-member-photo${member.name === 'Nick Sebahar' ? ' ab-member-photo--nick' : ''}`}
                     />
                   ) : (
                     <div className="ab-member-placeholder" aria-label={`${member.name} photo coming soon`}>
