@@ -1,6 +1,6 @@
 export const blogPosts = [
   {
-    slug: 'Adding Nick Sebahar to the SEB Fantasy Team',
+    slug: 'introducing-nick-sebahar',
     title: 'Introducing Nick Sebahar: The Newest Member of the SEB Fantasy Team',
     date: 'August 14, 2026',
     publishedDate: '2026-08-14',

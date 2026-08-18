@@ -26,6 +26,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://sebfantasy.com/blog/introducing-nick-sebahar</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://sebfantasy.com/blog/2026-march-madness-success</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
