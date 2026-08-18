@@ -45,8 +45,8 @@ export default function About() {
       <SEO
         title="About"
         path="/about"
-        description="Meet Jake and Nick Sebahar, the brothers behind SEB Fantasy's data-driven models for March Madness, NFL Fantasy, and NCAA Football."
-        keywords={['Jake Sebahar', 'Nick Sebahar', 'SEB Fantasy', 'sports analytics', 'data-driven fantasy sports', 'March Madness model']}
+        description="SEB Fantasy was built by Jake and Nick Sebahar to give fantasy players a real data edge. Learn how the models work and what drives the picks."
+        keywords={['Jake Sebahar', 'Nick Sebahar', 'SEB Fantasy', 'fantasy sports analytics', 'sports analytics tools', 'march madness model creator', 'nfl fantasy analytics']}
       />
 
       {/* Team hero */}

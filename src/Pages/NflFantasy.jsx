@@ -117,10 +117,10 @@ export default function NflFantasy() {
   return (
     <main className="page nfl-page">
       <SEO
-        title="NFL Fantasy Football Rankings"
+        title="2026 NFL Fantasy Football Rankings & Draft Tool"
         path="/nfl-fantasy"
-        description="Interactive NFL Fantasy rankings, draft-round targets, Value Above Replacement, and ADP leverage from SEB Fantasy."
-        keywords={['NFL fantasy rankings', 'fantasy football draft targets', 'fantasy football VOR', 'fantasy football ADP leverage', 'SEB Fantasy']}
+        description="Free 2026 NFL fantasy football draft rankings with ADP leverage and Value Above Replacement. Find undervalued players round by round and build a winning team from pick one."
+        keywords={['nfl fantasy football rankings 2026', 'fantasy football draft rankings', 'fantasy football draft tool', 'value above replacement fantasy football', 'fantasy football ADP strategy', 'nfl fantasy draft advice', 'fantasy football draft helper', 'undervalued fantasy players']}
       />
 
       <div className="container">

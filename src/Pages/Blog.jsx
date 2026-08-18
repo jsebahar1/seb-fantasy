@@ -6,9 +6,10 @@ export default function Blog() {
   return (
     <main className="page">
       <SEO
-        title="Blog"
+        title="Fantasy Sports Strategy Blog"
         path="/blog"
-        description="Read the latest sports analytics insights, model updates, tournament bracket strategy, and fantasy football tips from Jake Sebahar at SEB Fantasy."
+        description="March Madness bracket tips, NFL fantasy football draft advice, and sports analytics breakdowns from Jake and Nick Sebahar. Updated every season with new model results."
+        keywords={['fantasy sports blog', 'march madness bracket tips', 'nfl fantasy football advice', 'sports analytics blog', 'fantasy football strategy', 'march madness strategy guide', 'fantasy sports tips']}
       />
 
       <div className="container">

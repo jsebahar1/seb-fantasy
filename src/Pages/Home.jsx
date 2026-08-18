@@ -38,7 +38,8 @@ export default function Home() {
     <main className="home">
       <SEO
         path="/"
-        description="SEB Fantasy uses advanced statistical models to help you win at March Madness, NFL Fantasy Football, and NCAA Football. Get the data edge the public doesn't have."
+        description="Free tools to win your March Madness bracket pool and NFL fantasy football league. Beat the public with data-driven picks, ADP leverage rankings, and bracket strategy built on real analytics."
+        keywords={['march madness bracket strategy', 'nfl fantasy football rankings', 'fantasy sports analytics tools', 'how to win march madness pool', 'fantasy football draft help', 'sports analytics', 'beat your bracket pool']}
       />
 
       {/* ── HERO ───────────────────────────────────────────────── */}

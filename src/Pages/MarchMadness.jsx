@@ -77,21 +77,20 @@ export default function MarchMadness() {
   return (
     <main className="page">
       <SEO
-        title="March Madness Optimal Bracket"
+        title="March Madness Bracket Strategy & Pool Guide"
         path="/march-madness"
-        description="The SEB Fantasy Advanced Leverage Model finds where the public misprices teams in March Madness. Free interactive Tableau dashboard and downloadable bracket spreadsheet."
+        description="Stop picking favorites and start winning. Our March Madness bracket tool uses pick percentages and KenPom data to find the best value picks and beat your office pool."
+        keywords={['march madness bracket strategy', 'how to win march madness pool', 'march madness bracket tips', 'march madness pick percentages', 'beat march madness bracket challenge', 'KenPom bracket strategy', 'march madness bracket picks', 'optimal march madness bracket']}
       />
       <div className="container">
-        <p className="eyebrow">March Madness</p>
-        <h1 className="page-title">March Madness Optimal Bracket</h1>
+        <p className="eyebrow">March Madness Bracket Strategy</p>
+        <h1 className="page-title">How to Win Your March Madness Bracket Pool</h1>
         <p className="page-text">
-          Want to beat all your co-workers in the Bracket Challenge? <br />
-          Our March Madness Advanced Leverage
-          Model identifies the optimal picking strategy to beat all of your friends. While everyone else is worried about picking the perfect bracket, 
-          you're coming away with the prize pot.
-           Use our interactive dashboard to find where the
-          real bracket value is and download the full spreadsheet to work with
-          the data yourself. <br />
+          Most bracket players try to pick every game correctly. That is the wrong goal.
+          The SEB Fantasy Advanced Leverage Model uses real pick percentage data and KenPom win probabilities
+          to find the teams the public is undervaluing, so you can build a bracket
+          designed to win your pool, not just look smart. Use the dashboard to find
+          the best value picks by round, then download the full spreadsheet to dig in yourself.
         </p>
 
         <section className="grid-main">

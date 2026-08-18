@@ -4,9 +4,10 @@ export default function NcaaFootball() {
   return (
     <main className="page">
       <SEO
-        title="NCAA Football Rankings"
+        title="College Football Rankings & CFB Analytics"
         path="/ncaa-football"
-        description="Data-driven CFB rankings and analytics from SEB Fantasy. Coming soon."
+        description="Data-driven college football rankings and CFB analytics from SEB Fantasy. Advanced stats and matchup-based models for the 2026 season coming soon."
+        keywords={['college football rankings 2026', 'CFB analytics', 'ncaa football predictions', 'college football picks', 'data driven CFB rankings', 'college football fantasy picks', 'CFB statistics']}
       />
 
       <div className="container">
