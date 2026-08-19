@@ -216,14 +216,13 @@
 
 /* Advanced Settings modal */
 .nfl-adv-modal { background: var(--surface, #fff); border-radius: var(--radius-lg, 16px); box-shadow: 0 28px 72px rgba(0,0,0,0.26); display: flex; flex-direction: column; max-height: 88vh; max-width: 700px; overflow: hidden; position: relative; width: 100%; }
-.nfl-adv-modal-head { border-bottom: 1px solid var(--border-soft); display: flex; gap: 20px; justify-content: space-between; padding: 26px 28px 20px; }
-.nfl-adv-modal-title { color: var(--navy); font-size: 1.3rem; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 4px; }
-.nfl-adv-modal-sub { color: var(--text-soft); font-size: 0.84rem; line-height: 1.55; margin: 0; max-width: 480px; }
+.nfl-adv-modal-head { align-items: center; border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; padding: 14px 20px; }
+.nfl-adv-modal-title { color: var(--navy); font-size: 1rem; font-weight: 800; letter-spacing: 0.01em; margin: 0; }
 .nfl-adv-close { flex-shrink: 0; position: static; }
-.nfl-adv-modal-body { overflow-y: auto; padding: 22px 28px 28px; }
+.nfl-adv-modal-body { overflow-y: auto; padding: 22px 24px 28px; }
 
 /* Advanced sub-tabs */
-.nfl-sub-tabs { border-bottom: 2px solid var(--border-soft); display: flex; gap: 2px; margin: 0 28px 22px; }
+.nfl-sub-tabs { border-bottom: 2px solid var(--border-soft); display: flex; gap: 2px; margin: 10px 24px 0; }
 .nfl-sub-tab { background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-soft); cursor: pointer; font: inherit; font-size: 0.86rem; font-weight: 600; margin-bottom: -2px; padding: 9px 16px; transition: color var(--transition-fast), border-color var(--transition-fast); white-space: nowrap; }
 .nfl-sub-tab:hover { color: var(--navy); }
 .nfl-sub-tab-active { border-bottom-color: var(--green); color: var(--navy); font-weight: 700; }
@@ -232,6 +231,12 @@
 .nfl-adv-section-head { align-items: flex-start; display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; margin-bottom: 22px; }
 .nfl-adv-section-head > p { color: var(--text-soft); flex: 1; font-size: 0.85rem; line-height: 1.65; margin: 0; min-width: 200px; }
 .nfl-adv-head-actions { align-items: flex-start; display: flex; flex-direction: column; flex-shrink: 0; gap: 10px; }
+
+/* Position weights lock */
+.nfl-pos-lock-msg { background: rgba(13, 45, 98, 0.04); border: 1px solid var(--border-soft); border-radius: var(--radius-md); margin-bottom: 20px; padding: 16px 18px; }
+.nfl-pos-lock-msg p { color: var(--text-soft); font-size: 0.85rem; line-height: 1.65; margin: 0 0 14px; }
+.nfl-unlock-check { align-items: center; color: var(--navy); cursor: pointer; display: flex; font-size: 0.82rem; font-weight: 700; gap: 9px; }
+.nfl-unlock-check input[type="checkbox"] { accent-color: var(--green-dark); cursor: pointer; height: 15px; width: 15px; }
 
 /* Toggle */
 .nfl-toggle-label { align-items: center; color: var(--navy); cursor: pointer; display: flex; font-size: 0.83rem; font-weight: 700; gap: 8px; }

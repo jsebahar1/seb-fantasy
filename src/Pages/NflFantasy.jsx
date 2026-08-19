@@ -175,13 +175,13 @@ function AdvancedSettingsModal({
   onClose,
   scoringFormat,
   leagueSize,
-  useCustomScoring, setUseCustomScoring,
-  scoringWeights,   updateScoringWeight, resetScoringWeights,
-  replacementLevels, updateReplacement,  resetReplacementLevels,
-  rosterSlots,      updateRosterSlot,    resetRosterSlots,
-  numRounds,        setNumRounds,
+  scoringWeights,    updateScoringWeight, resetScoringWeights,
+  replacementLevels, updateReplacement,   resetReplacementLevels,
+  rosterSlots,       updateRosterSlot,    resetRosterSlots,
+  numRounds,         setNumRounds,
 }) {
   const [advancedTab, setAdvancedTab] = useState('scoring');
+  const [posLocked,   setPosLocked]   = useState(true);
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
@@ -194,13 +194,7 @@ function AdvancedSettingsModal({
       <div className="nfl-adv-modal" onClick={(e) => e.stopPropagation()}>
 
         <div className="nfl-adv-modal-head">
-          <div>
-            <h2 className="nfl-adv-modal-title">Advanced Settings</h2>
-            <p className="nfl-adv-modal-sub">
-              Customize how the model scores players and define your league's roster rules.
-              Changes apply instantly across both Draft Guide and Rankings.
-            </p>
-          </div>
+          <h2 className="nfl-adv-modal-title">Advanced Settings</h2>
           <button className="nfl-modal-close nfl-adv-close" onClick={onClose} aria-label="Close">×</button>
         </div>
 
@@ -225,31 +219,22 @@ function AdvancedSettingsModal({
             <>
               <div className="nfl-adv-section-head">
                 <p>
-                  For yardage stats, enter how many yards equal one point (e.g., 25 = 1 pt per
-                  25 passing yards). Penalty stats like interceptions and fumbles should be negative.
+                  For yardage stats, enter how many yards equal one point (e.g., 25 means 1 pt per
+                  25 passing yards). These are the factual scoring rules for your league.
                 </p>
                 <div className="nfl-adv-head-actions">
-                  <label className="nfl-toggle-label">
-                    <input
-                      type="checkbox"
-                      checked={useCustomScoring}
-                      onChange={(e) => setUseCustomScoring(e.target.checked)}
-                    />
-                    <span>Use custom scoring</span>
-                  </label>
                   <button className="nfl-reset-btn" onClick={resetScoringWeights}>
                     Reset to {FORMAT_LABELS[scoringFormat]} defaults
                   </button>
                 </div>
               </div>
 
-              <div className={`nfl-weights-sections${!useCustomScoring ? ' nfl-weights-disabled' : ''}`}>
+              <div className="nfl-weights-sections">
                 <div className="nfl-weights-group">
                   <h4>Passing</h4>
                   <div className="nfl-weights-grid">
-                    <WeightInput label="Yards per point" field="passingYardsPerPt" hint="yards → 1 pt"  value={scoringWeights.passingYardsPerPt}  onChange={updateScoringWeight} />
-                    <WeightInput label="TD points"       field="passingTdPts"      hint="pts per TD"    value={scoringWeights.passingTdPts}        onChange={updateScoringWeight} />
-                    <WeightInput label="INT points"      field="interceptionPts"   hint="neg = penalty" value={scoringWeights.interceptionPts}     onChange={updateScoringWeight} />
+                    <WeightInput label="Yards per point" field="passingYardsPerPt" hint="yards → 1 pt" value={scoringWeights.passingYardsPerPt}  onChange={updateScoringWeight} />
+                    <WeightInput label="TD points"       field="passingTdPts"      hint="pts per TD"   value={scoringWeights.passingTdPts}        onChange={updateScoringWeight} />
                   </div>
                 </div>
                 <div className="nfl-weights-group">
@@ -262,15 +247,16 @@ function AdvancedSettingsModal({
                 <div className="nfl-weights-group">
                   <h4>Receiving</h4>
                   <div className="nfl-weights-grid">
-                    <WeightInput label="Yards per point" field="receivingYardsPerPt" hint="yards → 1 pt" value={scoringWeights.receivingYardsPerPt}  onChange={updateScoringWeight} />
-                    <WeightInput label="TD points"       field="receivingTdPts"       hint="pts per TD"   value={scoringWeights.receivingTdPts}        onChange={updateScoringWeight} />
-                    <WeightInput label="Receptions"      field="receptionPts"         hint="pts per rec"  value={scoringWeights.receptionPts}          onChange={updateScoringWeight} />
+                    <WeightInput label="Yards per point" field="receivingYardsPerPt" hint="yards → 1 pt" value={scoringWeights.receivingYardsPerPt} onChange={updateScoringWeight} />
+                    <WeightInput label="TD points"       field="receivingTdPts"       hint="pts per TD"   value={scoringWeights.receivingTdPts}       onChange={updateScoringWeight} />
+                    <WeightInput label="Receptions"      field="receptionPts"         hint="pts per rec"  value={scoringWeights.receptionPts}         onChange={updateScoringWeight} />
                   </div>
                 </div>
                 <div className="nfl-weights-group">
-                  <h4>Penalties</h4>
+                  <h4>Turnovers</h4>
                   <div className="nfl-weights-grid">
-                    <WeightInput label="Fumbles lost" field="fumblesLostPts" hint="neg = penalty" value={scoringWeights.fumblesLostPts} onChange={updateScoringWeight} />
+                    <WeightInput label="Interceptions" field="interceptionPts" hint="neg = penalty" value={scoringWeights.interceptionPts} onChange={updateScoringWeight} />
+                    <WeightInput label="Fumbles lost"  field="fumblesLostPts"  hint="neg = penalty" value={scoringWeights.fumblesLostPts}  onChange={updateScoringWeight} />
                   </div>
                 </div>
               </div>
@@ -282,8 +268,8 @@ function AdvancedSettingsModal({
             <>
               <div className="nfl-adv-section-head">
                 <p>
-                  Set your starting lineup requirements and draft length. These settings are saved
-                  for the session and will feed replacement level calculations once automation is live.
+                  Set your starting lineup requirements and draft length. These settings will feed
+                  replacement level calculations once position weight automation is live.
                 </p>
                 <div className="nfl-adv-head-actions">
                   <button className="nfl-reset-btn" onClick={resetRosterSlots}>Reset to defaults</button>
@@ -332,46 +318,60 @@ function AdvancedSettingsModal({
           {/* ── Position Weights ── */}
           {advancedTab === 'positions' && (
             <>
-              <div className="nfl-adv-section-head">
+              <div className="nfl-pos-lock-msg">
                 <p>
-                  These thresholds set the replacement player for each position. A QB value of 12
-                  means the last useful QB in a 12-team, 1-QB league is ranked 12th. Raise this
-                  in deeper leagues or if your league starts more at a position.
+                  These replacement thresholds are calibrated for a standard 12-team league and drive
+                  how VOR and SEB Rank are calculated. The defaults work well for the vast majority
+                  of leagues. If you think our position weights are off for your specific setup,
+                  you can unlock and adjust them — but we don't recommend it for most leagues.
                 </p>
-                <div className="nfl-adv-head-actions">
-                  <button className="nfl-reset-btn" onClick={resetReplacementLevels}>Reset to defaults</button>
-                </div>
+                <label className="nfl-unlock-check">
+                  <input
+                    type="checkbox"
+                    checked={!posLocked}
+                    onChange={(e) => {
+                      if (e.target.checked) setPosLocked(false);
+                      else { resetReplacementLevels(); setPosLocked(true); }
+                    }}
+                  />
+                  <span>I want to customize position weights (not recommended)</span>
+                </label>
               </div>
 
-              <div className="nfl-weights-group">
-                <h4>Replacement Rank by Position</h4>
+              <div className={`nfl-weights-group${posLocked ? ' nfl-weights-disabled' : ''}`}>
+                <div className="nfl-adv-section-head" style={{ marginBottom: '16px' }}>
+                  <h4 style={{ margin: 0 }}>Replacement Rank by Position</h4>
+                  {!posLocked && (
+                    <button className="nfl-reset-btn" onClick={resetReplacementLevels}>Reset to defaults</button>
+                  )}
+                </div>
                 <div className="nfl-weights-grid">
                   <div className="nfl-weight-field">
                     <label>
                       <span className="nfl-weight-label">QB replacement rank</span>
                       <span className="nfl-weight-hint">default: {DEFAULT_REPLACEMENT_LEVELS.QB} (1 QB × {leagueSize} teams)</span>
-                      <input type="number" min="1" max="100" step="1" value={replacementLevels.QB} onChange={(e) => updateReplacement('QB', Number(e.target.value))} className="nfl-weight-input" />
+                      <input type="number" min="1" max="100" step="1" disabled={posLocked} value={replacementLevels.QB} onChange={(e) => updateReplacement('QB', Number(e.target.value))} className="nfl-weight-input" />
                     </label>
                   </div>
                   <div className="nfl-weight-field">
                     <label>
                       <span className="nfl-weight-label">RB replacement rank</span>
                       <span className="nfl-weight-hint">default: {DEFAULT_REPLACEMENT_LEVELS.RB} (2 RB + flex)</span>
-                      <input type="number" min="1" max="200" step="1" value={replacementLevels.RB} onChange={(e) => updateReplacement('RB', Number(e.target.value))} className="nfl-weight-input" />
+                      <input type="number" min="1" max="200" step="1" disabled={posLocked} value={replacementLevels.RB} onChange={(e) => updateReplacement('RB', Number(e.target.value))} className="nfl-weight-input" />
                     </label>
                   </div>
                   <div className="nfl-weight-field">
                     <label>
                       <span className="nfl-weight-label">WR replacement rank</span>
                       <span className="nfl-weight-hint">default: {DEFAULT_REPLACEMENT_LEVELS.WR} (2 WR + flex)</span>
-                      <input type="number" min="1" max="200" step="1" value={replacementLevels.WR} onChange={(e) => updateReplacement('WR', Number(e.target.value))} className="nfl-weight-input" />
+                      <input type="number" min="1" max="200" step="1" disabled={posLocked} value={replacementLevels.WR} onChange={(e) => updateReplacement('WR', Number(e.target.value))} className="nfl-weight-input" />
                     </label>
                   </div>
                   <div className="nfl-weight-field">
                     <label>
                       <span className="nfl-weight-label">TE replacement rank</span>
                       <span className="nfl-weight-hint">default: {DEFAULT_REPLACEMENT_LEVELS.TE} (1 TE × {leagueSize} teams)</span>
-                      <input type="number" min="1" max="100" step="1" value={replacementLevels.TE} onChange={(e) => updateReplacement('TE', Number(e.target.value))} className="nfl-weight-input" />
+                      <input type="number" min="1" max="100" step="1" disabled={posLocked} value={replacementLevels.TE} onChange={(e) => updateReplacement('TE', Number(e.target.value))} className="nfl-weight-input" />
                     </label>
                   </div>
                 </div>
@@ -551,16 +551,17 @@ export default function NflFantasy() {
   const [showAdvanced,    setShowAdvanced]    = useState(false);
 
   // Advanced settings state
-  const [useCustomScoring,  setUseCustomScoring]  = useState(false);
-  const [scoringWeights,    setScoringWeights]     = useState(() => buildDefaultWeights(SCORING_FORMATS.PPR));
-  const [replacementLevels, setReplacementLevels]  = useState({ ...DEFAULT_REPLACEMENT_LEVELS });
-  const [rosterSlots,       setRosterSlots]        = useState({ ...DEFAULT_ROSTER_SLOTS });
-  const [numRounds,         setNumRounds]          = useState(14);
+  const [scoringWeights,    setScoringWeights]    = useState(() => buildDefaultWeights(SCORING_FORMATS.PPR));
+  const [replacementLevels, setReplacementLevels] = useState({ ...DEFAULT_REPLACEMENT_LEVELS });
+  const [rosterSlots,       setRosterSlots]       = useState({ ...DEFAULT_ROSTER_SLOTS });
+  const [numRounds,         setNumRounds]         = useState(14);
 
-  const effectiveWeights = useMemo(
-    () => (useCustomScoring ? scoringWeights : buildDefaultWeights(scoringFormat)),
-    [useCustomScoring, scoringWeights, scoringFormat],
-  );
+  // Keep receptionPts in sync with the scoring format selector
+  useEffect(() => {
+    setScoringWeights((w) => ({ ...w, receptionPts: RECEPTION_POINTS_MAP[scoringFormat] ?? 1 }));
+  }, [scoringFormat]);
+
+  const effectiveWeights = scoringWeights;
 
   const openPlayer  = (player, pickCtx = null) => { setSelectedPlayer(player); setModalPickContext(pickCtx); };
   const closePlayer = () => { setSelectedPlayer(null); setModalPickContext(null); };
@@ -571,6 +572,7 @@ export default function NflFantasy() {
   const resetScoringWeights    = () => setScoringWeights(buildDefaultWeights(scoringFormat));
   const resetReplacementLevels = () => setReplacementLevels({ ...DEFAULT_REPLACEMENT_LEVELS });
   const resetRosterSlots       = () => setRosterSlots({ ...DEFAULT_ROSTER_SLOTS });
+
 
   useEffect(() => { setPageOffset(0); }, [selectedRound, position, pickPosition, draftFormat, leagueSize]);
 
@@ -592,14 +594,9 @@ export default function NflFantasy() {
 
   const rankings = useMemo(
     () => projectionPlayers.length
-      ? buildFantasyRankings(
-          projectionPlayers,
-          scoringFormat,
-          useCustomScoring ? scoringWeights : null,
-          replacementLevels,
-        )
+      ? buildFantasyRankings(projectionPlayers, scoringFormat, scoringWeights, replacementLevels)
       : [],
-    [projectionPlayers, scoringFormat, useCustomScoring, scoringWeights, replacementLevels],
+    [projectionPlayers, scoringFormat, scoringWeights, replacementLevels],
   );
 
   const leverageRankings = useMemo(
@@ -666,7 +663,6 @@ export default function NflFantasy() {
   const advancedProps = {
     onClose: () => setShowAdvanced(false),
     scoringFormat, leagueSize,
-    useCustomScoring, setUseCustomScoring,
     scoringWeights, updateScoringWeight, resetScoringWeights,
     replacementLevels, updateReplacement, resetReplacementLevels,
     rosterSlots, updateRosterSlot, resetRosterSlots,
@@ -719,17 +715,6 @@ export default function NflFantasy() {
             you can walk into draft day with a plan and come out ahead of it.
           </p>
         </header>
-
-        {useCustomScoring && (
-          <div className="nfl-custom-scoring-banner">
-            Custom scoring weights active.{' '}
-            <button className="nfl-banner-link" onClick={() => setShowAdvanced(true)}>Edit settings</button>
-            {' '}or{' '}
-            <button className="nfl-banner-link" onClick={() => { setUseCustomScoring(false); resetScoringWeights(); }}>
-              reset to defaults
-            </button>.
-          </div>
-        )}
 
         <div className="nfl-tabs" role="tablist">
           {MAIN_TABS.map((tab) => (
@@ -814,7 +799,6 @@ export default function NflFantasy() {
                   <div className="nfl-adv-btn-cell">
                     <button className="nfl-adv-btn" onClick={() => setShowAdvanced(true)}>
                       Advanced Settings
-                      {useCustomScoring && <span className="nfl-adv-dot" aria-label="Custom settings active" />}
                     </button>
                   </div>
                 </div>
@@ -1009,7 +993,6 @@ export default function NflFantasy() {
                   <div className="nfl-adv-btn-cell">
                     <button className="nfl-adv-btn" onClick={() => setShowAdvanced(true)}>
                       Advanced Settings
-                      {useCustomScoring && <span className="nfl-adv-dot" aria-label="Custom settings active" />}
                     </button>
                   </div>
                 </div>
