@@ -673,9 +673,22 @@ export default function NflFantasy() {
     [projectionPlayers, scoringFormat, scoringWeights, effectiveReplacementLevels],
   );
 
+  // Re-rank by weight × projected pts when in weighted mode; sebRank and leverage update accordingly
+  const weightedRankings = useMemo(
+    () => rankings.length
+      ? [...rankings]
+          .map((p) => ({ ...p, projectedValue: (effectivePositionWeights[p.position] ?? 1) * p.projectedFantasyPoints }))
+          .sort((a, b) => b.projectedValue - a.projectedValue || b.projectedFantasyPoints - a.projectedFantasyPoints || a.player.localeCompare(b.player))
+          .map((p, i) => ({ ...p, sebRank: i + 1 }))
+      : [],
+    [rankings, effectivePositionWeights],
+  );
+
+  const activeRankings = rankingMode === 'weighted' ? weightedRankings : rankings;
+
   const leverageRankings = useMemo(
-    () => (rankings.length ? buildLeverageRankings(rankings, adpData, adpSource) : []),
-    [rankings, adpData, adpSource],
+    () => (activeRankings.length ? buildLeverageRankings(activeRankings, adpData, adpSource) : []),
+    [activeRankings, adpData, adpSource],
   );
 
   const displayRankings = useMemo(
