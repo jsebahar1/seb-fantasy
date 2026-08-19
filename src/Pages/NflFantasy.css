@@ -56,6 +56,8 @@
 .nfl-page-btn { background: rgba(13, 45, 98, 0.05); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); color: var(--navy); cursor: pointer; font: inherit; font-size: 0.82rem; font-weight: 700; padding: 7px 14px; transition: background var(--transition-fast), border-color var(--transition-fast); }
 .nfl-page-btn:hover:not(:disabled) { background: rgba(13, 45, 98, 0.1); border-color: var(--navy); }
 .nfl-page-btn:disabled { color: var(--text-soft); cursor: default; opacity: 0.4; }
+.nfl-next-pick-btn { background: rgba(132, 198, 42, 0.12); border-color: rgba(132, 198, 42, 0.4); margin-left: auto; }
+.nfl-next-pick-btn:hover:not(:disabled) { background: rgba(132, 198, 42, 0.22); border-color: var(--green-dark); }
 .nfl-back-to-pick { background: transparent; border: none; color: var(--green-dark); cursor: pointer; font: inherit; font-size: 0.82rem; font-weight: 700; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
 
 /* Value badges (replaces old availability classes) */
@@ -191,6 +193,14 @@
 .nfl-adv-section-head { align-items: flex-start; display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; margin-bottom: 22px; }
 .nfl-adv-section-head > p { color: var(--text-soft); flex: 1; font-size: 0.85rem; line-height: 1.65; margin: 0; min-width: 200px; }
 .nfl-adv-head-actions { align-items: flex-start; display: flex; flex-direction: column; flex-shrink: 0; gap: 10px; }
+
+/* VOR / Weighted toggle */
+.nfl-mode-toggle-row { align-items: center; display: flex; gap: 12px; margin-bottom: 14px; }
+.nfl-mode-toggle-label { color: var(--text-soft); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+.nfl-mode-toggle { background: rgba(13, 45, 98, 0.06); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); display: flex; padding: 3px; }
+.nfl-mode-btn { background: none; border: none; border-radius: calc(var(--radius-sm) - 2px); color: var(--text-soft); cursor: pointer; font: inherit; font-size: 0.82rem; font-weight: 600; padding: 5px 14px; transition: background var(--transition-fast), color var(--transition-fast); white-space: nowrap; }
+.nfl-mode-btn:hover { color: var(--navy); }
+.nfl-mode-btn-active { background: var(--surface, #fff); box-shadow: 0 1px 4px rgba(0,0,0,0.12); color: var(--navy); font-weight: 700; }
 
 /* ADP / QB / SuperFlex disclaimer */
 .nfl-adp-disclaimer { align-items: flex-start; background: rgba(181, 97, 0, 0.07); border: 1px solid rgba(181, 97, 0, 0.28); border-radius: var(--radius-md); display: flex; gap: 14px; margin-top: 20px; padding: 16px 18px; }

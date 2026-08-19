@@ -20,16 +20,16 @@ const FORMAT_LABELS = {
   [SCORING_FORMATS.HALF_PPR]: 'Half-PPR',
   [SCORING_FORMATS.STANDARD]: 'Standard',
 };
-const FULL_TABLE_COLUMNS = [
+const BASE_TABLE_COLUMNS = [
   { key: 'sebRank',                label: 'SEB Rank',  align: 'number' },
   { key: 'player',                 label: 'Player' },
   { key: 'position',               label: 'Pos.' },
   { key: 'team',                   label: 'Team' },
   { key: 'projectedFantasyPoints', label: 'Proj. Pts', align: 'number' },
-  { key: 'valueAboveReplacement',  label: 'VOR',       align: 'number' },
   { key: 'adp',                    label: 'ADP',       align: 'number' },
-  { key: 'leverage',               label: 'Leverage',  align: 'number' },
 ];
+
+const DEFAULT_POSITION_WEIGHTS = { QB: 0.45, RB: 0.9, WR: 1.0, TE: 1.1 };
 const RECEPTION_POINTS_MAP = {
   [SCORING_FORMATS.PPR]:      1,
   [SCORING_FORMATS.HALF_PPR]: 0.5,
@@ -48,17 +48,10 @@ const buildDefaultWeights = (scoringFormat) => ({
   fumblesLostPts:       -2,
 });
 
-// FLEX is split between RB and WR based on format; TE never gets flex; superFlex always goes to QB
-const FLEX_WR_FRACTION = {
-  [SCORING_FORMATS.PPR]:      0.75,
-  [SCORING_FORMATS.HALF_PPR]: 0.50,
-  [SCORING_FORMATS.STANDARD]: 0.25,
-};
-
-function computeReplacementLevels(leagueSize, rosterSlots, scoringFormat) {
-  const wrFrac = FLEX_WR_FRACTION[scoringFormat] ?? 0.75;
-  const flexWr = Math.round(rosterSlots.FLEX * wrFrac * leagueSize);
-  const flexRb = Math.round(rosterSlots.FLEX * (1 - wrFrac) * leagueSize);
+// FLEX is split 75% WR / 25% RB (only 1-2 RBs get real opportunity per game); superFlex always goes to QB
+function computeReplacementLevels(leagueSize, rosterSlots) {
+  const flexWr = Math.round(rosterSlots.FLEX * 0.75 * leagueSize);
+  const flexRb = Math.round(rosterSlots.FLEX * 0.25 * leagueSize);
   return {
     QB: Math.round((rosterSlots.QB + (rosterSlots.superFlex ?? 0)) * leagueSize),
     RB: Math.round(rosterSlots.RB * leagueSize) + flexRb,
@@ -194,9 +187,11 @@ function AdvancedSettingsModal({
   scoringFormat,
   leagueSize,
   scoringWeights,          updateScoringWeight,  resetScoringWeights,
-  replacementLevels,       updateReplacement,    resetReplacementLevels,
+  replacementLevels,       updateReplacement,    resetReplacementLevels, unlockReplacementLevels,
   derivedReplacementLevels,
   posLocked,               setPosLocked,
+  positionWeights,         updatePositionWeight, resetPositionWeights,
+  effectivePositionWeights, qbIsElevated,
   rosterSlots,             updateRosterSlot,     resetRosterSlots,
   numRoundsOverride,       setNumRoundsOverride, autoRounds,
 }) {
@@ -302,8 +297,8 @@ function AdvancedSettingsModal({
                   <RosterInput label="RB starters"      field="RB"        value={rosterSlots.RB}        onChange={updateRosterSlot} />
                   <RosterInput label="WR starters"      field="WR"        value={rosterSlots.WR}        onChange={updateRosterSlot} />
                   <RosterInput label="TE starters"      field="TE"        value={rosterSlots.TE}        onChange={updateRosterSlot} />
-                  <RosterInput label="FLEX (RB/WR)"     field="FLEX"      value={rosterSlots.FLEX}      onChange={updateRosterSlot} note="RB or WR only" />
-                  <RosterInput label="Super Flex (any)" field="superFlex" value={rosterSlots.superFlex} onChange={updateRosterSlot} note="Any position" />
+                  <RosterInput label="FLEX (RB/WR/TE)"     field="FLEX"      value={rosterSlots.FLEX}      onChange={updateRosterSlot}/>
+                  <RosterInput label="Super Flex (any)" field="superFlex" value={rosterSlots.superFlex} onChange={updateRosterSlot} />
                 </div>
               </div>
 
@@ -324,8 +319,7 @@ function AdvancedSettingsModal({
                       {rosterSlots.QB > 1 && `${rosterSlots.QB} QB starters`}
                       {rosterSlots.QB > 1 && rosterSlots.superFlex > 0 && ' and '}
                       {rosterSlots.superFlex > 0 && 'a Super Flex slot'},
-                      the <strong>ADP column will not reflect your league's actual draft board</strong>{' '}
-                      and <strong>Leverage (ADP − SEB Rank) loses its meaning</strong>.{' '}
+                      the <strong>ADP column will not reflect your league's actual draft board</strong>.{' '}
                       <strong>SEB Leverage</strong> (your pick vs. SEB Rank) and{' '}
                       <strong>Value</strong> (steal/reach tier) remain fully useful —
                       they're based on our rankings, not market ADP.
@@ -379,21 +373,34 @@ function AdvancedSettingsModal({
                     type="checkbox"
                     checked={!posLocked}
                     onChange={(e) => {
-                      if (e.target.checked) {
-                        setReplacementLevels({ ...derivedReplacementLevels });
-                        setPosLocked(false);
-                      } else {
-                        resetReplacementLevels();
-                      }
+                      if (e.target.checked) unlockReplacementLevels();
+                      else resetReplacementLevels();
                     }}
                   />
                   <span>I want to manually override position thresholds (not recommended)</span>
                 </label>
               </div>
 
+              <div className="nfl-weights-group">
+                <div className="nfl-adv-section-head" style={{ marginBottom: '16px' }}>
+                  <h4 style={{ margin: 0 }}>Projected Value Weights</h4>
+                  <button className="nfl-reset-btn" onClick={resetPositionWeights}>Reset to defaults</button>
+                </div>
+                <div className="nfl-weights-grid">
+                  <WeightInput label="QB weight" field="QB" hint={qbIsElevated ? `elevated to ${effectivePositionWeights.QB} (multi-QB/flex)` : 'base'} step={0.05} value={positionWeights.QB} onChange={updatePositionWeight} />
+                  <WeightInput label="RB weight" field="RB" hint="multiplier" step={0.05} value={positionWeights.RB} onChange={updatePositionWeight} />
+                  <WeightInput label="WR weight" field="WR" hint="multiplier" step={0.05} value={positionWeights.WR} onChange={updatePositionWeight} />
+                  <WeightInput label="TE weight" field="TE" hint="multiplier" step={0.05} value={positionWeights.TE} onChange={updatePositionWeight} />
+                </div>
+                <p className="nfl-vorinfo" style={{ marginTop: '12px' }}>
+                  Projected Value = weight × projected points. QB weight auto-elevates to 0.9
+                  when you have multiple QB starters or a Super Flex slot.
+                </p>
+              </div>
+
               <div className={`nfl-weights-group${posLocked ? ' nfl-weights-disabled' : ''}`}>
                 <div className="nfl-adv-section-head" style={{ marginBottom: '16px' }}>
-                  <h4 style={{ margin: 0 }}>Replacement Rank by Position</h4>
+                  <h4 style={{ margin: 0 }}>VOR Replacement Rank by Position</h4>
                   {!posLocked && (
                     <button className="nfl-reset-btn" onClick={resetReplacementLevels}>Reset to auto</button>
                   )}
@@ -418,10 +425,9 @@ function AdvancedSettingsModal({
               </div>
 
               <div className="nfl-vorinfo">
-                <strong>How this affects rankings:</strong> The threshold for each position is{' '}
-                (starters × league size) + FLEX allocation. FLEX is split {' '}
-                {scoringFormat === 'ppr' ? '75% WR / 25% RB' : scoringFormat === 'halfPpr' ? '50% WR / 50% RB' : '25% WR / 75% RB'}{' '}
-                based on your scoring format. Super Flex always counts toward QB.
+                <strong>How this affects rankings:</strong> Each threshold is (starters × league size).
+                FLEX is split 75% WR / 25% RB — only 1–2 RBs get real opportunity per game, so WR
+                depth matters more. Super Flex always counts toward QB.
               </div>
             </>
           )}
@@ -432,7 +438,7 @@ function AdvancedSettingsModal({
   );
 }
 
-function PlayerModal({ player, effectiveWeights, scoringFormat, pickContext, onClose }) {
+function PlayerModal({ player, effectiveWeights, scoringFormat, pickContext, positionWeights, onClose }) {
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
@@ -489,6 +495,7 @@ function PlayerModal({ player, effectiveWeights, scoringFormat, pickContext, onC
             <h3>Model Metrics</h3>
             <div className="nfl-modal-metrics">
               <div><span>SEB Rank</span><strong>#{player.sebRank}</strong></div>
+              <div><span>Projected Value</span><strong>{positionWeights[player.position] != null ? fmt(positionWeights[player.position] * player.projectedFantasyPoints) : '—'}</strong></div>
               <div><span>VOR</span><strong>{fmt(player.valueAboveReplacement)}</strong></div>
               <div><span>ADP</span><strong>{player.adp != null ? player.adp.toFixed(1) : '—'}</strong></div>
               <div><span>Leverage</span><strong><LeverageValue value={player.leverage} /></strong></div>
@@ -597,6 +604,8 @@ export default function NflFantasy() {
   const [rosterSlots,       setRosterSlots]       = useState({ ...DEFAULT_ROSTER_SLOTS });
   const [posLocked,         setPosLocked]         = useState(true);
   const [numRoundsOverride, setNumRoundsOverride] = useState(null);
+  const [rankingMode,       setRankingMode]       = useState('vor');
+  const [positionWeights,   setPositionWeights]   = useState({ ...DEFAULT_POSITION_WEIGHTS });
 
   // Keep receptionPts in sync with scoring format
   useEffect(() => {
@@ -607,8 +616,8 @@ export default function NflFantasy() {
 
   // Auto-compute replacement levels from league size + roster + format
   const derivedReplacementLevels = useMemo(
-    () => computeReplacementLevels(leagueSize, rosterSlots, scoringFormat),
-    [leagueSize, rosterSlots, scoringFormat],
+    () => computeReplacementLevels(leagueSize, rosterSlots),
+    [leagueSize, rosterSlots],
   );
   const effectiveReplacementLevels = posLocked ? derivedReplacementLevels : replacementLevels;
 
@@ -626,7 +635,17 @@ export default function NflFantasy() {
   const updateRosterSlot       = (slot,  val) => setRosterSlots((r) => ({ ...r, [slot]: val }));
   const resetScoringWeights    = () => setScoringWeights(buildDefaultWeights(scoringFormat));
   const resetReplacementLevels = () => setPosLocked(true);
+  const unlockReplacementLevels = () => { setReplacementLevels({ ...derivedReplacementLevels }); setPosLocked(false); };
   const resetRosterSlots       = () => { setRosterSlots({ ...DEFAULT_ROSTER_SLOTS }); setNumRoundsOverride(null); };
+
+  const qbIsElevated = rosterSlots.QB > 1 || rosterSlots.superFlex > 0;
+  const effectivePositionWeights = useMemo(() => ({
+    ...positionWeights,
+    QB: qbIsElevated ? 0.9 : positionWeights.QB,
+  }), [positionWeights, qbIsElevated]);
+
+  const updatePositionWeight  = (pos, val) => setPositionWeights((w) => ({ ...w, [pos]: val }));
+  const resetPositionWeights  = () => setPositionWeights({ ...DEFAULT_POSITION_WEIGHTS });
 
 
   useEffect(() => { setPageOffset(0); }, [selectedRound, position, pickPosition, draftFormat, leagueSize]);
@@ -659,6 +678,14 @@ export default function NflFantasy() {
     [rankings, adpData, adpSource],
   );
 
+  const displayRankings = useMemo(
+    () => leverageRankings.map((p) => ({
+      ...p,
+      projectedValue: (effectivePositionWeights[p.position] ?? 1) * p.projectedFantasyPoints,
+    })),
+    [leverageRankings, effectivePositionWeights],
+  );
+
   const myPicks = useMemo(
     () => getDraftPicks(pickPosition, leagueSize, draftFormat, numRounds),
     [pickPosition, leagueSize, draftFormat, numRounds],
@@ -669,9 +696,9 @@ export default function NflFantasy() {
 
   const draftAssistantData = useMemo(() => {
     const empty = { players: [], lineAfterIndex: null, canGoPrev: false, canGoNext: false };
-    if (!leverageRankings.length) return empty;
+    if (!displayRankings.length) return empty;
 
-    const pool = leverageRankings
+    const pool = displayRankings
       .filter((p) => p.adp !== null && (position === 'All' || p.position === position))
       .sort((a, b) => a.adp - b.adp);
     if (!pool.length) return empty;
@@ -688,12 +715,12 @@ export default function NflFantasy() {
       ? rawLineAfter : null;
 
     return { players, lineAfterIndex, canGoPrev: startIdx > 0, canGoNext: endIdx < pool.length };
-  }, [leverageRankings, selectedOverallPick, position, pageOffset]);
+  }, [displayRankings, selectedOverallPick, position, pageOffset]);
 
   const { players: pickTargets, lineAfterIndex, canGoPrev, canGoNext } = draftAssistantData;
 
   const visibleRankings = useMemo(() => {
-    const filtered = leverageRankings.filter((p) => {
+    const filtered = displayRankings.filter((p) => {
       const posMatch = position === 'All' || p.position === position;
       const relevant = p.adp !== null && p.adp <= DRAFT_RELEVANT_ADP_CUTOFF;
       return posMatch && (draftRange === 'allPlayers' || relevant);
@@ -706,7 +733,7 @@ export default function NflFantasy() {
       const cmp = compareValues(a, b, sortKey);
       return sortDirection === 'asc' ? cmp : -cmp;
     });
-  }, [leverageRankings, position, draftRange, sortKey, sortDirection]);
+  }, [displayRankings, position, draftRange, sortKey, sortDirection]);
 
   const toggleSort = (key) => {
     if (key === sortKey) setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -718,12 +745,14 @@ export default function NflFantasy() {
   const advancedProps = {
     onClose: () => setShowAdvanced(false),
     scoringFormat, leagueSize,
-    scoringWeights,          updateScoringWeight,  resetScoringWeights,
-    replacementLevels,       updateReplacement,    resetReplacementLevels,
+    scoringWeights,          updateScoringWeight,      resetScoringWeights,
+    replacementLevels,       updateReplacement,        resetReplacementLevels, unlockReplacementLevels,
     derivedReplacementLevels,
     posLocked,               setPosLocked,
-    rosterSlots,             updateRosterSlot,     resetRosterSlots,
-    numRoundsOverride,       setNumRoundsOverride, autoRounds,
+    positionWeights,         updatePositionWeight,     resetPositionWeights,
+    effectivePositionWeights, qbIsElevated,
+    rosterSlots,             updateRosterSlot,         resetRosterSlots,
+    numRoundsOverride,       setNumRoundsOverride,     autoRounds,
   };
 
   const PosFilter = () => (
@@ -758,6 +787,7 @@ export default function NflFantasy() {
           effectiveWeights={effectiveWeights}
           scoringFormat={scoringFormat}
           pickContext={modalPickContext}
+          positionWeights={positionWeights}
           onClose={closePlayer}
         />
       )}
@@ -859,6 +889,13 @@ export default function NflFantasy() {
                     </button>
                   </div>
                 </div>
+                <div className="nfl-mode-toggle-row">
+                  <span className="nfl-mode-toggle-label">Value metric</span>
+                  <div className="nfl-mode-toggle">
+                    <button className={`nfl-mode-btn${rankingMode === 'vor' ? ' nfl-mode-btn-active' : ''}`} onClick={() => setRankingMode('vor')}>VOR</button>
+                    <button className={`nfl-mode-btn${rankingMode === 'weighted' ? ' nfl-mode-btn-active' : ''}`} onClick={() => setRankingMode('weighted')}>Weighted Positions</button>
+                  </div>
+                </div>
 
                 <div className="nfl-picks-row-wrap">
                   <p className="nfl-picks-label">Your {draftFormat === 'snake' ? 'snake' : 'linear'} draft picks</p>
@@ -905,6 +942,13 @@ export default function NflFantasy() {
                 <div className="nfl-paging">
                   <button className="nfl-page-btn" disabled={!canGoPrev} onClick={() => setPageOffset((o) => o - 1)}>Earlier picks</button>
                   <button className="nfl-page-btn" disabled={!canGoNext} onClick={() => setPageOffset((o) => o + 1)}>Later picks</button>
+                  <button
+                    className="nfl-page-btn nfl-next-pick-btn"
+                    disabled={safeRound >= myPicks.length}
+                    onClick={() => { setSelectedRound((r) => Math.min(r + 1, myPicks.length)); setPageOffset(0); }}
+                  >
+                    Next pick →
+                  </button>
                 </div>
 
                 <div className="nfl-target-table-scroll">
@@ -914,8 +958,8 @@ export default function NflFantasy() {
                         <th>Player</th><th>Pos.</th><th>Team</th>
                         <th className="nfl-number">SEB</th>
                         <th className="nfl-number">ADP</th>
-                        <th className="nfl-number">Leverage</th>
-                        <th className="nfl-number">SEB Lev.</th>
+                        <th className="nfl-number">{rankingMode === 'vor' ? 'VOR' : 'Proj. Value'}</th>
+                        <th className="nfl-number">SEB Leverage</th>
                         <th>Value</th>
                       </tr>
                     </thead>
@@ -936,7 +980,7 @@ export default function NflFantasy() {
                             <td>{player.team || '—'}</td>
                             <td className="nfl-number nfl-rank">{player.sebRank}</td>
                             <td className="nfl-number">{fmt(player.adp)}</td>
-                            <td className="nfl-number"><LeverageValue value={player.leverage} /></td>
+                            <td className="nfl-number">{rankingMode === 'vor' ? fmt(player.valueAboveReplacement) : fmt(player.projectedValue)}</td>
                             <td className="nfl-number"><LeverageValue value={sebLev} /></td>
                             <td><ValueBadge value={sebLev} /></td>
                           </tr>
@@ -1053,45 +1097,64 @@ export default function NflFantasy() {
                     </button>
                   </div>
                 </div>
+                <div className="nfl-mode-toggle-row">
+                  <span className="nfl-mode-toggle-label">Value metric</span>
+                  <div className="nfl-mode-toggle">
+                    <button className={`nfl-mode-btn${rankingMode === 'vor' ? ' nfl-mode-btn-active' : ''}`} onClick={() => setRankingMode('vor')}>VOR</button>
+                    <button className={`nfl-mode-btn${rankingMode === 'weighted' ? ' nfl-mode-btn-active' : ''}`} onClick={() => setRankingMode('weighted')}>Weighted Positions</button>
+                  </div>
+                </div>
                 <PosFilter />
               </div>
 
               <div className="nfl-table-scroll">
-                <table className="nfl-table">
-                  <thead>
-                    <tr>
-                      {FULL_TABLE_COLUMNS.map((col) => (
-                        <th
-                          key={col.key}
-                          className={col.align === 'number' ? 'nfl-number' : undefined}
-                          aria-sort={col.key === sortKey ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-                        >
-                          <button type="button" onClick={() => toggleSort(col.key)}>
-                            {col.label}{col.key === sortKey ? (sortDirection === 'asc' ? ' ↑' : ' ↓') : ''}
-                          </button>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visibleRankings.map((player) => (
-                      <tr key={`${player.player}-${player.position}`}>
-                        <td className="nfl-rank">{player.sebRank}</td>
-                        <td>
-                          <button className="nfl-player-btn" onClick={() => openPlayer(player, null)}>
-                            {player.player}
-                          </button>
-                        </td>
-                        <td><span className="nfl-position">{player.position}</span></td>
-                        <td>{player.team || '—'}</td>
-                        <td className="nfl-number">{fmt(player.projectedFantasyPoints)}</td>
-                        <td className="nfl-number">{fmt(player.valueAboveReplacement)}</td>
-                        <td className="nfl-number">{fmt(player.adp)}</td>
-                        <td className="nfl-number"><LeverageValue value={player.leverage} /></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                {(() => {
+                  const valueCol = rankingMode === 'vor'
+                    ? { key: 'valueAboveReplacement', label: 'VOR' }
+                    : { key: 'projectedValue',        label: 'Proj. Value' };
+                  const cols = [
+                    ...BASE_TABLE_COLUMNS,
+                    { ...valueCol, align: 'number' },
+                    { key: 'leverage', label: 'Leverage', align: 'number' },
+                  ];
+                  return (
+                    <table className="nfl-table">
+                      <thead>
+                        <tr>
+                          {cols.map((col) => (
+                            <th
+                              key={col.key}
+                              className={col.align === 'number' ? 'nfl-number' : undefined}
+                              aria-sort={col.key === sortKey ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                            >
+                              <button type="button" onClick={() => toggleSort(col.key)}>
+                                {col.label}{col.key === sortKey ? (sortDirection === 'asc' ? ' ↑' : ' ↓') : ''}
+                              </button>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visibleRankings.map((player) => (
+                          <tr key={`${player.player}-${player.position}`}>
+                            <td className="nfl-rank">{player.sebRank}</td>
+                            <td>
+                              <button className="nfl-player-btn" onClick={() => openPlayer(player, null)}>
+                                {player.player}
+                              </button>
+                            </td>
+                            <td><span className="nfl-position">{player.position}</span></td>
+                            <td>{player.team || '—'}</td>
+                            <td className="nfl-number">{fmt(player.projectedFantasyPoints)}</td>
+                            <td className="nfl-number">{fmt(player.adp)}</td>
+                            <td className="nfl-number">{fmt(rankingMode === 'vor' ? player.valueAboveReplacement : player.projectedValue)}</td>
+                            <td className="nfl-number"><LeverageValue value={player.leverage} /></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  );
+                })()}
               </div>
             </section>
 
@@ -1102,9 +1165,10 @@ export default function NflFantasy() {
               </div>
               <div className="nfl-definition-grid">
                 <div><h3>SEB Rank</h3><p>The model's overall pecking order, built on how much fantasy value each player adds above the last startable option at their position.</p></div>
-                <div><h3>VOR</h3><p>Points above the replacement-level player at the same position. The bigger the number, the more that player separates himself from the pack.</p></div>
+                <div><h3>VOR</h3><p>Points above the replacement-level player at the same position. The bigger the number, the more that player separates himself from the pack. Shown by default.</p></div>
+                <div><h3>Projected Value</h3><p>Projected points multiplied by a position weight (QB 0.45, RB 0.9, WR 1.0, TE 1.1). Switch to Weighted Positions mode above to see this column instead of VOR.</p></div>
                 <div><h3>ADP</h3><p>Average Draft Position from the source you selected. This is what thousands of real drafts are doing with this player right now.</p></div>
-                <div><h3>Leverage</h3><p>ADP minus SEB Rank. Positive means the market is drafting this player after where the model ranks them. That is where you find value.</p></div>
+                <div><h3>Leverage</h3><p>ADP minus SEB Rank. Positive means the market is drafting this player later than the model ranks them — that is where you find value. Rankings tab only.</p></div>
                 <div><h3>SEB Leverage</h3><p>Your pick number minus SEB Rank. Tells you whether that player is good value from your specific draft slot. Draft Guide tab only.</p></div>
                 <div><h3>Value</h3><p>SEB Leverage in plain English. Seven tiers from Huge Steal (plus 10 or more) down to Big Reach (minus 10 or worse). Draft Guide tab only.</p></div>
               </div>
