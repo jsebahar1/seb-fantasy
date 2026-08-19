@@ -321,8 +321,8 @@ function AdvancedSettingsModal({
                       {rosterSlots.superFlex > 0 && 'a Super Flex slot'},
                       the <strong>ADP column will not reflect your league's actual draft board</strong>.{' '}
                       <strong>SEB Leverage</strong> (your pick vs. SEB Rank) and{' '}
-                      <strong>Value</strong> (steal/reach tier) remain fully useful —
-                      they're based on our rankings, not market ADP.
+                      <strong>Value</strong> (steal/reach tier) remain fully useful
+                      because they are based on our rankings, not market ADP.
                     </p>
                   </div>
                 </div>
@@ -365,7 +365,7 @@ function AdvancedSettingsModal({
                 <p>
                   Replacement thresholds are auto-calculated from your league size and roster settings
                   and drive how VOR and SEB Rank are computed. The values below update live as you
-                  adjust your lineup. Most leagues should leave these alone — unlock only if you
+                  adjust your lineup. Most leagues should leave these alone. Unlock only if you
                   disagree with our FLEX split assumptions.
                 </p>
                 <label className="nfl-unlock-check">
@@ -426,7 +426,7 @@ function AdvancedSettingsModal({
 
               <div className="nfl-vorinfo">
                 <strong>How this affects rankings:</strong> Each threshold is (starters × league size).
-                FLEX is split 75% WR / 25% RB — only 1–2 RBs get real opportunity per game, so WR
+                FLEX is split 75% WR / 25% RB. Only 1-2 RBs get real opportunity per game, so WR
                 depth matters more. Super Flex always counts toward QB.
               </div>
             </>
@@ -495,10 +495,11 @@ function PlayerModal({ player, effectiveWeights, scoringFormat, pickContext, pos
             <h3>Model Metrics</h3>
             <div className="nfl-modal-metrics">
               <div><span>SEB Rank</span><strong>#{player.sebRank}</strong></div>
+              <div><span>Proj. Pts</span><strong>{fmt(player.projectedFantasyPoints)}</strong></div>
               <div><span>Projected Value</span><strong>{positionWeights[player.position] != null ? fmt(positionWeights[player.position] * player.projectedFantasyPoints) : '—'}</strong></div>
               <div><span>VOR</span><strong>{fmt(player.valueAboveReplacement)}</strong></div>
               <div><span>ADP</span><strong>{player.adp != null ? player.adp.toFixed(1) : '—'}</strong></div>
-              <div><span>Leverage</span><strong><LeverageValue value={player.leverage} /></strong></div>
+              <div><span>Leverage (vs market)</span><strong><LeverageValue value={player.leverage} /></strong></div>
               {sebLev !== null && (
                 <>
                   <div><span>SEB Leverage (Pick #{pickContext})</span><strong><LeverageValue value={sebLev} /></strong></div>
@@ -516,52 +517,108 @@ function PlayerModal({ player, effectiveWeights, scoringFormat, pickContext, pos
   );
 }
 
+function ColumnGuide() {
+  return (
+    <section className="card nfl-model-explainer" aria-labelledby="nfl-model-title">
+      <div>
+        <p className="eyebrow">Column guide</p>
+        <h2 id="nfl-model-title">What the Numbers Mean</h2>
+      </div>
+      <div className="nfl-definition-grid">
+        <div>
+          <h3>SEB Rank</h3>
+          <p>The model's overall player order. Built on Value Above Replacement. The top-ranked player at each position is the one who pulls the farthest ahead of the last startable option at that spot.</p>
+          <details className="nfl-learn-more">
+            <summary>Learn more</summary>
+            <p>All positions are ranked together by VOR. The player with the highest VOR gets SEB Rank 1 regardless of position. In Weighted Positions mode, VOR is replaced by Projected Value and the order shifts to reflect positional scarcity.</p>
+          </details>
+        </div>
+        <div>
+          <h3>Proj. Pts</h3>
+          <p>The consensus projected fantasy points for the season, pulled from FantasyPros. This number aggregates forecasts from dozens of analysts into one figure so no single hot take throws off the model.</p>
+          <details className="nfl-learn-more">
+            <summary>Learn more</summary>
+            <p><strong>Formula:</strong> Proj. Pts = (passing yards x 0.05) + (passing TD x 5) + (interceptions x -2) + (rushing yards x 0.1) + (rushing TD x 6) + (receiving yards x 0.1) + (receiving TD x 6) + (receptions x scoring format points) + (fumbles lost x -2).</p>
+            <p>Standard defaults: 0.05 pts per passing yard, 0.1 pts per rushing or receiving yard, 5 pts per passing TD, 6 pts per rushing or receiving TD. Receptions add 1 pt (PPR), 0.5 pt (half PPR), or 0 (standard). Adjust all weights in Advanced Settings under Scoring Weights.</p>
+          </details>
+        </div>
+        <div>
+          <h3>VOR</h3>
+          <p>Value Above Replacement. Points above the last expected starter at the same position. The bigger the number, the more that player separates himself from the pack.</p>
+          <details className="nfl-learn-more">
+            <summary>Learn more</summary>
+            <p><strong>Formula:</strong> VOR = player projected points minus replacement player projected points.</p>
+            <p>The replacement threshold scales with your league: QB threshold = (QB starters + SuperFlex) x league size, RB = (RB starters x league size) + 25% of FLEX spots, WR = (WR starters x league size) + 75% of FLEX spots, TE = TE starters x league size. Adjust all thresholds in Advanced Settings.</p>
+          </details>
+        </div>
+        <div>
+          <h3>Projected Value</h3>
+          <p>Projected points multiplied by a position weight that reflects real lineup scarcity. Shown when you switch to Weighted Positions mode. Higher weight means that position is harder to replace on your roster.</p>
+          <details className="nfl-learn-more">
+            <summary>Learn more</summary>
+            <p><strong>Formula:</strong> Projected Value = projected points x position weight.</p>
+            <p>Default weights: QB 0.45, RB 0.9, WR 1.0, TE 1.1. QB weight automatically rises to 0.9 when your league uses multi-QB or SuperFlex. You can adjust all weights in Advanced Settings under Position Weights.</p>
+          </details>
+        </div>
+        <div>
+          <h3>ADP</h3>
+          <p>Average Draft Position from your selected source. This is the actual consensus of thousands of real drafts happening right now, not a projection.</p>
+          <details className="nfl-learn-more">
+            <summary>Learn more</summary>
+            <p>Sources: Sleeper, ESPN, Yahoo, and Underdog. The Consensus option averages across all four. Use Consensus unless your league runs on a specific platform where ADP behavior differs from the broader market.</p>
+          </details>
+        </div>
+        <div>
+          <h3>Leverage</h3>
+          <p>ADP minus SEB Rank. Positive means the market is letting this player fall later than the model rates them. That gap is where you find value. Rankings tab only.</p>
+          <details className="nfl-learn-more">
+            <summary>Learn more</summary>
+            <p><strong>Formula:</strong> Leverage = ADP minus SEB Rank.</p>
+            <p>A Leverage of +10 means real drafters are taking this player 10 spots after where the model says they belong. A negative Leverage means the market is already ahead of the model on this player. Sort by Leverage descending to find the biggest market inefficiencies before your draft.</p>
+          </details>
+        </div>
+        <div>
+          <h3>SEB Leverage</h3>
+          <p>Your pick number minus SEB Rank. Tells you whether a player is good value from your exact draft slot. Positive is a steal. Negative is a reach. Draft Guide tab only.</p>
+          <details className="nfl-learn-more">
+            <summary>Learn more</summary>
+            <p><strong>Formula:</strong> SEB Leverage = your overall pick number minus player SEB Rank.</p>
+            <p>At pick 24, a player ranked 18th gives you a SEB Leverage of +6. At pick 12, that same player is a -6. The Value badge translates SEB Leverage into seven plain-English tiers so you can read the board fast on draft day.</p>
+          </details>
+        </div>
+        <div>
+          <h3>Value</h3>
+          <p>SEB Leverage converted into plain English. Seven tiers: Huge Steal (+10 or better), Steal (+5 to +9), Slight Steal (+1 to +4), At Value (0), Slight Reach (-1 to -4), Reach (-5 to -9), Big Reach (-10 or worse). Draft Guide tab only.</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function CreditsSection() {
   return (
     <section className="card nfl-credits" aria-labelledby="nfl-credits-title">
       <h3 id="nfl-credits-title">Data Sources</h3>
       <div className="nfl-credits-grid">
         <div>
-          <h4>Fantasy Projections</h4>
+          <h4>Player Projections</h4>
           <p>
-            Player projections come from{' '}
-            <a href="https://www.fantasypros.com/nfl/projections/qb.php?week=draft" target="_blank" rel="noreferrer" className="text-link">
-              FantasyPros
-            </a>
-            , which aggregates forecasts from dozens of experts into a single consensus number.
-            They do this well and deserve the credit.
+            Consensus season projections from <a href="https://www.fantasypros.com/nfl/projections/qb.php?week=draft" target="_blank" rel="noreferrer" className="text-link">FantasyPros</a>, aggregated across dozens of analysts. No single hot take skews the numbers.
           </p>
         </div>
         <div>
           <h4>ADP Data</h4>
           <p>
-            Average Draft Position data comes from Sleeper, ESPN, Yahoo, and Underdog.
-            The Consensus option averages across all four for the clearest market picture.
-          </p>
-        </div>
-        <div>
-          <h4>VOR Methodology</h4>
-          <p>
-            Value Above Replacement is calculated against the last startable player at each position.
-            Adjust the threshold in Advanced Settings to match your league's roster rules.
+            Draft position data sourced from <a href="https://fantasysixpack.net/fantasy-football-adp/" target="_blank" rel="noreferrer" className="text-link">Fantasy Six Pack</a>, covering Sleeper, ESPN, Yahoo, and Underdog. The Consensus option averages all four.
           </p>
         </div>
       </div>
       <div className="nfl-kd-note">
         <div className="nfl-kd-note-icon">K / D</div>
         <div>
-          <strong>Kickers and Defenses are not included in this tool.</strong>
+          <strong>Kickers and Defenses are not ranked here.</strong>
           <p>
-            Both positions are too volatile to rank meaningfully before draft day. Pick them in
-            your final two rounds. FantasyPros has{' '}
-            <a href="https://www.fantasypros.com/nfl/projections/k.php?week=draft" target="_blank" rel="noreferrer" className="text-link">
-              kicker projections
-            </a>
-            {' '}and{' '}
-            <a href="https://www.fantasypros.com/nfl/projections/dst.php?week=draft" target="_blank" rel="noreferrer" className="text-link">
-              defense projections
-            </a>
-            {' '}on their site when you are ready.
+            Both are too unpredictable to sort before draft day. Save them for your last two rounds and use the late-round runs as a rough guide. FantasyPros has <a href="https://www.fantasypros.com/nfl/projections/k.php?week=draft" target="_blank" rel="noreferrer" className="text-link">kicker projections</a> and <a href="https://www.fantasypros.com/nfl/projections/dst.php?week=draft" target="_blank" rel="noreferrer" className="text-link">defense projections</a> on their site when you are ready.
           </p>
         </div>
       </div>
@@ -843,7 +900,7 @@ export default function NflFantasy() {
           <div className="card nfl-weekly-placeholder">
             <p className="eyebrow">Coming Soon</p>
             <h2>Week by Week Tools</h2>
-            <p>Start/sit decisions, waiver wire targets, and weekly matchup analysis are on the way. Check back once the season kicks off.</p>
+            <p>Start/sit decisions, waiver wire targets, and weekly matchup analysis are coming once the season kicks off. The same model that powers your draft will tell you who to start and who to drop every week.</p>
           </div>
         )}
 
@@ -855,10 +912,11 @@ export default function NflFantasy() {
                 <div className="section-head nfl-rankings-head">
                   <div>
                     <p className="eyebrow">Draft Assistant</p>
-                    <h2 id="nfl-targets-title">Best Targets Around My Pick</h2>
+                    <h2 id="nfl-targets-title">Best Targets Around Your Pick</h2>
                     <p className="section-subtext">
-                      The board around your pick, sorted by ADP. The green line marks where your
-                      turn falls. Click any player to pull up their full projection and model breakdown.
+                      The board around your pick, sorted by ADP. The green line marks your turn.
+                      Use SEB Leverage to find steals before you land on the clock.
+                      Click any player to pull up their full projection and model breakdown.
                     </p>
                   </div>
                   <span className="nfl-model-badge">Version 1 model</span>
@@ -905,8 +963,14 @@ export default function NflFantasy() {
                 <div className="nfl-mode-toggle-row">
                   <span className="nfl-mode-toggle-label">Value metric</span>
                   <div className="nfl-mode-toggle">
-                    <button className={`nfl-mode-btn${rankingMode === 'vor' ? ' nfl-mode-btn-active' : ''}`} onClick={() => setRankingMode('vor')}>VOR</button>
-                    <button className={`nfl-mode-btn${rankingMode === 'weighted' ? ' nfl-mode-btn-active' : ''}`} onClick={() => setRankingMode('weighted')}>Weighted Positions</button>
+                    <button className={`nfl-mode-btn${rankingMode === 'vor' ? ' nfl-mode-btn-active' : ''}`} onClick={() => setRankingMode('vor')}>
+                      Value over Replacement
+                      <span className="nfl-tip-anchor" onClick={(e) => e.stopPropagation()}>?<span className="nfl-tip">Ranks players by how many points they project above the last expected starter at their position. The default mode and the most reliable signal for overall draft value.</span></span>
+                    </button>
+                    <button className={`nfl-mode-btn${rankingMode === 'weighted' ? ' nfl-mode-btn-active' : ''}`} onClick={() => setRankingMode('weighted')}>
+                      Weighted Positions
+                      <span className="nfl-tip-anchor" onClick={(e) => e.stopPropagation()}>?<span className="nfl-tip">Re-ranks players by projected points multiplied by a position scarcity weight (TE 1.1, WR 1.0, RB 0.9, QB 0.45). Adjust weights in Advanced Settings.</span></span>
+                    </button>
                   </div>
                 </div>
 
@@ -931,7 +995,7 @@ export default function NflFantasy() {
                 <PosFilter />
 
                 <div className="nfl-round-context">
-                  <strong>Round {safeRound} — Pick #{selectedOverallPick}</strong>
+                  <strong>Round {safeRound}, Pick #{selectedOverallPick}</strong>
                   {pageOffset !== 0 && (
                     <button className="nfl-back-to-pick" onClick={() => setPageOffset(0)}>Back to pick</button>
                   )}
@@ -1006,63 +1070,49 @@ export default function NflFantasy() {
               </div>
             </section>
 
-            <div className="nfl-notes-row">
-              <div className="card">
-                <h3>How your picks are calculated</h3>
-                <p>
-                  {draftFormat === 'snake'
-                    ? `Snake drafts flip direction each round. Pick ${pickPosition} in round 1 becomes pick ${myPicks[1]?.overallPick ?? '—'} in round 2. The pills above show all ${numRounds} of your picks.`
-                    : `Linear drafts keep your position every round. Pick ${pickPosition} stays pick ${pickPosition} straight through, so your picks are ${myPicks.slice(0, 4).map((p) => p.overallPick).join(', ')} and so on.`}
-                </p>
-              </div>
-              <div className="card">
-                <h3>What SEB Leverage means</h3>
-                <p>
-                  Take your pick number and subtract the player's SEB Rank. At pick 10, a player
-                  ranked 8th scores a +2. You grabbed value. The same player at pick 5 is a -3.
-                  The Value badge converts that number into plain English.
-                </p>
-              </div>
-              <div className="card">
-                <h3>What Leverage (ADP) means</h3>
-                <p>
-                  Compares the market to the model regardless of where you pick. A positive
-                  number means the market is consistently taking that player later than SEB ranks them.
-                  Combine it with SEB Leverage to target players a round late.
-                </p>
-              </div>
-            </div>
-
             <section className="card info-section nfl-how-to" aria-labelledby="nfl-how-to-title">
               <div className="section-head">
                 <div>
                   <h2 id="nfl-how-to-title">How To Use the Draft Guide</h2>
                   <p className="section-subtext">
-                    Most fantasy drafts are won or lost in the middle rounds. Early picks are
-                    obvious. Late picks are a gamble. Rounds 3 through 7 are where rosters get
-                    built or broken.
+                    Most fantasy drafts are won or lost in the middle rounds. Rounds 1 and 2
+                    pick themselves. Rounds 8 through 14 are hard to find impact players. The real edge lives
+                    in rounds 3 through 7, where one or two steals can separate a good team
+                    from a great one. This guide tells you exactly where those steals are before you
+                    go on the clock.
                   </p>
-                </div>
               </div>
+                  <h3 className="nfl-how-to-subhead">Draft Guide Tips</h3>
+                </div>
               <div className="info-grid">
                 <div className="info-block">
-                  <h4>1. Lock in your spot</h4>
-                  <p>Enter your pick position, league size, and draft format. The tool maps out every pick you hold across all {numRounds} rounds.</p>
+                  <h4>1. Set your league</h4>
+                  <p>Enter your pick position, league size, platform,and draft format at the top. The tool calculates every pick you hold across all {numRounds} rounds and adjusts the entire model to your exact setup. For snake drafts, the board flips direction each round, so your round 2 pick is near the end of the round. For linear, your spot stays the same every round. All your picks are shown as round pills above the board.</p>
                 </div>
                 <div className="info-block">
-                  <h4>2. Click a round, see the board</h4>
-                  <p>Pick any round pill to pull up the board around that pick. Six players go before your turn, six after, and the green line shows where you sit.</p>
+                  <h4>2. Get ready for your turn</h4>
+                  <p>Click your next pick number to load the board around that pick. The green line marks your turn and should show you players that will likely be at the top of your draft board. Players above it will likely go before you, players below it are more likely to be there, but it is worth checking if anyone valuable fell. Use Earlier picks and Later picks to scroll around your slot if you want a wider view. Hit Next Pick to jump straight to your next round once you've made your choice.</p>
                 </div>
                 <div className="info-block">
-                  <h4>3. Hunt for the steals</h4>
-                  <p>A Steal or Huge Steal means the market is consistently letting that player slide past where the model ranks them. Find two or three and you come out ahead.</p>
+                  <h4>3. Look for high SEB Leverage Players still on the board</h4>
+                  <p>SEB Leverage is your pick number minus the player's SEB Rank. A +6 at pick 24 means the model rates that player as the 18th best overall. That is six spots of free value. The Value badge translates that number into plain English, from Huge Steal down to Big Reach. Look for Steal and above on the board around your pick before anyone else does.</p>
                 </div>
                 <div className="info-block">
-                  <h4>4. Dig into a player</h4>
-                  <p>Click any player's name to open their full profile — stat projections, points breakdown, and all model metrics including value from your exact pick slot.</p>
+                  <h4>4. Fill out your Positions</h4>
+                  <p>Filter by roster positions to ensure you are targeting the right players for your team. Attempt to fill out each position on your roster with the best available players first before drafting backups. We recommend taking only WRs and RBs in the first two rounds and waiting to draft kickers and defense until the end of the draft.</p>
+                </div>
+                <div className="info-block">
+                  <h4>5. Open a player before you decide</h4>
+                  <p>Click any player's name to pull up their full profile. You will see their stat projections broken down by category, their scoring breakdown for your exact format, VOR, and a direct value grade from your pick slot. If the profile backs what you are already thinking, you have your answer.</p>
+                </div>
+                <div className="info-block">
+                  <h4>6. Adjust the model to your league</h4>
+                  <p>Open Advanced Settings to change roster spots, scoring weights, and position weights. Every tweak updates the model live. If your league uses SuperFlex, add it under Roster and Rounds. The QB weight will auto-adjust and the replacement thresholds will rebuild. The model is only as good as the setup you give it.</p>
                 </div>
               </div>
             </section>
+
+            <ColumnGuide />
 
             <CreditsSection />
           </>
@@ -1074,11 +1124,13 @@ export default function NflFantasy() {
             <section className="card nfl-rankings-card" aria-labelledby="nfl-rankings-title">
               <div className="section-head nfl-rankings-head">
                 <div>
-                  <p className="eyebrow">Full data</p>
+                  <p className="eyebrow">Full board</p>
                   <h2 id="nfl-rankings-title">Interactive Rankings</h2>
                   <p className="section-subtext">
-                    {visibleRankings.length} players shown. Click any column header to sort,
-                    or click a player's name to see their full projection breakdown.
+                    {visibleRankings.length} players shown. Sort by any column to find the angles
+                    that matter to you. Click any player's name to open their full projection and
+                    model breakdown. Leverage here compares the market to the model regardless of
+                    where you pick.
                   </p>
                 </div>
               </div>
@@ -1113,8 +1165,14 @@ export default function NflFantasy() {
                 <div className="nfl-mode-toggle-row">
                   <span className="nfl-mode-toggle-label">Value metric</span>
                   <div className="nfl-mode-toggle">
-                    <button className={`nfl-mode-btn${rankingMode === 'vor' ? ' nfl-mode-btn-active' : ''}`} onClick={() => setRankingMode('vor')}>VOR</button>
-                    <button className={`nfl-mode-btn${rankingMode === 'weighted' ? ' nfl-mode-btn-active' : ''}`} onClick={() => setRankingMode('weighted')}>Weighted Positions</button>
+                    <button className={`nfl-mode-btn${rankingMode === 'vor' ? ' nfl-mode-btn-active' : ''}`} onClick={() => setRankingMode('vor')}>
+                      VOR
+                      <span className="nfl-tip-anchor" onClick={(e) => e.stopPropagation()}>?<span className="nfl-tip">Ranks players by how many points they project above the last expected starter at their position. The default mode and the most reliable signal for overall draft value.</span></span>
+                    </button>
+                    <button className={`nfl-mode-btn${rankingMode === 'weighted' ? ' nfl-mode-btn-active' : ''}`} onClick={() => setRankingMode('weighted')}>
+                      Weighted Positions
+                      <span className="nfl-tip-anchor" onClick={(e) => e.stopPropagation()}>?<span className="nfl-tip">Re-ranks players by projected points multiplied by a position scarcity weight (TE 1.1, WR 1.0, RB 0.9, QB 0.45). Adjust weights in Advanced Settings.</span></span>
+                    </button>
                   </div>
                 </div>
                 <PosFilter />
@@ -1171,21 +1229,7 @@ export default function NflFantasy() {
               </div>
             </section>
 
-            <section className="card nfl-model-explainer" aria-labelledby="nfl-model-title">
-              <div>
-                <p className="eyebrow">Column guide</p>
-                <h2 id="nfl-model-title">What the Numbers Mean</h2>
-              </div>
-              <div className="nfl-definition-grid">
-                <div><h3>SEB Rank</h3><p>The model's overall pecking order, built on how much fantasy value each player adds above the last startable option at their position.</p></div>
-                <div><h3>VOR</h3><p>Points above the replacement-level player at the same position. The bigger the number, the more that player separates himself from the pack. Shown by default.</p></div>
-                <div><h3>Projected Value</h3><p>Projected points multiplied by a position weight (QB 0.45, RB 0.9, WR 1.0, TE 1.1). Switch to Weighted Positions mode above to see this column instead of VOR.</p></div>
-                <div><h3>ADP</h3><p>Average Draft Position from the source you selected. This is what thousands of real drafts are doing with this player right now.</p></div>
-                <div><h3>Leverage</h3><p>ADP minus SEB Rank. Positive means the market is drafting this player later than the model ranks them — that is where you find value. Rankings tab only.</p></div>
-                <div><h3>SEB Leverage</h3><p>Your pick number minus SEB Rank. Tells you whether that player is good value from your specific draft slot. Draft Guide tab only.</p></div>
-                <div><h3>Value</h3><p>SEB Leverage in plain English. Seven tiers from Huge Steal (plus 10 or more) down to Big Reach (minus 10 or worse). Draft Guide tab only.</p></div>
-              </div>
-            </section>
+            <ColumnGuide />
 
             <CreditsSection />
           </>
