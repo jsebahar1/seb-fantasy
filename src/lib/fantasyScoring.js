@@ -16,15 +16,15 @@ const stat = (player, key) => Number(player?.[key]) || 0;
 export function calculateFantasyPoints(player, scoringFormat = SCORING_FORMATS.PPR, customWeights = null) {
   if (customWeights) {
     return (
-      stat(player, 'passingYards')       / (customWeights.passingYardsPerPt  || 25)
-      + stat(player, 'passingTouchdowns') * (customWeights.passingTdPts       ?? 4)
-      + stat(player, 'interceptions')     * (customWeights.interceptionPts     ?? -2)
-      + stat(player, 'rushingYards')      / (customWeights.rushingYardsPerPt  || 10)
-      + stat(player, 'rushingTouchdowns') * (customWeights.rushingTdPts        ?? 6)
-      + stat(player, 'receivingYards')    / (customWeights.receivingYardsPerPt || 10)
-      + stat(player, 'receivingTouchdowns') * (customWeights.receivingTdPts    ?? 6)
-      + stat(player, 'receptions')        * (customWeights.receptionPts        ?? 1)
-      + stat(player, 'fumblesLost')       * (customWeights.fumblesLostPts      ?? -2)
+      stat(player, 'passingYards')          * (customWeights.passingPtsPerYd    ?? 0.05)
+      + stat(player, 'passingTouchdowns')   * (customWeights.passingTdPts        ?? 5)
+      + stat(player, 'interceptions')       * (customWeights.interceptionPts      ?? -2)
+      + stat(player, 'rushingYards')        * (customWeights.rushingPtsPerYd     ?? 0.1)
+      + stat(player, 'rushingTouchdowns')   * (customWeights.rushingTdPts         ?? 6)
+      + stat(player, 'receivingYards')      * (customWeights.receivingPtsPerYd   ?? 0.1)
+      + stat(player, 'receivingTouchdowns') * (customWeights.receivingTdPts       ?? 6)
+      + stat(player, 'receptions')          * (customWeights.receptionPts         ?? 1)
+      + stat(player, 'fumblesLost')         * (customWeights.fumblesLostPts       ?? -2)
     );
   }
 
@@ -33,12 +33,12 @@ export function calculateFantasyPoints(player, scoringFormat = SCORING_FORMATS.P
   }
 
   return (
-    stat(player, 'passingYards') / 25
-    + stat(player, 'passingTouchdowns') * 4
+    stat(player, 'passingYards') * 0.05
+    + stat(player, 'passingTouchdowns') * 5
     - stat(player, 'interceptions') * 2
-    + stat(player, 'rushingYards') / 10
+    + stat(player, 'rushingYards') * 0.1
     + stat(player, 'rushingTouchdowns') * 6
-    + stat(player, 'receivingYards') / 10
+    + stat(player, 'receivingYards') * 0.1
     + stat(player, 'receivingTouchdowns') * 6
     + stat(player, 'receptions') * RECEPTION_POINTS[scoringFormat]
     - stat(player, 'fumblesLost') * 2

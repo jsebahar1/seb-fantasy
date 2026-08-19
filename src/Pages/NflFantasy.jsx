@@ -37,19 +37,37 @@ const RECEPTION_POINTS_MAP = {
 };
 
 const buildDefaultWeights = (scoringFormat) => ({
-  passingYardsPerPt:   25,
-  passingTdPts:         4,
-  interceptionPts:     -2,
-  rushingYardsPerPt:   10,
-  rushingTdPts:         6,
-  receivingYardsPerPt: 10,
-  receivingTdPts:       6,
+  passingPtsPerYd:    0.05,
+  passingTdPts:          5,
+  interceptionPts:      -2,
+  rushingPtsPerYd:     0.1,
+  rushingTdPts:          6,
+  receivingPtsPerYd:   0.1,
+  receivingTdPts:        6,
   receptionPts:        RECEPTION_POINTS_MAP[scoringFormat] ?? 1,
-  fumblesLostPts:      -2,
+  fumblesLostPts:       -2,
 });
 
-const DEFAULT_REPLACEMENT_LEVELS = { QB: 12, RB: 30, WR: 36, TE: 12 };
-const DEFAULT_ROSTER_SLOTS        = { QB: 1, RB: 2, WR: 2, TE: 1, FLEX: 1, superFlex: 0 };
+// FLEX is split between RB and WR based on format; TE never gets flex; superFlex always goes to QB
+const FLEX_WR_FRACTION = {
+  [SCORING_FORMATS.PPR]:      0.75,
+  [SCORING_FORMATS.HALF_PPR]: 0.50,
+  [SCORING_FORMATS.STANDARD]: 0.25,
+};
+
+function computeReplacementLevels(leagueSize, rosterSlots, scoringFormat) {
+  const wrFrac = FLEX_WR_FRACTION[scoringFormat] ?? 0.75;
+  const flexWr = Math.round(rosterSlots.FLEX * wrFrac * leagueSize);
+  const flexRb = Math.round(rosterSlots.FLEX * (1 - wrFrac) * leagueSize);
+  return {
+    QB: Math.round((rosterSlots.QB + (rosterSlots.superFlex ?? 0)) * leagueSize),
+    RB: Math.round(rosterSlots.RB * leagueSize) + flexRb,
+    WR: Math.round(rosterSlots.WR * leagueSize) + flexWr,
+    TE: Math.round(rosterSlots.TE * leagueSize),
+  };
+}
+
+const DEFAULT_ROSTER_SLOTS = { QB: 1, RB: 2, WR: 2, TE: 1, FLEX: 1, superFlex: 0, benchSpots: 7 };
 
 const PAGE_SIZE = 12;
 const HALF      = PAGE_SIZE / 2;
@@ -91,16 +109,16 @@ function getValueInfo(value) {
 function getStatBreakdown(player, effectiveWeights) {
   const w = effectiveWeights;
   const defs = [
-    { key: 'passingYards',        label: 'Passing Yards',   pts: (v) => v / (w.passingYardsPerPt   || 25) },
-    { key: 'passingTouchdowns',   label: 'Passing TDs',     pts: (v) => v * (w.passingTdPts        ?? 4)  },
-    { key: 'interceptions',       label: 'Interceptions',   pts: (v) => v * (w.interceptionPts     ?? -2) },
+    { key: 'passingYards',        label: 'Passing Yards',   pts: (v) => v * (w.passingPtsPerYd    ?? 0.05) },
+    { key: 'passingTouchdowns',   label: 'Passing TDs',     pts: (v) => v * (w.passingTdPts        ?? 5)   },
+    { key: 'interceptions',       label: 'Interceptions',   pts: (v) => v * (w.interceptionPts     ?? -2)  },
     { key: 'rushingAttempts',     label: 'Rush Attempts',   pts: null },
-    { key: 'rushingYards',        label: 'Rush Yards',      pts: (v) => v / (w.rushingYardsPerPt   || 10) },
-    { key: 'rushingTouchdowns',   label: 'Rush TDs',        pts: (v) => v * (w.rushingTdPts        ?? 6)  },
-    { key: 'receptions',          label: 'Receptions',      pts: (v) => v * (w.receptionPts        ?? 1)  },
-    { key: 'receivingYards',      label: 'Receiving Yards', pts: (v) => v / (w.receivingYardsPerPt || 10) },
-    { key: 'receivingTouchdowns', label: 'Receiving TDs',   pts: (v) => v * (w.receivingTdPts      ?? 6)  },
-    { key: 'fumblesLost',         label: 'Fumbles Lost',    pts: (v) => v * (w.fumblesLostPts      ?? -2) },
+    { key: 'rushingYards',        label: 'Rush Yards',      pts: (v) => v * (w.rushingPtsPerYd     ?? 0.1) },
+    { key: 'rushingTouchdowns',   label: 'Rush TDs',        pts: (v) => v * (w.rushingTdPts        ?? 6)   },
+    { key: 'receptions',          label: 'Receptions',      pts: (v) => v * (w.receptionPts        ?? 1)   },
+    { key: 'receivingYards',      label: 'Receiving Yards', pts: (v) => v * (w.receivingPtsPerYd   ?? 0.1) },
+    { key: 'receivingTouchdowns', label: 'Receiving TDs',   pts: (v) => v * (w.receivingTdPts      ?? 6)   },
+    { key: 'fumblesLost',         label: 'Fumbles Lost',    pts: (v) => v * (w.fumblesLostPts      ?? -2)  },
   ];
   return defs
     .filter((d) => (player[d.key] ?? 0) !== 0)
@@ -133,7 +151,7 @@ function ValueBadge({ value }) {
   return <span className={`nfl-value-badge nfl-value-${tier}`}>{label}</span>;
 }
 
-function WeightInput({ label, value, field, onChange, hint }) {
+function WeightInput({ label, value, field, onChange, hint, step = 0.5 }) {
   return (
     <div className="nfl-weight-field">
       <label>
@@ -141,7 +159,7 @@ function WeightInput({ label, value, field, onChange, hint }) {
         {hint && <span className="nfl-weight-hint">{hint}</span>}
         <input
           type="number"
-          step="0.5"
+          step={step}
           value={value}
           onChange={(e) => onChange(field, Number(e.target.value))}
           className="nfl-weight-input"
@@ -175,13 +193,14 @@ function AdvancedSettingsModal({
   onClose,
   scoringFormat,
   leagueSize,
-  scoringWeights,    updateScoringWeight, resetScoringWeights,
-  replacementLevels, updateReplacement,   resetReplacementLevels,
-  rosterSlots,       updateRosterSlot,    resetRosterSlots,
-  numRounds,         setNumRounds,
+  scoringWeights,          updateScoringWeight,  resetScoringWeights,
+  replacementLevels,       updateReplacement,    resetReplacementLevels,
+  derivedReplacementLevels,
+  posLocked,               setPosLocked,
+  rosterSlots,             updateRosterSlot,     resetRosterSlots,
+  numRoundsOverride,       setNumRoundsOverride, autoRounds,
 }) {
   const [advancedTab, setAdvancedTab] = useState('scoring');
-  const [posLocked,   setPosLocked]   = useState(true);
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
@@ -233,30 +252,30 @@ function AdvancedSettingsModal({
                 <div className="nfl-weights-group">
                   <h4>Passing</h4>
                   <div className="nfl-weights-grid">
-                    <WeightInput label="Yards per point" field="passingYardsPerPt" hint="yards → 1 pt" value={scoringWeights.passingYardsPerPt}  onChange={updateScoringWeight} />
-                    <WeightInput label="TD points"       field="passingTdPts"      hint="pts per TD"   value={scoringWeights.passingTdPts}        onChange={updateScoringWeight} />
+                    <WeightInput label="Pts per yard" field="passingPtsPerYd" hint="pts per yd" step={0.01} value={scoringWeights.passingPtsPerYd}  onChange={updateScoringWeight} />
+                    <WeightInput label="TD points"    field="passingTdPts"    hint="pts per TD" step={0.5}  value={scoringWeights.passingTdPts}      onChange={updateScoringWeight} />
                   </div>
                 </div>
                 <div className="nfl-weights-group">
                   <h4>Rushing</h4>
                   <div className="nfl-weights-grid">
-                    <WeightInput label="Yards per point" field="rushingYardsPerPt" hint="yards → 1 pt" value={scoringWeights.rushingYardsPerPt}  onChange={updateScoringWeight} />
-                    <WeightInput label="TD points"       field="rushingTdPts"      hint="pts per TD"   value={scoringWeights.rushingTdPts}        onChange={updateScoringWeight} />
+                    <WeightInput label="Pts per yard" field="rushingPtsPerYd" hint="pts per yd" step={0.01} value={scoringWeights.rushingPtsPerYd}  onChange={updateScoringWeight} />
+                    <WeightInput label="TD points"    field="rushingTdPts"    hint="pts per TD" step={0.5}  value={scoringWeights.rushingTdPts}      onChange={updateScoringWeight} />
                   </div>
                 </div>
                 <div className="nfl-weights-group">
                   <h4>Receiving</h4>
                   <div className="nfl-weights-grid">
-                    <WeightInput label="Yards per point" field="receivingYardsPerPt" hint="yards → 1 pt" value={scoringWeights.receivingYardsPerPt} onChange={updateScoringWeight} />
-                    <WeightInput label="TD points"       field="receivingTdPts"       hint="pts per TD"   value={scoringWeights.receivingTdPts}       onChange={updateScoringWeight} />
-                    <WeightInput label="Receptions"      field="receptionPts"         hint="pts per rec"  value={scoringWeights.receptionPts}         onChange={updateScoringWeight} />
+                    <WeightInput label="Pts per yard" field="receivingPtsPerYd" hint="pts per yd" step={0.01} value={scoringWeights.receivingPtsPerYd} onChange={updateScoringWeight} />
+                    <WeightInput label="TD points"    field="receivingTdPts"    hint="pts per TD" step={0.5}  value={scoringWeights.receivingTdPts}     onChange={updateScoringWeight} />
+                    <WeightInput label="Receptions"   field="receptionPts"      hint="pts per rec" step={0.5} value={scoringWeights.receptionPts}       onChange={updateScoringWeight} />
                   </div>
                 </div>
                 <div className="nfl-weights-group">
                   <h4>Turnovers</h4>
                   <div className="nfl-weights-grid">
-                    <WeightInput label="Interceptions" field="interceptionPts" hint="neg = penalty" value={scoringWeights.interceptionPts} onChange={updateScoringWeight} />
-                    <WeightInput label="Fumbles lost"  field="fumblesLostPts"  hint="neg = penalty" value={scoringWeights.fumblesLostPts}  onChange={updateScoringWeight} />
+                    <WeightInput label="Interceptions" field="interceptionPts" hint="neg = penalty" step={0.5} value={scoringWeights.interceptionPts} onChange={updateScoringWeight} />
+                    <WeightInput label="Fumbles lost"  field="fumblesLostPts"  hint="neg = penalty" step={0.5} value={scoringWeights.fumblesLostPts}  onChange={updateScoringWeight} />
                   </div>
                 </div>
               </div>
@@ -283,10 +302,37 @@ function AdvancedSettingsModal({
                   <RosterInput label="RB starters"      field="RB"        value={rosterSlots.RB}        onChange={updateRosterSlot} />
                   <RosterInput label="WR starters"      field="WR"        value={rosterSlots.WR}        onChange={updateRosterSlot} />
                   <RosterInput label="TE starters"      field="TE"        value={rosterSlots.TE}        onChange={updateRosterSlot} />
-                  <RosterInput label="FLEX (RB/WR/TE)"  field="FLEX"      value={rosterSlots.FLEX}      onChange={updateRosterSlot} note="RB, WR, or TE" />
+                  <RosterInput label="FLEX (RB/WR)"     field="FLEX"      value={rosterSlots.FLEX}      onChange={updateRosterSlot} note="RB or WR only" />
                   <RosterInput label="Super Flex (any)" field="superFlex" value={rosterSlots.superFlex} onChange={updateRosterSlot} note="Any position" />
                 </div>
               </div>
+
+              <div className="nfl-weights-group">
+                <h4>Bench</h4>
+                <div className="nfl-weights-grid">
+                  <RosterInput label="Bench spots" field="benchSpots" value={rosterSlots.benchSpots} onChange={updateRosterSlot} note="Non-starting roster spots" />
+                </div>
+              </div>
+
+              {(rosterSlots.QB > 1 || rosterSlots.superFlex > 0) && (
+                <div className="nfl-adp-disclaimer">
+                  <div className="nfl-adp-disclaimer-icon">!</div>
+                  <div className="nfl-adp-disclaimer-text">
+                    <strong>ADP &amp; Leverage heads-up</strong>
+                    <p>
+                      Our ADP data is sourced from standard 1-QB leagues. With{' '}
+                      {rosterSlots.QB > 1 && `${rosterSlots.QB} QB starters`}
+                      {rosterSlots.QB > 1 && rosterSlots.superFlex > 0 && ' and '}
+                      {rosterSlots.superFlex > 0 && 'a Super Flex slot'},
+                      the <strong>ADP column will not reflect your league's actual draft board</strong>{' '}
+                      and <strong>Leverage (ADP − SEB Rank) loses its meaning</strong>.{' '}
+                      <strong>SEB Leverage</strong> (your pick vs. SEB Rank) and{' '}
+                      <strong>Value</strong> (steal/reach tier) remain fully useful —
+                      they're based on our rankings, not market ADP.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="nfl-weights-group nfl-rounds-group">
                 <h4>Draft Length</h4>
@@ -299,16 +345,19 @@ function AdvancedSettingsModal({
                         min="1"
                         max="30"
                         step="1"
-                        value={numRounds}
-                        onChange={(e) => setNumRounds(Math.max(1, Number(e.target.value)))}
+                        value={numRoundsOverride ?? autoRounds}
+                        onChange={(e) => setNumRoundsOverride(Math.max(1, Number(e.target.value)))}
                         className="nfl-weight-input"
                       />
                     </label>
                   </div>
                   <div className="nfl-rounds-tip">
-                    <strong>Tip:</strong> We recommend setting this 2 rounds below your actual draft
-                    length to leave room for a kicker and a defense, since those positions are not
-                    ranked in this model. Most 16-round leagues work well at 14 here.
+                    <strong>Auto: {autoRounds} rounds</strong> (starters + bench).
+                    {numRoundsOverride !== null && (
+                      <> <button className="nfl-reset-inline-btn" onClick={() => setNumRoundsOverride(null)}>Reset to auto</button></>
+                    )}
+                    <br />We recommend leaving 2 rounds for kicker &amp; defense since those positions
+                    aren't ranked here.
                   </div>
                 </div>
               </div>
@@ -320,21 +369,25 @@ function AdvancedSettingsModal({
             <>
               <div className="nfl-pos-lock-msg">
                 <p>
-                  These replacement thresholds are calibrated for a standard 12-team league and drive
-                  how VOR and SEB Rank are calculated. The defaults work well for the vast majority
-                  of leagues. If you think our position weights are off for your specific setup,
-                  you can unlock and adjust them — but we don't recommend it for most leagues.
+                  Replacement thresholds are auto-calculated from your league size and roster settings
+                  and drive how VOR and SEB Rank are computed. The values below update live as you
+                  adjust your lineup. Most leagues should leave these alone — unlock only if you
+                  disagree with our FLEX split assumptions.
                 </p>
                 <label className="nfl-unlock-check">
                   <input
                     type="checkbox"
                     checked={!posLocked}
                     onChange={(e) => {
-                      if (e.target.checked) setPosLocked(false);
-                      else { resetReplacementLevels(); setPosLocked(true); }
+                      if (e.target.checked) {
+                        setReplacementLevels({ ...derivedReplacementLevels });
+                        setPosLocked(false);
+                      } else {
+                        resetReplacementLevels();
+                      }
                     }}
                   />
-                  <span>I want to customize position weights (not recommended)</span>
+                  <span>I want to manually override position thresholds (not recommended)</span>
                 </label>
               </div>
 
@@ -342,45 +395,33 @@ function AdvancedSettingsModal({
                 <div className="nfl-adv-section-head" style={{ marginBottom: '16px' }}>
                   <h4 style={{ margin: 0 }}>Replacement Rank by Position</h4>
                   {!posLocked && (
-                    <button className="nfl-reset-btn" onClick={resetReplacementLevels}>Reset to defaults</button>
+                    <button className="nfl-reset-btn" onClick={resetReplacementLevels}>Reset to auto</button>
                   )}
                 </div>
                 <div className="nfl-weights-grid">
-                  <div className="nfl-weight-field">
-                    <label>
-                      <span className="nfl-weight-label">QB replacement rank</span>
-                      <span className="nfl-weight-hint">default: {DEFAULT_REPLACEMENT_LEVELS.QB} (1 QB × {leagueSize} teams)</span>
-                      <input type="number" min="1" max="100" step="1" disabled={posLocked} value={replacementLevels.QB} onChange={(e) => updateReplacement('QB', Number(e.target.value))} className="nfl-weight-input" />
-                    </label>
-                  </div>
-                  <div className="nfl-weight-field">
-                    <label>
-                      <span className="nfl-weight-label">RB replacement rank</span>
-                      <span className="nfl-weight-hint">default: {DEFAULT_REPLACEMENT_LEVELS.RB} (2 RB + flex)</span>
-                      <input type="number" min="1" max="200" step="1" disabled={posLocked} value={replacementLevels.RB} onChange={(e) => updateReplacement('RB', Number(e.target.value))} className="nfl-weight-input" />
-                    </label>
-                  </div>
-                  <div className="nfl-weight-field">
-                    <label>
-                      <span className="nfl-weight-label">WR replacement rank</span>
-                      <span className="nfl-weight-hint">default: {DEFAULT_REPLACEMENT_LEVELS.WR} (2 WR + flex)</span>
-                      <input type="number" min="1" max="200" step="1" disabled={posLocked} value={replacementLevels.WR} onChange={(e) => updateReplacement('WR', Number(e.target.value))} className="nfl-weight-input" />
-                    </label>
-                  </div>
-                  <div className="nfl-weight-field">
-                    <label>
-                      <span className="nfl-weight-label">TE replacement rank</span>
-                      <span className="nfl-weight-hint">default: {DEFAULT_REPLACEMENT_LEVELS.TE} (1 TE × {leagueSize} teams)</span>
-                      <input type="number" min="1" max="100" step="1" disabled={posLocked} value={replacementLevels.TE} onChange={(e) => updateReplacement('TE', Number(e.target.value))} className="nfl-weight-input" />
-                    </label>
-                  </div>
+                  {['QB', 'RB', 'WR', 'TE'].map((pos) => (
+                    <div key={pos} className="nfl-weight-field">
+                      <label>
+                        <span className="nfl-weight-label">{pos} replacement rank</span>
+                        <span className="nfl-weight-hint">auto: {derivedReplacementLevels[pos]}</span>
+                        <input
+                          type="number" min="1" max="300" step="1"
+                          disabled={posLocked}
+                          value={posLocked ? derivedReplacementLevels[pos] : replacementLevels[pos]}
+                          onChange={(e) => updateReplacement(pos, Number(e.target.value))}
+                          className="nfl-weight-input"
+                        />
+                      </label>
+                    </div>
+                  ))}
                 </div>
               </div>
 
               <div className="nfl-vorinfo">
-                <strong>How this affects rankings:</strong> Increasing a position's replacement rank
-                makes high VOR harder to achieve there because the benchmark improves. If your league
-                starts 2 QBs, set QB to 24 and watch quarterbacks climb the overall SEB rankings.
+                <strong>How this affects rankings:</strong> The threshold for each position is{' '}
+                (starters × league size) + FLEX allocation. FLEX is split {' '}
+                {scoringFormat === 'ppr' ? '75% WR / 25% RB' : scoringFormat === 'halfPpr' ? '50% WR / 50% RB' : '25% WR / 75% RB'}{' '}
+                based on your scoring format. Super Flex always counts toward QB.
               </div>
             </>
           )}
@@ -552,16 +593,30 @@ export default function NflFantasy() {
 
   // Advanced settings state
   const [scoringWeights,    setScoringWeights]    = useState(() => buildDefaultWeights(SCORING_FORMATS.PPR));
-  const [replacementLevels, setReplacementLevels] = useState({ ...DEFAULT_REPLACEMENT_LEVELS });
+  const [replacementLevels, setReplacementLevels] = useState({});
   const [rosterSlots,       setRosterSlots]       = useState({ ...DEFAULT_ROSTER_SLOTS });
-  const [numRounds,         setNumRounds]         = useState(14);
+  const [posLocked,         setPosLocked]         = useState(true);
+  const [numRoundsOverride, setNumRoundsOverride] = useState(null);
 
-  // Keep receptionPts in sync with the scoring format selector
+  // Keep receptionPts in sync with scoring format
   useEffect(() => {
     setScoringWeights((w) => ({ ...w, receptionPts: RECEPTION_POINTS_MAP[scoringFormat] ?? 1 }));
   }, [scoringFormat]);
 
   const effectiveWeights = scoringWeights;
+
+  // Auto-compute replacement levels from league size + roster + format
+  const derivedReplacementLevels = useMemo(
+    () => computeReplacementLevels(leagueSize, rosterSlots, scoringFormat),
+    [leagueSize, rosterSlots, scoringFormat],
+  );
+  const effectiveReplacementLevels = posLocked ? derivedReplacementLevels : replacementLevels;
+
+  // Auto-compute draft rounds from starters + bench
+  const totalStarters = rosterSlots.QB + rosterSlots.RB + rosterSlots.WR + rosterSlots.TE
+    + rosterSlots.FLEX + (rosterSlots.superFlex ?? 0);
+  const autoRounds = totalStarters + (rosterSlots.benchSpots ?? 7);
+  const numRounds  = numRoundsOverride ?? autoRounds;
 
   const openPlayer  = (player, pickCtx = null) => { setSelectedPlayer(player); setModalPickContext(pickCtx); };
   const closePlayer = () => { setSelectedPlayer(null); setModalPickContext(null); };
@@ -570,8 +625,8 @@ export default function NflFantasy() {
   const updateReplacement      = (pos,   val) => setReplacementLevels((r) => ({ ...r, [pos]: val }));
   const updateRosterSlot       = (slot,  val) => setRosterSlots((r) => ({ ...r, [slot]: val }));
   const resetScoringWeights    = () => setScoringWeights(buildDefaultWeights(scoringFormat));
-  const resetReplacementLevels = () => setReplacementLevels({ ...DEFAULT_REPLACEMENT_LEVELS });
-  const resetRosterSlots       = () => setRosterSlots({ ...DEFAULT_ROSTER_SLOTS });
+  const resetReplacementLevels = () => setPosLocked(true);
+  const resetRosterSlots       = () => { setRosterSlots({ ...DEFAULT_ROSTER_SLOTS }); setNumRoundsOverride(null); };
 
 
   useEffect(() => { setPageOffset(0); }, [selectedRound, position, pickPosition, draftFormat, leagueSize]);
@@ -594,9 +649,9 @@ export default function NflFantasy() {
 
   const rankings = useMemo(
     () => projectionPlayers.length
-      ? buildFantasyRankings(projectionPlayers, scoringFormat, scoringWeights, replacementLevels)
+      ? buildFantasyRankings(projectionPlayers, scoringFormat, scoringWeights, effectiveReplacementLevels)
       : [],
-    [projectionPlayers, scoringFormat, scoringWeights, replacementLevels],
+    [projectionPlayers, scoringFormat, scoringWeights, effectiveReplacementLevels],
   );
 
   const leverageRankings = useMemo(
@@ -663,10 +718,12 @@ export default function NflFantasy() {
   const advancedProps = {
     onClose: () => setShowAdvanced(false),
     scoringFormat, leagueSize,
-    scoringWeights, updateScoringWeight, resetScoringWeights,
-    replacementLevels, updateReplacement, resetReplacementLevels,
-    rosterSlots, updateRosterSlot, resetRosterSlots,
-    numRounds, setNumRounds,
+    scoringWeights,          updateScoringWeight,  resetScoringWeights,
+    replacementLevels,       updateReplacement,    resetReplacementLevels,
+    derivedReplacementLevels,
+    posLocked,               setPosLocked,
+    rosterSlots,             updateRosterSlot,     resetRosterSlots,
+    numRoundsOverride,       setNumRoundsOverride, autoRounds,
   };
 
   const PosFilter = () => (
