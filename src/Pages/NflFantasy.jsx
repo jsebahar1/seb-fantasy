@@ -7,53 +7,68 @@ import { buildLeverageRankings, DRAFT_RELEVANT_ADP_CUTOFF } from '../lib/fantasy
 import { buildFantasyRankings } from '../lib/fantasyValuation';
 import './NflFantasy.css';
 
-// ─── Constants ───────────────────────────────────────────────────────────────
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const POSITION_OPTIONS = ['All', 'QB', 'RB', 'WR', 'TE'];
 const SCORING_OPTIONS = [
-  { value: SCORING_FORMATS.PPR, label: 'PPR' },
+  { value: SCORING_FORMATS.PPR,      label: 'PPR' },
   { value: SCORING_FORMATS.HALF_PPR, label: 'Half-PPR' },
   { value: SCORING_FORMATS.STANDARD, label: 'Standard' },
 ];
 const FORMAT_LABELS = {
-  [SCORING_FORMATS.PPR]: 'PPR',
+  [SCORING_FORMATS.PPR]:      'PPR',
   [SCORING_FORMATS.HALF_PPR]: 'Half-PPR',
   [SCORING_FORMATS.STANDARD]: 'Standard',
 };
 const FULL_TABLE_COLUMNS = [
-  { key: 'sebRank', label: 'SEB Rank', align: 'number' },
-  { key: 'player', label: 'Player' },
-  { key: 'position', label: 'Pos.' },
-  { key: 'team', label: 'Team' },
+  { key: 'sebRank',                label: 'SEB Rank',  align: 'number' },
+  { key: 'player',                 label: 'Player' },
+  { key: 'position',               label: 'Pos.' },
+  { key: 'team',                   label: 'Team' },
   { key: 'projectedFantasyPoints', label: 'Proj. Pts', align: 'number' },
-  { key: 'valueAboveReplacement', label: 'VOR', align: 'number' },
-  { key: 'adp', label: 'ADP', align: 'number' },
-  { key: 'leverage', label: 'Leverage', align: 'number' },
+  { key: 'valueAboveReplacement',  label: 'VOR',       align: 'number' },
+  { key: 'adp',                    label: 'ADP',       align: 'number' },
+  { key: 'leverage',               label: 'Leverage',  align: 'number' },
 ];
 const RECEPTION_POINTS_MAP = {
-  [SCORING_FORMATS.PPR]: 1,
+  [SCORING_FORMATS.PPR]:      1,
   [SCORING_FORMATS.HALF_PPR]: 0.5,
   [SCORING_FORMATS.STANDARD]: 0,
 };
-const STAT_DEFS = [
-  { key: 'passingYards',       label: 'Passing Yards',    pts: (v) => v / 25 },
-  { key: 'passingTouchdowns',  label: 'Passing TDs',      pts: (v) => v * 4 },
-  { key: 'interceptions',      label: 'Interceptions',    pts: (v) => v * -2 },
-  { key: 'rushingAttempts',    label: 'Rush Attempts',    pts: null },
-  { key: 'rushingYards',       label: 'Rush Yards',       pts: (v) => v / 10 },
-  { key: 'rushingTouchdowns',  label: 'Rush TDs',         pts: (v) => v * 6 },
-  { key: 'receptions',         label: 'Receptions',       pts: (v, rec) => v * rec },
-  { key: 'receivingYards',     label: 'Receiving Yards',  pts: (v) => v / 10 },
-  { key: 'receivingTouchdowns',label: 'Receiving TDs',    pts: (v) => v * 6 },
-  { key: 'fumblesLost',        label: 'Fumbles Lost',     pts: (v) => v * -2 },
-];
+
+const buildDefaultWeights = (scoringFormat) => ({
+  passingYardsPerPt:   25,
+  passingTdPts:         4,
+  interceptionPts:     -2,
+  rushingYardsPerPt:   10,
+  rushingTdPts:         6,
+  receivingYardsPerPt: 10,
+  receivingTdPts:       6,
+  receptionPts:        RECEPTION_POINTS_MAP[scoringFormat] ?? 1,
+  fumblesLostPts:      -2,
+});
+
+const DEFAULT_REPLACEMENT_LEVELS = { QB: 12, RB: 30, WR: 36, TE: 12 };
+const DEFAULT_ROSTER_SLOTS        = { QB: 1, RB: 2, WR: 2, TE: 1, FLEX: 1, superFlex: 0 };
+
 const PAGE_SIZE = 12;
-const HALF = PAGE_SIZE / 2;
+const HALF      = PAGE_SIZE / 2;
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+const MAIN_TABS = [
+  { id: 'draft',    label: 'Draft Guide' },
+  { id: 'rankings', label: 'Rankings' },
+  { id: 'weekly',   label: 'Week by Week' },
+];
+const ADVANCED_TABS = [
+  { id: 'scoring',   label: 'Scoring Weights' },
+  { id: 'roster',    label: 'Roster & Rounds' },
+  { id: 'positions', label: 'Position Weights' },
+];
 
-function getDraftPicks(pickPosition, leagueSize, format) {
-  return Array.from({ length: 15 }, (_, i) => {
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getDraftPicks(pickPosition, leagueSize, format, numRounds) {
+  return Array.from({ length: numRounds }, (_, i) => {
     const round = i + 1;
     const overallPick = format === 'linear' || round % 2 === 1
       ? (round - 1) * leagueSize + pickPosition
@@ -73,15 +88,27 @@ function getValueInfo(value) {
   return { label: 'Big Reach', tier: 'big-reach' };
 }
 
-function getStatBreakdown(player, scoringFormat) {
-  const recPts = RECEPTION_POINTS_MAP[scoringFormat] ?? 1;
-  return STAT_DEFS
+function getStatBreakdown(player, effectiveWeights) {
+  const w = effectiveWeights;
+  const defs = [
+    { key: 'passingYards',        label: 'Passing Yards',   pts: (v) => v / (w.passingYardsPerPt   || 25) },
+    { key: 'passingTouchdowns',   label: 'Passing TDs',     pts: (v) => v * (w.passingTdPts        ?? 4)  },
+    { key: 'interceptions',       label: 'Interceptions',   pts: (v) => v * (w.interceptionPts     ?? -2) },
+    { key: 'rushingAttempts',     label: 'Rush Attempts',   pts: null },
+    { key: 'rushingYards',        label: 'Rush Yards',      pts: (v) => v / (w.rushingYardsPerPt   || 10) },
+    { key: 'rushingTouchdowns',   label: 'Rush TDs',        pts: (v) => v * (w.rushingTdPts        ?? 6)  },
+    { key: 'receptions',          label: 'Receptions',      pts: (v) => v * (w.receptionPts        ?? 1)  },
+    { key: 'receivingYards',      label: 'Receiving Yards', pts: (v) => v / (w.receivingYardsPerPt || 10) },
+    { key: 'receivingTouchdowns', label: 'Receiving TDs',   pts: (v) => v * (w.receivingTdPts      ?? 6)  },
+    { key: 'fumblesLost',         label: 'Fumbles Lost',    pts: (v) => v * (w.fumblesLostPts      ?? -2) },
+  ];
+  return defs
     .filter((d) => (player[d.key] ?? 0) !== 0)
     .map((d) => ({
-      key: d.key,
-      label: d.label,
-      value: player[d.key] ?? 0,
-      points: d.pts ? d.pts(player[d.key] ?? 0, recPts) : null,
+      key:    d.key,
+      label:  d.label,
+      value:  player[d.key] ?? 0,
+      points: d.pts ? d.pts(player[d.key] ?? 0) : null,
     }));
 }
 
@@ -90,7 +117,7 @@ function compareValues(a, b, key) {
   return a[key] - b[key];
 }
 
-const fmt = (v) => (v === null || v === undefined ? '—' : v.toFixed(1));
+const fmt    = (v) => (v === null || v === undefined ? '—' : v.toFixed(1));
 const fmtLev = (v) => (v === null || v === undefined ? '—' : `${v > 0 ? '+' : ''}${v.toFixed(1)}`);
 const fmtPts = (v) => (v === null ? '—' : `${v > 0 ? '+' : ''}${v.toFixed(1)}`);
 
@@ -106,7 +133,265 @@ function ValueBadge({ value }) {
   return <span className={`nfl-value-badge nfl-value-${tier}`}>{label}</span>;
 }
 
-function PlayerModal({ player, scoringFormat, pickContext, onClose }) {
+function WeightInput({ label, value, field, onChange, hint }) {
+  return (
+    <div className="nfl-weight-field">
+      <label>
+        <span className="nfl-weight-label">{label}</span>
+        {hint && <span className="nfl-weight-hint">{hint}</span>}
+        <input
+          type="number"
+          step="0.5"
+          value={value}
+          onChange={(e) => onChange(field, Number(e.target.value))}
+          className="nfl-weight-input"
+        />
+      </label>
+    </div>
+  );
+}
+
+function RosterInput({ label, value, field, onChange, note }) {
+  return (
+    <div className="nfl-roster-field">
+      <label>
+        <span className="nfl-roster-label">{label}</span>
+        {note && <span className="nfl-weight-hint">{note}</span>}
+        <input
+          type="number"
+          min="0"
+          max="20"
+          step="1"
+          value={value}
+          onChange={(e) => onChange(field, Math.max(0, Number(e.target.value)))}
+          className="nfl-weight-input"
+        />
+      </label>
+    </div>
+  );
+}
+
+function AdvancedSettingsModal({
+  onClose,
+  scoringFormat,
+  leagueSize,
+  useCustomScoring, setUseCustomScoring,
+  scoringWeights,   updateScoringWeight, resetScoringWeights,
+  replacementLevels, updateReplacement,  resetReplacementLevels,
+  rosterSlots,      updateRosterSlot,    resetRosterSlots,
+  numRounds,        setNumRounds,
+}) {
+  const [advancedTab, setAdvancedTab] = useState('scoring');
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div className="nfl-modal-backdrop" onClick={onClose} role="dialog" aria-modal="true" aria-label="Advanced Settings">
+      <div className="nfl-adv-modal" onClick={(e) => e.stopPropagation()}>
+
+        <div className="nfl-adv-modal-head">
+          <div>
+            <h2 className="nfl-adv-modal-title">Advanced Settings</h2>
+            <p className="nfl-adv-modal-sub">
+              Customize how the model scores players and define your league's roster rules.
+              Changes apply instantly across both Draft Guide and Rankings.
+            </p>
+          </div>
+          <button className="nfl-modal-close nfl-adv-close" onClick={onClose} aria-label="Close">×</button>
+        </div>
+
+        <div className="nfl-sub-tabs" role="tablist">
+          {ADVANCED_TABS.map((t) => (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={advancedTab === t.id}
+              className={`nfl-sub-tab${advancedTab === t.id ? ' nfl-sub-tab-active' : ''}`}
+              onClick={() => setAdvancedTab(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="nfl-adv-modal-body">
+
+          {/* ── Scoring Weights ── */}
+          {advancedTab === 'scoring' && (
+            <>
+              <div className="nfl-adv-section-head">
+                <p>
+                  For yardage stats, enter how many yards equal one point (e.g., 25 = 1 pt per
+                  25 passing yards). Penalty stats like interceptions and fumbles should be negative.
+                </p>
+                <div className="nfl-adv-head-actions">
+                  <label className="nfl-toggle-label">
+                    <input
+                      type="checkbox"
+                      checked={useCustomScoring}
+                      onChange={(e) => setUseCustomScoring(e.target.checked)}
+                    />
+                    <span>Use custom scoring</span>
+                  </label>
+                  <button className="nfl-reset-btn" onClick={resetScoringWeights}>
+                    Reset to {FORMAT_LABELS[scoringFormat]} defaults
+                  </button>
+                </div>
+              </div>
+
+              <div className={`nfl-weights-sections${!useCustomScoring ? ' nfl-weights-disabled' : ''}`}>
+                <div className="nfl-weights-group">
+                  <h4>Passing</h4>
+                  <div className="nfl-weights-grid">
+                    <WeightInput label="Yards per point" field="passingYardsPerPt" hint="yards → 1 pt"  value={scoringWeights.passingYardsPerPt}  onChange={updateScoringWeight} />
+                    <WeightInput label="TD points"       field="passingTdPts"      hint="pts per TD"    value={scoringWeights.passingTdPts}        onChange={updateScoringWeight} />
+                    <WeightInput label="INT points"      field="interceptionPts"   hint="neg = penalty" value={scoringWeights.interceptionPts}     onChange={updateScoringWeight} />
+                  </div>
+                </div>
+                <div className="nfl-weights-group">
+                  <h4>Rushing</h4>
+                  <div className="nfl-weights-grid">
+                    <WeightInput label="Yards per point" field="rushingYardsPerPt" hint="yards → 1 pt" value={scoringWeights.rushingYardsPerPt}  onChange={updateScoringWeight} />
+                    <WeightInput label="TD points"       field="rushingTdPts"      hint="pts per TD"   value={scoringWeights.rushingTdPts}        onChange={updateScoringWeight} />
+                  </div>
+                </div>
+                <div className="nfl-weights-group">
+                  <h4>Receiving</h4>
+                  <div className="nfl-weights-grid">
+                    <WeightInput label="Yards per point" field="receivingYardsPerPt" hint="yards → 1 pt" value={scoringWeights.receivingYardsPerPt}  onChange={updateScoringWeight} />
+                    <WeightInput label="TD points"       field="receivingTdPts"       hint="pts per TD"   value={scoringWeights.receivingTdPts}        onChange={updateScoringWeight} />
+                    <WeightInput label="Receptions"      field="receptionPts"         hint="pts per rec"  value={scoringWeights.receptionPts}          onChange={updateScoringWeight} />
+                  </div>
+                </div>
+                <div className="nfl-weights-group">
+                  <h4>Penalties</h4>
+                  <div className="nfl-weights-grid">
+                    <WeightInput label="Fumbles lost" field="fumblesLostPts" hint="neg = penalty" value={scoringWeights.fumblesLostPts} onChange={updateScoringWeight} />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ── Roster & Rounds ── */}
+          {advancedTab === 'roster' && (
+            <>
+              <div className="nfl-adv-section-head">
+                <p>
+                  Set your starting lineup requirements and draft length. These settings are saved
+                  for the session and will feed replacement level calculations once automation is live.
+                </p>
+                <div className="nfl-adv-head-actions">
+                  <button className="nfl-reset-btn" onClick={resetRosterSlots}>Reset to defaults</button>
+                </div>
+              </div>
+
+              <div className="nfl-weights-group">
+                <h4>Starting Lineup</h4>
+                <div className="nfl-weights-grid">
+                  <RosterInput label="QB starters"      field="QB"        value={rosterSlots.QB}        onChange={updateRosterSlot} />
+                  <RosterInput label="RB starters"      field="RB"        value={rosterSlots.RB}        onChange={updateRosterSlot} />
+                  <RosterInput label="WR starters"      field="WR"        value={rosterSlots.WR}        onChange={updateRosterSlot} />
+                  <RosterInput label="TE starters"      field="TE"        value={rosterSlots.TE}        onChange={updateRosterSlot} />
+                  <RosterInput label="FLEX (RB/WR/TE)"  field="FLEX"      value={rosterSlots.FLEX}      onChange={updateRosterSlot} note="RB, WR, or TE" />
+                  <RosterInput label="Super Flex (any)" field="superFlex" value={rosterSlots.superFlex} onChange={updateRosterSlot} note="Any position" />
+                </div>
+              </div>
+
+              <div className="nfl-weights-group nfl-rounds-group">
+                <h4>Draft Length</h4>
+                <div className="nfl-rounds-row">
+                  <div className="nfl-roster-field">
+                    <label>
+                      <span className="nfl-roster-label">Number of rounds</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="30"
+                        step="1"
+                        value={numRounds}
+                        onChange={(e) => setNumRounds(Math.max(1, Number(e.target.value)))}
+                        className="nfl-weight-input"
+                      />
+                    </label>
+                  </div>
+                  <div className="nfl-rounds-tip">
+                    <strong>Tip:</strong> We recommend setting this 2 rounds below your actual draft
+                    length to leave room for a kicker and a defense, since those positions are not
+                    ranked in this model. Most 16-round leagues work well at 14 here.
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ── Position Weights ── */}
+          {advancedTab === 'positions' && (
+            <>
+              <div className="nfl-adv-section-head">
+                <p>
+                  These thresholds set the replacement player for each position. A QB value of 12
+                  means the last useful QB in a 12-team, 1-QB league is ranked 12th. Raise this
+                  in deeper leagues or if your league starts more at a position.
+                </p>
+                <div className="nfl-adv-head-actions">
+                  <button className="nfl-reset-btn" onClick={resetReplacementLevels}>Reset to defaults</button>
+                </div>
+              </div>
+
+              <div className="nfl-weights-group">
+                <h4>Replacement Rank by Position</h4>
+                <div className="nfl-weights-grid">
+                  <div className="nfl-weight-field">
+                    <label>
+                      <span className="nfl-weight-label">QB replacement rank</span>
+                      <span className="nfl-weight-hint">default: {DEFAULT_REPLACEMENT_LEVELS.QB} (1 QB × {leagueSize} teams)</span>
+                      <input type="number" min="1" max="100" step="1" value={replacementLevels.QB} onChange={(e) => updateReplacement('QB', Number(e.target.value))} className="nfl-weight-input" />
+                    </label>
+                  </div>
+                  <div className="nfl-weight-field">
+                    <label>
+                      <span className="nfl-weight-label">RB replacement rank</span>
+                      <span className="nfl-weight-hint">default: {DEFAULT_REPLACEMENT_LEVELS.RB} (2 RB + flex)</span>
+                      <input type="number" min="1" max="200" step="1" value={replacementLevels.RB} onChange={(e) => updateReplacement('RB', Number(e.target.value))} className="nfl-weight-input" />
+                    </label>
+                  </div>
+                  <div className="nfl-weight-field">
+                    <label>
+                      <span className="nfl-weight-label">WR replacement rank</span>
+                      <span className="nfl-weight-hint">default: {DEFAULT_REPLACEMENT_LEVELS.WR} (2 WR + flex)</span>
+                      <input type="number" min="1" max="200" step="1" value={replacementLevels.WR} onChange={(e) => updateReplacement('WR', Number(e.target.value))} className="nfl-weight-input" />
+                    </label>
+                  </div>
+                  <div className="nfl-weight-field">
+                    <label>
+                      <span className="nfl-weight-label">TE replacement rank</span>
+                      <span className="nfl-weight-hint">default: {DEFAULT_REPLACEMENT_LEVELS.TE} (1 TE × {leagueSize} teams)</span>
+                      <input type="number" min="1" max="100" step="1" value={replacementLevels.TE} onChange={(e) => updateReplacement('TE', Number(e.target.value))} className="nfl-weight-input" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="nfl-vorinfo">
+                <strong>How this affects rankings:</strong> Increasing a position's replacement rank
+                makes high VOR harder to achieve there because the benchmark improves. If your league
+                starts 2 QBs, set QB to 24 and watch quarterbacks climb the overall SEB rankings.
+              </div>
+            </>
+          )}
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlayerModal({ player, effectiveWeights, scoringFormat, pickContext, onClose }) {
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
@@ -115,18 +400,12 @@ function PlayerModal({ player, scoringFormat, pickContext, onClose }) {
 
   if (!player) return null;
 
-  const stats = getStatBreakdown(player, scoringFormat);
+  const stats  = getStatBreakdown(player, effectiveWeights);
   const sebLev = pickContext != null ? pickContext - player.sebRank : null;
   const { label: valueLabel, tier: valueTier } = sebLev != null ? getValueInfo(sebLev) : {};
 
   return (
-    <div
-      className="nfl-modal-backdrop"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${player.player} player profile`}
-    >
+    <div className="nfl-modal-backdrop" onClick={onClose} role="dialog" aria-modal="true" aria-label={`${player.player} player profile`}>
       <div className="nfl-modal" onClick={(e) => e.stopPropagation()}>
         <button className="nfl-modal-close" onClick={onClose} aria-label="Close">×</button>
 
@@ -143,11 +422,7 @@ function PlayerModal({ player, scoringFormat, pickContext, onClose }) {
             <h3>Projected Stats</h3>
             <table className="nfl-modal-stats-table">
               <thead>
-                <tr>
-                  <th>Stat</th>
-                  <th>Projected</th>
-                  <th>Points</th>
-                </tr>
+                <tr><th>Stat</th><th>Projected</th><th>Points</th></tr>
               </thead>
               <tbody>
                 {stats.map((s) => (
@@ -172,31 +447,16 @@ function PlayerModal({ player, scoringFormat, pickContext, onClose }) {
           <div className="nfl-modal-section">
             <h3>Model Metrics</h3>
             <div className="nfl-modal-metrics">
-              <div>
-                <span>SEB Rank</span>
-                <strong>#{player.sebRank}</strong>
-              </div>
-              <div>
-                <span>VOR</span>
-                <strong>{fmt(player.valueAboveReplacement)}</strong>
-              </div>
-              <div>
-                <span>ADP</span>
-                <strong>{player.adp != null ? player.adp.toFixed(1) : '—'}</strong>
-              </div>
-              <div>
-                <span>Leverage</span>
-                <strong><LeverageValue value={player.leverage} /></strong>
-              </div>
+              <div><span>SEB Rank</span><strong>#{player.sebRank}</strong></div>
+              <div><span>VOR</span><strong>{fmt(player.valueAboveReplacement)}</strong></div>
+              <div><span>ADP</span><strong>{player.adp != null ? player.adp.toFixed(1) : '—'}</strong></div>
+              <div><span>Leverage</span><strong><LeverageValue value={player.leverage} /></strong></div>
               {sebLev !== null && (
                 <>
-                  <div>
-                    <span>SEB Leverage (Pick #{pickContext})</span>
-                    <strong><LeverageValue value={sebLev} /></strong>
-                  </div>
+                  <div><span>SEB Leverage (Pick #{pickContext})</span><strong><LeverageValue value={sebLev} /></strong></div>
                   <div className="nfl-metric-full">
                     <span>Value at Pick #{pickContext}</span>
-                    <strong><span className={`nfl-value-badge nfl-value-${valueTier}`}>{valueLabel}</span></strong>
+                    <span className={`nfl-value-badge nfl-value-${valueTier}`}>{valueLabel}</span>
                   </div>
                 </>
               )}
@@ -208,39 +468,109 @@ function PlayerModal({ player, scoringFormat, pickContext, onClose }) {
   );
 }
 
+function CreditsSection() {
+  return (
+    <section className="card nfl-credits" aria-labelledby="nfl-credits-title">
+      <h3 id="nfl-credits-title">Data Sources</h3>
+      <div className="nfl-credits-grid">
+        <div>
+          <h4>Fantasy Projections</h4>
+          <p>
+            Player projections come from{' '}
+            <a href="https://www.fantasypros.com/nfl/projections/qb.php?week=draft" target="_blank" rel="noreferrer" className="text-link">
+              FantasyPros
+            </a>
+            , which aggregates forecasts from dozens of experts into a single consensus number.
+            They do this well and deserve the credit.
+          </p>
+        </div>
+        <div>
+          <h4>ADP Data</h4>
+          <p>
+            Average Draft Position data comes from Sleeper, ESPN, Yahoo, and Underdog.
+            The Consensus option averages across all four for the clearest market picture.
+          </p>
+        </div>
+        <div>
+          <h4>VOR Methodology</h4>
+          <p>
+            Value Above Replacement is calculated against the last startable player at each position.
+            Adjust the threshold in Advanced Settings to match your league's roster rules.
+          </p>
+        </div>
+      </div>
+      <div className="nfl-kd-note">
+        <div className="nfl-kd-note-icon">K / D</div>
+        <div>
+          <strong>Kickers and Defenses are not included in this tool.</strong>
+          <p>
+            Both positions are too volatile to rank meaningfully before draft day. Pick them in
+            your final two rounds. FantasyPros has{' '}
+            <a href="https://www.fantasypros.com/nfl/projections/k.php?week=draft" target="_blank" rel="noreferrer" className="text-link">
+              kicker projections
+            </a>
+            {' '}and{' '}
+            <a href="https://www.fantasypros.com/nfl/projections/dst.php?week=draft" target="_blank" rel="noreferrer" className="text-link">
+              defense projections
+            </a>
+            {' '}on their site when you are ready.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function NflFantasy() {
   const [projectionPlayers, setProjectionPlayers] = useState([]);
-  const [adpData, setAdpData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [adpData,  setAdpData]  = useState([]);
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState(null);
 
-  // Settings
+  // Standard settings
   const [scoringFormat, setScoringFormat] = useState(SCORING_FORMATS.PPR);
-  const [adpSource, setAdpSource] = useState('Consensus');
-  const [position, setPosition] = useState('All');
-  const [leagueSize, setLeagueSize] = useState(12);
-  const [draftRange, setDraftRange] = useState('draftRelevant');
-  const [sortKey, setSortKey] = useState('sebRank');
+  const [adpSource,     setAdpSource]     = useState('Consensus');
+  const [position,      setPosition]      = useState('All');
+  const [leagueSize,    setLeagueSize]    = useState(12);
+  const [draftRange,    setDraftRange]    = useState('draftRelevant');
+  const [sortKey,       setSortKey]       = useState('sebRank');
   const [sortDirection, setSortDirection] = useState('asc');
 
   // Navigation
-  const [activeTab, setActiveTab] = useState('draft');
-  const [pickPosition, setPickPosition] = useState(1);
+  const [activeTab,     setActiveTab]     = useState('draft');
+  const [pickPosition,  setPickPosition]  = useState(1);
   const [selectedRound, setSelectedRound] = useState(1);
-  const [draftFormat, setDraftFormat] = useState('snake');
-  const [pageOffset, setPageOffset] = useState(0);
+  const [draftFormat,   setDraftFormat]   = useState('snake');
+  const [pageOffset,    setPageOffset]    = useState(0);
 
-  // Player profile modal
-  const [selectedPlayer, setSelectedPlayer] = useState(null);
+  // Modals
+  const [selectedPlayer,  setSelectedPlayer]  = useState(null);
   const [modalPickContext, setModalPickContext] = useState(null);
+  const [showAdvanced,    setShowAdvanced]    = useState(false);
 
-  const openPlayer = (player, pickContext = null) => {
-    setSelectedPlayer(player);
-    setModalPickContext(pickContext);
-  };
+  // Advanced settings state
+  const [useCustomScoring,  setUseCustomScoring]  = useState(false);
+  const [scoringWeights,    setScoringWeights]     = useState(() => buildDefaultWeights(SCORING_FORMATS.PPR));
+  const [replacementLevels, setReplacementLevels]  = useState({ ...DEFAULT_REPLACEMENT_LEVELS });
+  const [rosterSlots,       setRosterSlots]        = useState({ ...DEFAULT_ROSTER_SLOTS });
+  const [numRounds,         setNumRounds]          = useState(14);
+
+  const effectiveWeights = useMemo(
+    () => (useCustomScoring ? scoringWeights : buildDefaultWeights(scoringFormat)),
+    [useCustomScoring, scoringWeights, scoringFormat],
+  );
+
+  const openPlayer  = (player, pickCtx = null) => { setSelectedPlayer(player); setModalPickContext(pickCtx); };
   const closePlayer = () => { setSelectedPlayer(null); setModalPickContext(null); };
+
+  const updateScoringWeight    = (field, val) => setScoringWeights((w) => ({ ...w, [field]: val }));
+  const updateReplacement      = (pos,   val) => setReplacementLevels((r) => ({ ...r, [pos]: val }));
+  const updateRosterSlot       = (slot,  val) => setRosterSlots((r) => ({ ...r, [slot]: val }));
+  const resetScoringWeights    = () => setScoringWeights(buildDefaultWeights(scoringFormat));
+  const resetReplacementLevels = () => setReplacementLevels({ ...DEFAULT_REPLACEMENT_LEVELS });
+  const resetRosterSlots       = () => setRosterSlots({ ...DEFAULT_ROSTER_SLOTS });
 
   useEffect(() => { setPageOffset(0); }, [selectedRound, position, pickPosition, draftFormat, leagueSize]);
 
@@ -261,19 +591,28 @@ export default function NflFantasy() {
   }, []);
 
   const rankings = useMemo(
-    () => (projectionPlayers.length ? buildFantasyRankings(projectionPlayers, scoringFormat) : []),
-    [projectionPlayers, scoringFormat],
+    () => projectionPlayers.length
+      ? buildFantasyRankings(
+          projectionPlayers,
+          scoringFormat,
+          useCustomScoring ? scoringWeights : null,
+          replacementLevels,
+        )
+      : [],
+    [projectionPlayers, scoringFormat, useCustomScoring, scoringWeights, replacementLevels],
   );
+
   const leverageRankings = useMemo(
     () => (rankings.length ? buildLeverageRankings(rankings, adpData, adpSource) : []),
     [rankings, adpData, adpSource],
   );
+
   const myPicks = useMemo(
-    () => getDraftPicks(pickPosition, leagueSize, draftFormat),
-    [pickPosition, leagueSize, draftFormat],
+    () => getDraftPicks(pickPosition, leagueSize, draftFormat, numRounds),
+    [pickPosition, leagueSize, draftFormat, numRounds],
   );
 
-  const safeRound = Math.min(selectedRound, myPicks.length);
+  const safeRound           = Math.min(selectedRound, myPicks.length);
   const selectedOverallPick = myPicks[safeRound - 1]?.overallPick ?? 1;
 
   const draftAssistantData = useMemo(() => {
@@ -283,17 +622,16 @@ export default function NflFantasy() {
     const pool = leverageRankings
       .filter((p) => p.adp !== null && (position === 'All' || p.position === position))
       .sort((a, b) => a.adp - b.adp);
-
     if (!pool.length) return empty;
 
     const insertionPoint = pool.findIndex((p) => p.adp >= selectedOverallPick);
-    const splitIdx = insertionPoint === -1 ? pool.length : insertionPoint;
-    const rawStart = splitIdx - HALF + pageOffset * PAGE_SIZE;
-    const startIdx = Math.max(0, Math.min(rawStart, pool.length - PAGE_SIZE));
-    const endIdx = Math.min(pool.length, startIdx + PAGE_SIZE);
-    const players = pool.slice(startIdx, endIdx);
+    const splitIdx  = insertionPoint === -1 ? pool.length : insertionPoint;
+    const rawStart  = splitIdx - HALF + pageOffset * PAGE_SIZE;
+    const startIdx  = Math.max(0, Math.min(rawStart, pool.length - PAGE_SIZE));
+    const endIdx    = Math.min(pool.length, startIdx + PAGE_SIZE);
+    const players   = pool.slice(startIdx, endIdx);
 
-    const rawLineAfter = splitIdx - startIdx - 1;
+    const rawLineAfter   = splitIdx - startIdx - 1;
     const lineAfterIndex = pageOffset === 0 && rawLineAfter >= 0 && rawLineAfter < players.length - 1
       ? rawLineAfter : null;
 
@@ -309,8 +647,8 @@ export default function NflFantasy() {
       return posMatch && (draftRange === 'allPlayers' || relevant);
     });
     return [...filtered].sort((a, b) => {
-      const aNull = a[sortKey] === null || a[sortKey] === undefined;
-      const bNull = b[sortKey] === null || b[sortKey] === undefined;
+      const aNull = a[sortKey] == null;
+      const bNull = b[sortKey] == null;
       if (aNull) return bNull ? 0 : 1;
       if (bNull) return -1;
       const cmp = compareValues(a, b, sortKey);
@@ -325,11 +663,30 @@ export default function NflFantasy() {
 
   const pickOptions = Array.from({ length: leagueSize }, (_, i) => i + 1);
 
-  const TABS = [
-    { id: 'draft', label: 'Draft Guide' },
-    { id: 'rankings', label: 'Rankings' },
-    { id: 'weekly', label: 'Week by Week' },
-  ];
+  const advancedProps = {
+    onClose: () => setShowAdvanced(false),
+    scoringFormat, leagueSize,
+    useCustomScoring, setUseCustomScoring,
+    scoringWeights, updateScoringWeight, resetScoringWeights,
+    replacementLevels, updateReplacement, resetReplacementLevels,
+    rosterSlots, updateRosterSlot, resetRosterSlots,
+    numRounds, setNumRounds,
+  };
+
+  const PosFilter = () => (
+    <div className="nfl-pos-filter-row" role="group" aria-label="Filter by position">
+      <span className="nfl-pos-filter-label">Position</span>
+      {POSITION_OPTIONS.map((opt) => (
+        <button
+          key={opt}
+          className={`nfl-pos-btn${position === opt ? ' nfl-pos-btn-active' : ''}`}
+          onClick={() => setPosition(opt)}
+        >
+          {opt}
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <main className="page nfl-page">
@@ -340,9 +697,12 @@ export default function NflFantasy() {
         keywords={['nfl fantasy football rankings 2026', 'fantasy football draft rankings', 'fantasy football draft tool', 'value above replacement fantasy football', 'fantasy football ADP strategy', 'nfl fantasy draft advice', 'undervalued fantasy players']}
       />
 
+      {showAdvanced && <AdvancedSettingsModal {...advancedProps} />}
+
       {selectedPlayer && (
         <PlayerModal
           player={selectedPlayer}
+          effectiveWeights={effectiveWeights}
           scoringFormat={scoringFormat}
           pickContext={modalPickContext}
           onClose={closePlayer}
@@ -360,8 +720,19 @@ export default function NflFantasy() {
           </p>
         </header>
 
+        {useCustomScoring && (
+          <div className="nfl-custom-scoring-banner">
+            Custom scoring weights active.{' '}
+            <button className="nfl-banner-link" onClick={() => setShowAdvanced(true)}>Edit settings</button>
+            {' '}or{' '}
+            <button className="nfl-banner-link" onClick={() => { setUseCustomScoring(false); resetScoringWeights(); }}>
+              reset to defaults
+            </button>.
+          </div>
+        )}
+
         <div className="nfl-tabs" role="tablist">
-          {TABS.map((tab) => (
+          {MAIN_TABS.map((tab) => (
             <button
               key={tab.id}
               role="tab"
@@ -382,19 +753,16 @@ export default function NflFantasy() {
         )}
         {error && <div className="nfl-state nfl-state-error" role="alert">{error}</div>}
 
-        {/* ── Week by Week ── */}
+        {/* ══ WEEK BY WEEK ══════════════════════════════════════════════════════ */}
         {!loading && !error && activeTab === 'weekly' && (
           <div className="card nfl-weekly-placeholder">
             <p className="eyebrow">Coming Soon</p>
             <h2>Week by Week Tools</h2>
-            <p>
-              Start/sit decisions, waiver wire targets, and weekly matchup analysis are on the way.
-              Check back once the season kicks off.
-            </p>
+            <p>Start/sit decisions, waiver wire targets, and weekly matchup analysis are on the way. Check back once the season kicks off.</p>
           </div>
         )}
 
-        {/* ── Draft Guide ── */}
+        {/* ══ DRAFT GUIDE ═══════════════════════════════════════════════════════ */}
         {!loading && !error && activeTab === 'draft' && (
           <>
             <section aria-labelledby="nfl-targets-title">
@@ -411,7 +779,6 @@ export default function NflFantasy() {
                   <span className="nfl-model-badge">Version 1 model</span>
                 </div>
 
-                {/* Preset controls */}
                 <div className="nfl-controls nfl-main-controls" aria-label="Draft settings">
                   <label>
                     <span>Scoring format</span>
@@ -444,13 +811,16 @@ export default function NflFantasy() {
                       <option value="linear">Linear (1, 11, 21...)</option>
                     </select>
                   </label>
+                  <div className="nfl-adv-btn-cell">
+                    <button className="nfl-adv-btn" onClick={() => setShowAdvanced(true)}>
+                      Advanced Settings
+                      {useCustomScoring && <span className="nfl-adv-dot" aria-label="Custom settings active" />}
+                    </button>
+                  </div>
                 </div>
 
-                {/* Round pills */}
                 <div className="nfl-picks-row-wrap">
-                  <p className="nfl-picks-label">
-                    Your {draftFormat === 'snake' ? 'snake' : 'linear'} draft picks
-                  </p>
+                  <p className="nfl-picks-label">Your {draftFormat === 'snake' ? 'snake' : 'linear'} draft picks</p>
                   <div className="nfl-picks-row" role="tablist" aria-label="Draft rounds">
                     {myPicks.map(({ round, overallPick }) => (
                       <button
@@ -467,64 +837,40 @@ export default function NflFantasy() {
                   </div>
                 </div>
 
-                {/* Position quick-filter */}
-                <div className="nfl-pos-filter-row" role="group" aria-label="Filter by position">
-                  <span className="nfl-pos-filter-label">Position</span>
-                  {POSITION_OPTIONS.map((opt) => (
-                    <button
-                      key={opt}
-                      className={`nfl-pos-btn${position === opt ? ' nfl-pos-btn-active' : ''}`}
-                      onClick={() => setPosition(opt)}
-                    >
-                      {opt}
-                    </button>
-                  ))}
-                </div>
+                <PosFilter />
 
-                {/* Pick context */}
                 <div className="nfl-round-context">
                   <strong>Round {safeRound} — Pick #{selectedOverallPick}</strong>
                   {pageOffset !== 0 && (
-                    <button className="nfl-back-to-pick" onClick={() => setPageOffset(0)}>
-                      Back to pick
-                    </button>
+                    <button className="nfl-back-to-pick" onClick={() => setPageOffset(0)}>Back to pick</button>
                   )}
                 </div>
 
-                {/* Value legend */}
                 <div className="nfl-value-legend" aria-label="Value scale">
                   <span className="nfl-value-legend-label">Value scale:</span>
                   {[
-                    { tier: 'huge-steal', label: 'Huge Steal' },
-                    { tier: 'steal', label: 'Steal' },
+                    { tier: 'huge-steal',   label: 'Huge Steal' },
+                    { tier: 'steal',        label: 'Steal' },
                     { tier: 'slight-steal', label: 'Slight Steal' },
-                    { tier: 'at-value', label: 'At Value' },
+                    { tier: 'at-value',     label: 'At Value' },
                     { tier: 'slight-reach', label: 'Slight Reach' },
-                    { tier: 'reach', label: 'Reach' },
-                    { tier: 'big-reach', label: 'Big Reach' },
+                    { tier: 'reach',        label: 'Reach' },
+                    { tier: 'big-reach',    label: 'Big Reach' },
                   ].map(({ tier, label }) => (
                     <span key={tier} className={`nfl-value-badge nfl-value-${tier}`}>{label}</span>
                   ))}
                 </div>
 
-                {/* Paging */}
                 <div className="nfl-paging">
-                  <button className="nfl-page-btn" disabled={!canGoPrev} onClick={() => setPageOffset((o) => o - 1)}>
-                    Earlier picks
-                  </button>
-                  <button className="nfl-page-btn" disabled={!canGoNext} onClick={() => setPageOffset((o) => o + 1)}>
-                    Later picks
-                  </button>
+                  <button className="nfl-page-btn" disabled={!canGoPrev} onClick={() => setPageOffset((o) => o - 1)}>Earlier picks</button>
+                  <button className="nfl-page-btn" disabled={!canGoNext} onClick={() => setPageOffset((o) => o + 1)}>Later picks</button>
                 </div>
 
-                {/* Board table */}
                 <div className="nfl-target-table-scroll">
                   <table className="nfl-table nfl-target-table">
                     <thead>
                       <tr>
-                        <th>Player</th>
-                        <th>Pos.</th>
-                        <th>Team</th>
+                        <th>Player</th><th>Pos.</th><th>Team</th>
                         <th className="nfl-number">SEB</th>
                         <th className="nfl-number">ADP</th>
                         <th className="nfl-number">Leverage</th>
@@ -541,10 +887,7 @@ export default function NflFantasy() {
                             className={lineAfterIndex !== null && idx === lineAfterIndex ? 'nfl-row-before-line' : ''}
                           >
                             <td>
-                              <button
-                                className="nfl-player-btn"
-                                onClick={() => openPlayer(player, selectedOverallPick)}
-                              >
+                              <button className="nfl-player-btn" onClick={() => openPlayer(player, selectedOverallPick)}>
                                 {player.player}
                               </button>
                             </td>
@@ -561,19 +904,16 @@ export default function NflFantasy() {
                     </tbody>
                   </table>
                 </div>
-                {!pickTargets.length && (
-                  <p className="nfl-empty-state">No players match the current filters.</p>
-                )}
+                {!pickTargets.length && <p className="nfl-empty-state">No players match the current filters.</p>}
               </div>
             </section>
 
-            {/* Notes row */}
             <div className="nfl-notes-row">
               <div className="card">
                 <h3>How your picks are calculated</h3>
                 <p>
                   {draftFormat === 'snake'
-                    ? `Snake drafts flip direction each round. Pick ${pickPosition} in round 1 becomes pick ${myPicks[1]?.overallPick} in round 2, then ${myPicks[2]?.overallPick} in round 3. The pills above show all 15 of your picks so you can plan before you sit down.`
+                    ? `Snake drafts flip direction each round. Pick ${pickPosition} in round 1 becomes pick ${myPicks[1]?.overallPick ?? '—'} in round 2. The pills above show all ${numRounds} of your picks.`
                     : `Linear drafts keep your position every round. Pick ${pickPosition} stays pick ${pickPosition} straight through, so your picks are ${myPicks.slice(0, 4).map((p) => p.overallPick).join(', ')} and so on.`}
                 </p>
               </div>
@@ -581,21 +921,20 @@ export default function NflFantasy() {
                 <h3>What SEB Leverage means</h3>
                 <p>
                   Take your pick number and subtract the player's SEB Rank. At pick 10, a player
-                  ranked 8th scores a +2. You grabbed value. The same player at pick 5 would be
-                  a -3. You paid up. The Value badge converts that number into plain English.
+                  ranked 8th scores a +2. You grabbed value. The same player at pick 5 is a -3.
+                  The Value badge converts that number into plain English.
                 </p>
               </div>
               <div className="card">
                 <h3>What Leverage (ADP) means</h3>
                 <p>
-                  This compares the market to the model, regardless of where you pick. A positive
-                  number means the market is consistently taking that player later than the SEB model
-                  ranks them. Combine it with SEB Leverage to find players you can target a round late.
+                  Compares the market to the model regardless of where you pick. A positive
+                  number means the market is consistently taking that player later than SEB ranks them.
+                  Combine it with SEB Leverage to target players a round late.
                 </p>
               </div>
             </div>
 
-            {/* How to use */}
             <section className="card info-section nfl-how-to" aria-labelledby="nfl-how-to-title">
               <div className="section-head">
                 <div>
@@ -603,49 +942,35 @@ export default function NflFantasy() {
                   <p className="section-subtext">
                     Most fantasy drafts are won or lost in the middle rounds. Early picks are
                     obvious. Late picks are a gamble. Rounds 3 through 7 are where rosters get
-                    built or broken, and that is exactly where this tool is designed to help.
+                    built or broken.
                   </p>
                 </div>
               </div>
               <div className="info-grid">
                 <div className="info-block">
                   <h4>1. Lock in your spot</h4>
-                  <p>
-                    Enter your pick position, league size, and draft format. The tool maps out every
-                    pick you hold across all 15 rounds. Round 4 in a snake looks completely different
-                    than round 4 in a linear draft, so get this right first.
-                  </p>
+                  <p>Enter your pick position, league size, and draft format. The tool maps out every pick you hold across all {numRounds} rounds.</p>
                 </div>
                 <div className="info-block">
                   <h4>2. Click a round, see the board</h4>
-                  <p>
-                    Pick any round pill to pull up the board around that pick. Six players are going
-                    just before your turn, six are going just after, and the green line shows where you
-                    sit. Use the buttons to scout further up or down the board.
-                  </p>
+                  <p>Pick any round pill to pull up the board around that pick. Six players go before your turn, six after, and the green line shows where you sit.</p>
                 </div>
                 <div className="info-block">
                   <h4>3. Hunt for the steals</h4>
-                  <p>
-                    A Steal or Huge Steal means the market is consistently letting that player slide
-                    past where the SEB model ranks them. You do not need to nail every pick. Find two
-                    or three of those spots and you will come out ahead.
-                  </p>
+                  <p>A Steal or Huge Steal means the market is consistently letting that player slide past where the model ranks them. Find two or three and you come out ahead.</p>
                 </div>
                 <div className="info-block">
                   <h4>4. Dig into a player</h4>
-                  <p>
-                    Click any player's name to open their full profile. You will see the stat
-                    projections that drive their ranking, the points breakdown by category, and all
-                    the model metrics including their value from your exact pick slot.
-                  </p>
+                  <p>Click any player's name to open their full profile — stat projections, points breakdown, and all model metrics including value from your exact pick slot.</p>
                 </div>
               </div>
             </section>
+
+            <CreditsSection />
           </>
         )}
 
-        {/* ── Rankings tab ── */}
+        {/* ══ RANKINGS ══════════════════════════════════════════════════════════ */}
         {!loading && !error && activeTab === 'rankings' && (
           <>
             <section className="card nfl-rankings-card" aria-labelledby="nfl-rankings-title">
@@ -654,13 +979,12 @@ export default function NflFantasy() {
                   <p className="eyebrow">Full data</p>
                   <h2 id="nfl-rankings-title">Interactive Rankings</h2>
                   <p className="section-subtext">
-                    The full model output. {visibleRankings.length} players shown. Click any column
-                    header to sort, or click a player's name to see their full projection breakdown.
+                    {visibleRankings.length} players shown. Click any column header to sort,
+                    or click a player's name to see their full projection breakdown.
                   </p>
                 </div>
               </div>
 
-              {/* Rankings controls */}
               <div className="nfl-rankings-controls">
                 <div className="nfl-controls" aria-label="Rankings settings">
                   <label>
@@ -682,19 +1006,14 @@ export default function NflFantasy() {
                       <option value="allPlayers">All Players</option>
                     </select>
                   </label>
-                </div>
-                <div className="nfl-pos-filter-row" role="group" aria-label="Filter by position">
-                  <span className="nfl-pos-filter-label">Position</span>
-                  {POSITION_OPTIONS.map((opt) => (
-                    <button
-                      key={opt}
-                      className={`nfl-pos-btn${position === opt ? ' nfl-pos-btn-active' : ''}`}
-                      onClick={() => setPosition(opt)}
-                    >
-                      {opt}
+                  <div className="nfl-adv-btn-cell">
+                    <button className="nfl-adv-btn" onClick={() => setShowAdvanced(true)}>
+                      Advanced Settings
+                      {useCustomScoring && <span className="nfl-adv-dot" aria-label="Custom settings active" />}
                     </button>
-                  ))}
+                  </div>
                 </div>
+                <PosFilter />
               </div>
 
               <div className="nfl-table-scroll">
@@ -736,79 +1055,22 @@ export default function NflFantasy() {
               </div>
             </section>
 
-            {/* Glossary */}
             <section className="card nfl-model-explainer" aria-labelledby="nfl-model-title">
               <div>
                 <p className="eyebrow">Column guide</p>
                 <h2 id="nfl-model-title">What the Numbers Mean</h2>
               </div>
               <div className="nfl-definition-grid">
-                <div>
-                  <h3>SEB Rank</h3>
-                  <p>The model's overall pecking order. Built on how much fantasy value each player adds above the last startable option at their position.</p>
-                </div>
-                <div>
-                  <h3>VOR</h3>
-                  <p>Points above the replacement-level player at the same position. The bigger the number, the more that player separates himself from the pack.</p>
-                </div>
-                <div>
-                  <h3>ADP</h3>
-                  <p>Average Draft Position from the source you selected. This is what thousands of real drafts are doing with this player right now.</p>
-                </div>
-                <div>
-                  <h3>Leverage</h3>
-                  <p>ADP minus SEB Rank. A positive number means the market is drafting this player after where the model ranks them. That is where you find value.</p>
-                </div>
-                <div>
-                  <h3>SEB Leverage</h3>
-                  <p>Your pick number minus SEB Rank. This one is personal. It tells you whether that player is good value from your specific draft slot. Only shown on the Draft Guide tab.</p>
-                </div>
-                <div>
-                  <h3>Value</h3>
-                  <p>SEB Leverage translated into plain English. Seven tiers from Huge Steal (plus 10 or more) down to Big Reach (minus 10 or worse). Only shown on the Draft Guide tab.</p>
-                </div>
+                <div><h3>SEB Rank</h3><p>The model's overall pecking order, built on how much fantasy value each player adds above the last startable option at their position.</p></div>
+                <div><h3>VOR</h3><p>Points above the replacement-level player at the same position. The bigger the number, the more that player separates himself from the pack.</p></div>
+                <div><h3>ADP</h3><p>Average Draft Position from the source you selected. This is what thousands of real drafts are doing with this player right now.</p></div>
+                <div><h3>Leverage</h3><p>ADP minus SEB Rank. Positive means the market is drafting this player after where the model ranks them. That is where you find value.</p></div>
+                <div><h3>SEB Leverage</h3><p>Your pick number minus SEB Rank. Tells you whether that player is good value from your specific draft slot. Draft Guide tab only.</p></div>
+                <div><h3>Value</h3><p>SEB Leverage in plain English. Seven tiers from Huge Steal (plus 10 or more) down to Big Reach (minus 10 or worse). Draft Guide tab only.</p></div>
               </div>
             </section>
 
-            {/* Credits */}
-            <section className="card nfl-credits" aria-labelledby="nfl-credits-title">
-              <h3 id="nfl-credits-title">Data Sources</h3>
-              <div className="nfl-credits-grid">
-                <div>
-                  <h4>Fantasy Projections</h4>
-                  <p>
-                    Player projections come from{' '}
-                    <a
-                      href="https://www.fantasypros.com/nfl/projections/qb.php?week=draft"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-link"
-                    >
-                      FantasyPros
-                    </a>
-                    , which aggregates forecasts from dozens of experts to build the consensus
-                    numbers behind VOR and SEB Rank. They do this well and deserve the credit.
-                    Check out their full projection sheets directly on their site.
-                  </p>
-                </div>
-                <div>
-                  <h4>ADP Data</h4>
-                  <p>
-                    Average Draft Position data comes from Sleeper, ESPN, Yahoo, and Underdog.
-                    The Consensus option averages across all of them to give you the clearest
-                    picture of where the market is sitting.
-                  </p>
-                </div>
-                <div>
-                  <h4>VOR Methodology</h4>
-                  <p>
-                    Value Above Replacement is calculated against the last startable player at
-                    each position in a standard league. The replacement threshold shifts
-                    automatically based on the league size you set.
-                  </p>
-                </div>
-              </div>
-            </section>
+            <CreditsSection />
           </>
         )}
       </div>

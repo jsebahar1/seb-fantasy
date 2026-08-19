@@ -13,7 +13,21 @@ const RECEPTION_POINTS = {
 const stat = (player, key) => Number(player?.[key]) || 0;
 
 /** Calculates projected fantasy points from normalized stats, never CSV FPTS. */
-export function calculateFantasyPoints(player, scoringFormat = SCORING_FORMATS.PPR) {
+export function calculateFantasyPoints(player, scoringFormat = SCORING_FORMATS.PPR, customWeights = null) {
+  if (customWeights) {
+    return (
+      stat(player, 'passingYards')       / (customWeights.passingYardsPerPt  || 25)
+      + stat(player, 'passingTouchdowns') * (customWeights.passingTdPts       ?? 4)
+      + stat(player, 'interceptions')     * (customWeights.interceptionPts     ?? -2)
+      + stat(player, 'rushingYards')      / (customWeights.rushingYardsPerPt  || 10)
+      + stat(player, 'rushingTouchdowns') * (customWeights.rushingTdPts        ?? 6)
+      + stat(player, 'receivingYards')    / (customWeights.receivingYardsPerPt || 10)
+      + stat(player, 'receivingTouchdowns') * (customWeights.receivingTdPts    ?? 6)
+      + stat(player, 'receptions')        * (customWeights.receptionPts        ?? 1)
+      + stat(player, 'fumblesLost')       * (customWeights.fumblesLostPts      ?? -2)
+    );
+  }
+
   if (!(scoringFormat in RECEPTION_POINTS)) {
     throw new Error(`Unsupported scoring format: ${scoringFormat}`);
   }
