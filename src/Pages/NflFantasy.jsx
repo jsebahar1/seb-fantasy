@@ -704,8 +704,6 @@ export default function NflFantasy() {
   const resetPositionWeights  = () => setPositionWeights({ ...DEFAULT_POSITION_WEIGHTS });
 
 
-  useEffect(() => { setPageOffset(0); }, [selectedRound, position, pickPosition, draftFormat, leagueSize]);
-
   useEffect(() => {
     let cancelled = false;
     async function load() {
