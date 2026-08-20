@@ -809,9 +809,10 @@ export default function NflFantasy() {
     const container = tableScrollRef.current;
     const line      = pickLineRef.current;
     if (!container || !line) return;
-    const offset = line.offsetTop - container.offsetTop - Math.floor(container.clientHeight * 0.35);
-    container.scrollTop = Math.max(0, offset);
-  }, [selectedRound, position]);
+    const lineRect      = line.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    container.scrollTop += lineRect.top - containerRect.top - 60;
+  }, [selectedRound, position, pickTargets.length]);
 
   const advancedProps = {
     onClose: () => setShowAdvanced(false),
