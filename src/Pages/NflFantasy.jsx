@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import SEO from '../components/SEO';
 import { ADP_SOURCES, loadAdpData, loadFantasyProjections } from '../lib/fantasyData';
 import { LEAGUE_SIZES } from '../lib/fantasyDraftTargets';
@@ -648,7 +648,6 @@ export default function NflFantasy() {
   const [pickPosition,  setPickPosition]  = useState(1);
   const [selectedRound, setSelectedRound] = useState(1);
   const [draftFormat,   setDraftFormat]   = useState('snake');
-  const [pageOffset,    setPageOffset]    = useState(0);
 
   // Modals
   const [selectedPlayer,  setSelectedPlayer]  = useState(null);
@@ -765,29 +764,22 @@ export default function NflFantasy() {
   const selectedOverallPick = myPicks[safeRound - 1]?.overallPick ?? 1;
 
   const draftAssistantData = useMemo(() => {
-    const empty = { players: [], lineAfterIndex: null, canGoPrev: false, canGoNext: false };
+    const empty = { players: [], lineAfterIndex: null };
     if (!displayRankings.length) return empty;
 
-    const pool = displayRankings
+    const players = displayRankings
       .filter((p) => p.adp !== null && (position === 'All' || p.position === position))
       .sort((a, b) => a.adp - b.adp);
-    if (!pool.length) return empty;
+    if (!players.length) return empty;
 
-    const insertionPoint = pool.findIndex((p) => p.adp >= selectedOverallPick);
-    const splitIdx  = insertionPoint === -1 ? pool.length : insertionPoint;
-    const rawStart  = splitIdx - HALF + pageOffset * PAGE_SIZE;
-    const startIdx  = Math.max(0, Math.min(rawStart, pool.length - PAGE_SIZE));
-    const endIdx    = Math.min(pool.length, startIdx + PAGE_SIZE);
-    const players   = pool.slice(startIdx, endIdx);
+    const insertionPoint = players.findIndex((p) => p.adp >= selectedOverallPick);
+    const splitIdx = insertionPoint === -1 ? players.length : insertionPoint;
+    const lineAfterIndex = splitIdx > 0 && splitIdx < players.length ? splitIdx - 1 : null;
 
-    const rawLineAfter   = splitIdx - startIdx - 1;
-    const lineAfterIndex = pageOffset === 0 && rawLineAfter >= 0 && rawLineAfter < players.length - 1
-      ? rawLineAfter : null;
+    return { players, lineAfterIndex };
+  }, [displayRankings, selectedOverallPick, position]);
 
-    return { players, lineAfterIndex, canGoPrev: startIdx > 0, canGoNext: endIdx < pool.length };
-  }, [displayRankings, selectedOverallPick, position, pageOffset]);
-
-  const { players: pickTargets, lineAfterIndex, canGoPrev, canGoNext } = draftAssistantData;
+  const { players: pickTargets, lineAfterIndex } = draftAssistantData;
 
   const visibleRankings = useMemo(() => {
     const filtered = displayRankings.filter((p) => {
@@ -811,6 +803,17 @@ export default function NflFantasy() {
   };
 
   const pickOptions = Array.from({ length: leagueSize }, (_, i) => i + 1);
+
+  const tableScrollRef = useRef(null);
+  const pickLineRef    = useRef(null);
+
+  useEffect(() => {
+    const container = tableScrollRef.current;
+    const line      = pickLineRef.current;
+    if (!container || !line) return;
+    const offset = line.offsetTop - container.offsetTop - Math.floor(container.clientHeight * 0.35);
+    container.scrollTop = Math.max(0, offset);
+  }, [selectedRound, position]);
 
   const advancedProps = {
     onClose: () => setShowAdvanced(false),
@@ -996,9 +999,13 @@ export default function NflFantasy() {
 
                 <div className="nfl-round-context">
                   <strong>Round {safeRound}, Pick #{selectedOverallPick}</strong>
-                  {pageOffset !== 0 && (
-                    <button className="nfl-back-to-pick" onClick={() => setPageOffset(0)}>Back to pick</button>
-                  )}
+                  <button
+                    className="nfl-page-btn nfl-next-pick-btn"
+                    disabled={safeRound >= myPicks.length}
+                    onClick={() => setSelectedRound((r) => Math.min(r + 1, myPicks.length))}
+                  >
+                    Next pick →
+                  </button>
                 </div>
 
                 <div className="nfl-value-legend" aria-label="Value scale">
@@ -1016,19 +1023,7 @@ export default function NflFantasy() {
                   ))}
                 </div>
 
-                <div className="nfl-paging">
-                  <button className="nfl-page-btn" disabled={!canGoPrev} onClick={() => setPageOffset((o) => o - 1)}>Earlier picks</button>
-                  <button className="nfl-page-btn" disabled={!canGoNext} onClick={() => setPageOffset((o) => o + 1)}>Later picks</button>
-                  <button
-                    className="nfl-page-btn nfl-next-pick-btn"
-                    disabled={safeRound >= myPicks.length}
-                    onClick={() => { setSelectedRound((r) => Math.min(r + 1, myPicks.length)); setPageOffset(0); }}
-                  >
-                    Next pick →
-                  </button>
-                </div>
-
-                <div className="nfl-target-table-scroll">
+                <div className="nfl-target-table-scroll" ref={tableScrollRef}>
                   <table className="nfl-table nfl-target-table">
                     <thead>
                       <tr>
@@ -1043,24 +1038,31 @@ export default function NflFantasy() {
                     <tbody>
                       {pickTargets.map((player, idx) => {
                         const sebLev = selectedOverallPick - (player.sebRank ?? selectedOverallPick);
+                        const isPickRow = lineAfterIndex !== null && idx === lineAfterIndex + 1;
                         return (
-                          <tr
-                            key={`${player.player}-${player.position}`}
-                            className={lineAfterIndex !== null && idx === lineAfterIndex ? 'nfl-row-before-line' : ''}
-                          >
-                            <td>
-                              <button className="nfl-player-btn" onClick={() => openPlayer(player, selectedOverallPick)}>
-                                {player.player}
-                              </button>
-                            </td>
-                            <td><span className="nfl-position">{player.position}</span></td>
-                            <td>{player.team || '—'}</td>
-                            <td className="nfl-number nfl-rank">{player.sebRank}</td>
-                            <td className="nfl-number">{fmt(player.adp)}</td>
-                            <td className="nfl-number">{rankingMode === 'vor' ? fmt(player.valueAboveReplacement) : fmt(player.projectedValue)}</td>
-                            <td className="nfl-number"><LeverageValue value={sebLev} /></td>
-                            <td><ValueBadge value={sebLev} /></td>
-                          </tr>
+                          <React.Fragment key={`${player.player}-${player.position}`}>
+                            {isPickRow && (
+                              <tr className="nfl-pick-separator" ref={pickLineRef}>
+                                <td colSpan={8}>
+                                  <span>Your Pick — Round {safeRound}, #{selectedOverallPick}</span>
+                                </td>
+                              </tr>
+                            )}
+                            <tr className={isPickRow ? 'nfl-row-after-line' : ''}>
+                              <td>
+                                <button className="nfl-player-btn" onClick={() => openPlayer(player, selectedOverallPick)}>
+                                  {player.player}
+                                </button>
+                              </td>
+                              <td><span className="nfl-position">{player.position}</span></td>
+                              <td>{player.team || '—'}</td>
+                              <td className="nfl-number nfl-rank">{player.sebRank}</td>
+                              <td className="nfl-number">{fmt(player.adp)}</td>
+                              <td className="nfl-number">{rankingMode === 'vor' ? fmt(player.valueAboveReplacement) : fmt(player.projectedValue)}</td>
+                              <td className="nfl-number"><LeverageValue value={sebLev} /></td>
+                              <td><ValueBadge value={sebLev} /></td>
+                            </tr>
+                          </React.Fragment>
                         );
                       })}
                     </tbody>

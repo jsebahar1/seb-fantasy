@@ -16,6 +16,7 @@
 .nfl-round-context strong { color: var(--navy); font-size: 0.94rem; }
 .nfl-round-context span + span { border-left: 1px solid var(--border-mid); padding-left: 18px; }
 .nfl-target-table-scroll, .nfl-table-scroll { border: 1px solid var(--border-soft); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: auto; }
+.nfl-target-table-scroll { max-height: 520px; }
 .nfl-table-scroll { max-height: 670px; }
 .nfl-table { border-collapse: collapse; font-size: 0.9rem; min-width: 900px; width: 100%; }
 .nfl-table thead { background: linear-gradient(to bottom, #f4f8fc, #eaf1f8); position: sticky; top: 0; z-index: 1; }
@@ -36,29 +37,19 @@
 .nfl-leverage-negative { color: #b14227 !important; }
 .nfl-leverage-negative::before { content: '▼ '; font-size: 0.66rem; }
 .nfl-leverage-neutral { color: var(--text-soft) !important; }
-/* Pick dividing line — drawn via bottom-border on the row above the split */
-.nfl-row-before-line td { border-bottom: 2px solid var(--green) !important; position: relative; }
-.nfl-row-before-line td:first-child::after {
-  content: '← your pick';
-  color: var(--green-dark);
-  font-size: 0.68rem;
-  font-weight: 800;
-  left: 0;
-  letter-spacing: 0.04em;
-  position: absolute;
-  bottom: -18px;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
+/* Pick separator row */
+.nfl-pick-separator td { background: var(--green-dark); padding: 0; }
+.nfl-pick-separator span { align-items: center; color: #fff; display: flex; font-size: 0.72rem; font-weight: 800; gap: 8px; letter-spacing: 0.08em; padding: 6px 14px; text-transform: uppercase; }
+.nfl-pick-separator span::before, .nfl-pick-separator span::after { background: rgba(255,255,255,0.35); content: ''; flex: 1; height: 1px; }
+.nfl-row-after-line td { background: rgba(132, 198, 42, 0.06); }
 
-/* Paging nav */
-.nfl-paging { align-items: center; display: flex; gap: 10px; margin: 14px 0 12px; }
+/* Round context + next pick row */
+.nfl-round-context { align-items: center; display: flex; gap: 12px; margin: 10px 0 8px; }
 .nfl-page-btn { background: rgba(13, 45, 98, 0.05); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); color: var(--navy); cursor: pointer; font: inherit; font-size: 0.82rem; font-weight: 700; padding: 7px 14px; transition: background var(--transition-fast), border-color var(--transition-fast); }
 .nfl-page-btn:hover:not(:disabled) { background: rgba(13, 45, 98, 0.1); border-color: var(--navy); }
 .nfl-page-btn:disabled { color: var(--text-soft); cursor: default; opacity: 0.4; }
 .nfl-next-pick-btn { background: rgba(132, 198, 42, 0.12); border-color: rgba(132, 198, 42, 0.4); margin-left: auto; }
 .nfl-next-pick-btn:hover:not(:disabled) { background: rgba(132, 198, 42, 0.22); border-color: var(--green-dark); }
-.nfl-back-to-pick { background: transparent; border: none; color: var(--green-dark); cursor: pointer; font: inherit; font-size: 0.82rem; font-weight: 700; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
 
 /* Value badges (replaces old availability classes) */
 .nfl-value-badge { border-radius: 999px; display: inline-block; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.03em; padding: 4px 9px; text-transform: uppercase; white-space: nowrap; }
