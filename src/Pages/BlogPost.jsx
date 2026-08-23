@@ -37,11 +37,13 @@ export default function BlogPost() {
         <h1 className="post-title">{post.title}</h1>
 
         <article className="post-card">
-          {post.content.map((paragraph, index) => (
-            <p key={index} className="post-paragraph">
-              {paragraph}
-            </p>
-          ))}
+          {post.content.map((paragraph, index) =>
+            /^<(h[1-6]|blockquote|ul|ol|div)\b/.test(paragraph) ? (
+              <div key={index} dangerouslySetInnerHTML={{ __html: paragraph }} />
+            ) : (
+              <p key={index} className="post-paragraph" dangerouslySetInnerHTML={{ __html: paragraph }} />
+            )
+          )}
         </article>
 
         {post.image && (
