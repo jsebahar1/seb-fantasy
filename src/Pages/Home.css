@@ -232,6 +232,95 @@
 }
 
 /* ============================================================
+   NFL SPOTLIGHT SECTION
+   ============================================================ */
+.h-nfl-spot {
+  padding: 88px 0 80px;
+  background: linear-gradient(160deg, #f4fce8 0%, #edf9d8 50%, #f8ffee 100%);
+  border-top: 1px solid rgba(132, 198, 42, 0.18);
+  border-bottom: 1px solid rgba(132, 198, 42, 0.18);
+  position: relative;
+  overflow: hidden;
+}
+
+.h-nfl-spot::before {
+  content: '';
+  position: absolute;
+  top: -200px;
+  right: -160px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(132, 198, 42, 0.10) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.h-nfl-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.h-nfl-eyebrow {
+  background: rgba(132, 198, 42, 0.14) !important;
+  border-color: rgba(125, 200, 32, 0.32) !important;
+  color: #4a8c08 !important;
+}
+
+.h-nfl-title {
+  font-size: clamp(1.9rem, 3.4vw, 2.8rem);
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -0.028em;
+  line-height: 1.08;
+  margin: 14px 0 18px;
+}
+
+.h-nfl-sub {
+  color: var(--text-soft);
+  font-size: 1.02rem;
+  line-height: 1.82;
+  margin: 0 0 32px;
+  max-width: 480px;
+}
+
+.h-nfl-copy .h-btn-primary {
+  box-shadow: 0 4px 18px rgba(132, 198, 42, 0.28);
+}
+
+.h-nfl-feats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.h-nfl-feat {
+  background: white;
+  border: 1px solid rgba(132, 198, 42, 0.22);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  box-shadow: 0 2px 12px rgba(13, 45, 98, 0.05);
+}
+
+.h-nfl-feat-label {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -0.005em;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.73rem;
+}
+
+.h-nfl-feat-desc {
+  font-size: 0.87rem;
+  color: var(--text-soft);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ============================================================
    TOOLS SECTION  (light)
    ============================================================ */
 .h-tools {
@@ -334,10 +423,47 @@
   border: 1px solid rgba(132, 198, 42, 0.28);
 }
 
+.h-tool-badge--new {
+  background: linear-gradient(135deg, rgba(132, 198, 42, 0.18) 0%, rgba(125, 200, 32, 0.10) 100%);
+  color: #3d7a04;
+  border: 1px solid rgba(132, 198, 42, 0.36);
+}
+
 .h-tool-badge--soon {
   background: rgba(13, 45, 98, 0.05);
   color: var(--text-muted);
   border: 1px solid var(--border-soft);
+}
+
+/* Featured tool card (NFL) */
+.h-tool-card--featured {
+  border-color: rgba(132, 198, 42, 0.30);
+  box-shadow: 0 6px 28px rgba(132, 198, 42, 0.10), 0 2px 8px rgba(13, 45, 98, 0.06);
+}
+
+.h-tool-card--featured::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #84c62a 0%, #b6e840 100%);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  opacity: 1;
+}
+
+.h-tool-card--featured::after {
+  background: linear-gradient(90deg, #84c62a 0%, #b6e840 100%);
+}
+
+.h-tool-card--featured .h-tool-name {
+  color: var(--navy);
+}
+
+.h-tool-card--featured .h-tool-cta {
+  color: var(--green-dark);
+  font-weight: 700;
 }
 
 .h-tool-name {
@@ -577,6 +703,23 @@
    RESPONSIVE
    ============================================================ */
 @media (max-width: 900px) {
+  .h-nfl-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .h-nfl-spot {
+    padding: 64px 0 56px;
+  }
+
+  .h-nfl-title {
+    font-size: clamp(1.7rem, 6vw, 2.2rem);
+  }
+
+  .h-nfl-feats {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .h-hero-grid {
     grid-template-columns: 1fr;
     padding: 68px 0 52px;
@@ -636,5 +779,11 @@
 
   .h-blog {
     padding: 0 0 72px;
+  }
+}
+
+@media (max-width: 540px) {
+  .h-nfl-feats {
+    grid-template-columns: 1fr;
   }
 }
