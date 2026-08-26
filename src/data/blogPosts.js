@@ -28,7 +28,9 @@ export const blogPosts = [
       '<h3>Wide Receivers</h3>',
       '<ol><li>Player K - ADP: 12, SEB Rank: 6</li><li>Player L - ADP: 18, SEB Rank: 11</li><li>Player M - ADP: 24, SEB Rank: 16</li><li>Player N - ADP: 30, SEB Rank: 21</li><li>Player O - ADP: 36, SEB Rank: 26</li></ol>',
       '<h3>Tight Ends</h3>',
-      '<ol><li>Player P - ADP: 20, SEB Rank: 10</li><li>Player Q - ADP: 25, SEB Rank: 15</li><li>Player R - ADP: 30, SEB Rank: 20</li><li>Player S - ADP: 35, SEB Rank: 25</li><li>Player T - ADP: 40, SEB Rank: 30</li></ol>'
+      '<ol><li>Player P - ADP: 20, SEB Rank: 10</li><li>Player Q - ADP: 25, SEB Rank: 15</li><li>Player R - ADP: 30, SEB Rank: 20</li><li>Player S - ADP: 35, SEB Rank: 25</li><li>Player T - ADP: 40, SEB Rank: 30</li></ol>',
+      '<h3>Conclusion</h3>',
+      '<p>The SEB NFL Fantasy Draft Model provides a data-driven approach to identifying undervalued players and making smarter draft decisions. By leveraging real-time ADP data and the Value Over Replacement metric, you can gain a competitive edge in your fantasy football draft.</p>'
     ],
   },      
   {
