@@ -1,5 +1,37 @@
 export const blogPosts = [
   {
+    slug: 'nfl-fantasy-draft-steals-2026',
+    title: 'Top 5 NFL Fantasy Draft Steals at Each Position 2026',
+    date: 'August 30, 2026',
+    publishedDate: '2026-08-30',
+    excerpt:
+      'Here are the top five NFL fantasy draft steals at each position for 2026, based on the SEB Fantasy Draft Model and real-time ADP data.',
+    metaDescription:
+      'Discover the top five NFL fantasy draft steals at each position for 2026, based on the SEB Fantasy Draft Model and real-time ADP data.',
+    keywords: [
+      'nfl fantasy draft steals 2026',
+      'fantasy football draft rankings 2026',
+      'value over replacement fantasy football',
+      'fantasy football ADP strategy',
+      'how to win fantasy football draft',
+      'fantasy football sleepers 2026',
+      'best fantasy football picks 2026',
+    ],
+    content: [
+      'Every year, the NFL fantasy draft is full of surprises. Some players are overvalued by the market, while others are undervalued. The SEB Fantasy Draft Model helps identify these discrepancies, allowing you to make smarter picks.',
+      'Using real-time ADP data from multiple platforms, we have pinpointed where the market is mispricing players, allowing you to target these high-value picks before your draft.',
+      'Here are the top five NFL fantasy draft steals at each position for 2026, based on the SEB Fantasy Draft Model and real-time ADP data, which you can access here: <a href="https://sebfantasy.com/nfl" class="text-link">SEB NFL Fantasy Draft Model</a>.',
+      '<h3>Quarterbacks</h3>',
+      '<ol><li>Brock Purdy - ADP: 105.8, SEB Rank: 82, Leverage: 23.8</li><li>Dak Prescott - ADP: 82.5, SEB Rank: 70, Leverage: 12.5</li><li>Daniel Jones - ADP: 172.3, SEB Rank: 147, Leverage: 25.3</li><li>Jared Goff - ADP: 119.4, SEB Rank: 105, Leverage: 14.4</li><li>Jalen Hurts - ADP: 71.5, SEB Rank: 66, Leverage: 5.5</li></ol>',
+      '<h3>Running Backs</h3>',
+      '<ol><li>Player F - ADP: 10, SEB Rank: 5</li><li>Player G - ADP: 15, SEB Rank: 9</li><li>Player H - ADP: 20, SEB Rank: 14</li><li>Player I - ADP: 25, SEB Rank: 19</li><li>Player J - ADP: 30, SEB Rank: 24</li></ol>',
+      '<h3>Wide Receivers</h3>',
+      '<ol><li>Player K - ADP: 12, SEB Rank: 6</li><li>Player L - ADP: 18, SEB Rank: 11</li><li>Player M - ADP: 24, SEB Rank: 16</li><li>Player N - ADP: 30, SEB Rank: 21</li><li>Player O - ADP: 36, SEB Rank: 26</li></ol>',
+      '<h3>Tight Ends</h3>',
+      '<ol><li>Player P - ADP: 20, SEB Rank: 10</li><li>Player Q - ADP: 25, SEB Rank: 15</li><li>Player R - ADP: 30, SEB Rank: 20</li><li>Player S - ADP: 35, SEB Rank: 25</li><li>Player T - ADP: 40, SEB Rank: 30</li></ol>'
+    ],
+  },      
+  {
     slug: 'introducing-seb-nfl-fantasy-draft-model',
     title: 'Introducing the SEB NFL Fantasy Draft Model: Smarter Picks, Built on Real Data',
     date: 'August 23, 2026',

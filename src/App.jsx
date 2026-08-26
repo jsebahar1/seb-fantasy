@@ -10,6 +10,7 @@ import NcaaFootball from './Pages/NcaaFootball';
 import Blog from './Pages/Blog';
 import BlogPost from './Pages/BlogPost';
 import About from './Pages/About';
+import BlogAdmin from './Pages/BlogAdmin';
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/nfl-fantasy" element={<NflFantasy />} />
         <Route path="/ncaa-football" element={<NcaaFootball />} />
         <Route path="/about" element={<About />} />
+        <Route path="/blog-admin" element={<BlogAdmin />} />
       </Routes>
 
       <Footer />
