@@ -33,12 +33,12 @@ export default function BlogPost() {
       />
 
       <div className="container narrow-container">
-        <p className="meta-text">{post.date}</p>
+        <p className="meta-text">{post.date}{post.author && <> &middot; {post.author}</>}</p>
         <h1 className="post-title">{post.title}</h1>
 
         <article className="post-card">
           {post.content.map((paragraph, index) =>
-            /^<(h[1-6]|blockquote|ul|ol|div)\b/.test(paragraph) ? (
+            /^<(h[1-6]|blockquote|ul|ol|div|p)\b/.test(paragraph) ? (
               <div key={index} dangerouslySetInnerHTML={{ __html: paragraph }} />
             ) : (
               <p key={index} className="post-paragraph" dangerouslySetInnerHTML={{ __html: paragraph }} />

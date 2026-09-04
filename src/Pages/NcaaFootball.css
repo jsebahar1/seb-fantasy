@@ -1,0 +1,229 @@
+/* ============================================================
+   NCAA FOOTBALL RANKINGS  — cf- prefix
+   ============================================================ */
+
+/* ── Hero / header ─────────────────────────────────────────── */
+.cf-hero {
+  padding: 40px 0 32px;
+}
+
+.cf-sub {
+  font-size: 1rem;
+  color: var(--text-soft);
+  line-height: 1.7;
+  max-width: 640px;
+  margin: 12px 0 28px;
+}
+
+.cf-stats {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.cf-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cf-stat-val {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.cf-stat-label {
+  font-size: 0.73rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Search bar ────────────────────────────────────────────── */
+.cf-controls {
+  position: relative;
+  max-width: 320px;
+  margin: 0 0 20px;
+}
+
+.cf-search {
+  width: 100%;
+  padding: 9px 38px 9px 14px;
+  border: 1.5px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  color: var(--navy);
+  background: var(--bg-panel);
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.cf-search:focus {
+  outline: none;
+  border-color: var(--green-dark);
+  box-shadow: 0 0 0 3px rgba(125, 200, 32, 0.14);
+}
+
+.cf-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.cf-clear:hover { color: var(--navy); }
+
+/* ── Table container ───────────────────────────────────────── */
+.cf-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 12px rgba(13, 45, 98, 0.06);
+}
+
+/* ── Table ─────────────────────────────────────────────────── */
+.cf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+/* Header */
+.cf-table thead tr {
+  background: var(--navy);
+}
+
+.cf-table th {
+  padding: 13px 16px;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cf-th-rank  { width: 70px; }
+.cf-th-team  { min-width: 160px; }
+.cf-th-record { width: 90px; }
+.cf-th-score { width: 110px; text-align: right; }
+
+/* Rows */
+.cf-table tbody tr {
+  border-bottom: 1px solid var(--border-soft);
+  transition: background var(--transition-fast);
+}
+
+.cf-table tbody tr:last-child { border-bottom: none; }
+
+.cf-tr--active:hover { background: rgba(132, 198, 42, 0.05); }
+.cf-tr--idle { opacity: 0.55; }
+.cf-tr--idle:hover { opacity: 0.8; background: rgba(13, 45, 98, 0.025); }
+
+/* Alternating rows */
+.cf-tr--active:nth-child(even) { background: rgba(13, 45, 98, 0.02); }
+.cf-tr--active:nth-child(even):hover { background: rgba(132, 198, 42, 0.05); }
+
+/* Cells */
+.cf-table td {
+  padding: 11px 16px;
+  vertical-align: middle;
+}
+
+/* ── Rank badge ────────────────────────────────────────────── */
+.cf-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: rgba(13, 45, 98, 0.07);
+  color: var(--text-muted);
+}
+
+.cf-rank--top3 {
+  background: linear-gradient(135deg, #c9a227, #e8c547);
+  color: #4a3200;
+  box-shadow: 0 2px 6px rgba(201, 162, 39, 0.3);
+}
+
+.cf-rank--top10 {
+  background: linear-gradient(135deg, var(--green-dark), #5aa016);
+  color: white;
+  box-shadow: 0 2px 6px rgba(125, 200, 32, 0.25);
+}
+
+.cf-rank--top25 {
+  background: rgba(13, 45, 98, 0.12);
+  color: var(--navy);
+}
+
+/* ── Team cell ─────────────────────────────────────────────── */
+.cf-td-team {
+  font-weight: 600;
+  color: var(--navy);
+}
+
+/* ── Record cell ───────────────────────────────────────────── */
+.cf-td-record {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Score cell ────────────────────────────────────────────── */
+.cf-td-score {
+  text-align: right;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cf-score--pos { color: #3d7a04; }
+.cf-score--neg { color: #b52020; }
+
+.cf-idle { color: var(--text-muted); font-weight: 400; }
+
+/* ── Empty state ───────────────────────────────────────────── */
+.cf-empty {
+  text-align: center;
+  padding: 32px !important;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ── Footnote ──────────────────────────────────────────────── */
+.cf-footnote {
+  font-size: 0.77rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+  margin: 16px 0 48px;
+  max-width: 600px;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .cf-hero { padding: 24px 0 20px; }
+  .cf-stats { gap: 20px; }
+  .cf-stat-val { font-size: 1.3rem; }
+  .cf-controls { max-width: 100%; }
+  .cf-table th, .cf-table td { padding: 10px 12px; }
+}

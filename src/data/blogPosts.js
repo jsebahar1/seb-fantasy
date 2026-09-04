@@ -2,8 +2,9 @@ export const blogPosts = [
   {
     slug: 'nfl-fantasy-draft-steals-2026',
     title: 'Top 5 NFL Fantasy Draft Steals at Each Position 2026',
-    date: 'August 30, 2026',
-    publishedDate: '2026-08-30',
+    author: 'Jake Sebahar',
+    date: 'August 25, 2026',
+    publishedDate: '2026-08-25',
     excerpt:
       'Here are the top five NFL fantasy draft steals at each position for 2026, based on the SEB Fantasy Draft Model and real-time ADP data.',
     metaDescription:
@@ -30,12 +31,13 @@ export const blogPosts = [
       '<h3>Tight Ends</h3>',
       '<ol><li>Player P - ADP: 20, SEB Rank: 10</li><li>Player Q - ADP: 25, SEB Rank: 15</li><li>Player R - ADP: 30, SEB Rank: 20</li><li>Player S - ADP: 35, SEB Rank: 25</li><li>Player T - ADP: 40, SEB Rank: 30</li></ol>',
       '<h3>Conclusion</h3>',
-      '<p>The SEB NFL Fantasy Draft Model provides a data-driven approach to identifying undervalued players and making smarter draft decisions. By leveraging real-time ADP data and the Value Over Replacement metric, you can gain a competitive edge in your fantasy football draft.</p>'
+      'The SEB NFL Fantasy Draft Model provides a data-driven approach to identifying undervalued players and making smarter draft decisions. By leveraging real-time ADP data and the Value Over Replacement metric, you can gain a competitive edge in your fantasy football draft.'
     ],
   },      
   {
     slug: 'introducing-seb-nfl-fantasy-draft-model',
     title: 'Introducing the SEB NFL Fantasy Draft Model: Smarter Picks, Built on Real Data',
+    author: 'Jake Sebahar',
     date: 'August 23, 2026',
     publishedDate: '2026-08-23',
     excerpt:
@@ -79,6 +81,7 @@ export const blogPosts = [
   {
     slug: 'introducing-nick-sebahar',
     title: 'Introducing Nick Sebahar: The Newest Member of the SEB Fantasy Team',
+    author: 'Jake Sebahar',
     date: 'August 14, 2026',
     publishedDate: '2026-08-14',
     excerpt:
@@ -103,6 +106,7 @@ export const blogPosts = [
   {
     slug: '2026-march-madness-success',
     title: 'Beating the Odds: How the SEB Fantasy Model Cracked the 2026 Bracket',
+    author: 'Jake Sebahar',
     date: 'April 6, 2026',
     publishedDate: '2026-04-06',
     excerpt:
@@ -128,6 +132,7 @@ export const blogPosts = [
   {
     slug: '2026-optimal-bracket',
     title: 'My 2026 Optimal March Madness Bracket',
+    author: 'Jake Sebahar',
     date: 'March 16, 2026',
     publishedDate: '2026-03-16',
     excerpt:
@@ -154,6 +159,7 @@ export const blogPosts = [
   {
     slug: 'march-madness-advanced-leverage-model-2026',
     title: 'March Madness Advanced Leverage Model Returns',
+    author: 'Jake Sebahar',
     date: 'March 15, 2026',
     publishedDate: '2026-03-15',
     excerpt:

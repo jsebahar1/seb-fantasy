@@ -215,7 +215,7 @@ function Preview({ post }) {
       <h1 className="post-title">{post.title || <em style={{ opacity: 0.35 }}>Untitled</em>}</h1>
       <article className="post-card">
         {post.content.map((p, i) =>
-          /^<(h[1-6]|blockquote|ul|ol|div)\b/.test(p) ? (
+          /^<(h[1-6]|blockquote|ul|ol|div|p)\b/.test(p) ? (
             <div key={i} dangerouslySetInnerHTML={{ __html: p }} />
           ) : (
             <p key={i} className="post-paragraph" dangerouslySetInnerHTML={{ __html: p }} />
@@ -236,6 +236,7 @@ function BlogEditor() {
   const [status, setStatus] = useState(null); // null | 'publishing' | 'success' | {error}
 
   const [title, setTitle] = useState('');
+  const [author, setAuthor] = useState('Jake Sebahar');
   const [slugManual, setSlugManual] = useState(false);
   const [slug, setSlug] = useState('');
   const [publishedDate, setPublishedDate] = useState(today);
@@ -279,6 +280,7 @@ function BlogEditor() {
   const post = {
     slug: slug || slugify(title),
     title,
+    author,
     date: formatDateLabel(publishedDate),
     publishedDate,
     excerpt,
@@ -308,7 +310,7 @@ function BlogEditor() {
         <h2>Published!</h2>
         <p>The post was committed to the repo. Your deploy pipeline will pick it up in a minute or two.</p>
         <button className="ba-btn-primary" onClick={() => {
-          setStatus(null); setTitle(''); setSlug(''); setSlugManual(false);
+          setStatus(null); setTitle(''); setAuthor('Jake Sebahar'); setSlug(''); setSlugManual(false);
           setPublishedDate(today); setExcerpt(''); setMetaDescription('');
           setKeywords([]); setBlocks([{ id: uid(), type: 'paragraph', value: '' }]);
           setTab('write');
@@ -343,6 +345,11 @@ function BlogEditor() {
             <div className="ba-field">
               <label className="ba-label">Title <span className="ba-req">*</span></label>
               <input className="ba-input ba-input--lg" value={title} onChange={handleTitle} placeholder="Your post title…" />
+            </div>
+
+            <div className="ba-field">
+              <label className="ba-label">Author</label>
+              <input className="ba-input" value={author} onChange={e => setAuthor(e.target.value)} placeholder="Jake Sebahar" />
             </div>
 
             <div className="ba-row">
