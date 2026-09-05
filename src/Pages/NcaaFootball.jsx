@@ -45,7 +45,6 @@ const INITIAL_GAMES = [
   { home: 'Stanford',          away: 'Hawaii',          homePoints: 37, awayPoints: 27 },
   { home: 'Florida State',     away: 'New Mexico State',homePoints: 34, awayPoints: 17 },
   { home: 'UNLV',              away: 'Memphis',         homePoints: 21, awayPoints: 27 },
-  // Week 2
   { home: 'Utah',             away: 'FCS',             homePoints: 66, awayPoints: 14 },
   { home: 'Missouri',         away: 'FCS',             homePoints: 54, awayPoints: 14 },
   { home: 'Rutgers',          away: 'UMass',           homePoints: 21, awayPoints: 37 },
@@ -57,6 +56,14 @@ const INITIAL_GAMES = [
   { home: 'Minnesota',        away: 'FCS',             homePoints: 59, awayPoints:  7 },
   { home: 'Georgia Tech',     away: 'Colorado',        homePoints: 13, awayPoints: 14 },
   { home: 'Illinois',         away: 'UAB',             homePoints: 42, awayPoints: 23 },
+  { home: 'Miami (FL)',       away: 'Stanford',        homePoints: 45, awayPoints:  6 },
+  { home: 'Oklahoma',        away: 'UTEP',             homePoints: 51, awayPoints:  0 },
+  { home: 'USC',             away: 'Fresno State',     homePoints: 39, awayPoints:  0 },
+  { home: 'Eastern Michigan', away: 'San Jose State',  homePoints: 21, awayPoints: 27 },
+  { home: 'Georgia State',   away: 'FCS',              homePoints: 59, awayPoints: 10 },
+  { home: 'Purdue',          away: 'FCS',              homePoints: 44, awayPoints: 19 },
+  { home: 'Kansas',          away: 'FCS',              homePoints: 51, awayPoints:  6 },
+  { home: 'Michigan State',  away: 'Toledo',           homePoints: 30, awayPoints: 20 },
 ];
 
 // ── Scoring engine ────────────────────────────────────────────────────────────

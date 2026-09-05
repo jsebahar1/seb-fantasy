@@ -5,6 +5,7 @@ import { LEAGUE_SIZES } from '../lib/fantasyDraftTargets';
 import { SCORING_FORMATS } from '../lib/fantasyScoring';
 import { buildLeverageRankings, DRAFT_RELEVANT_ADP_CUTOFF } from '../lib/fantasyLeverage';
 import { buildFantasyRankings } from '../lib/fantasyValuation';
+import JakeDraftTool from '../components/JakeDraftTool';
 import './NflFantasy.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -68,6 +69,7 @@ const HALF      = PAGE_SIZE / 2;
 const MAIN_TABS = [
   { id: 'draft',    label: 'Draft Guide' },
   { id: 'rankings', label: 'Rankings' },
+  { id: 'jake',     label: "Jake's Picks" },
   { id: 'weekly',   label: 'Week by Week' },
 ];
 const ADVANCED_TABS = [
@@ -896,6 +898,9 @@ export default function NflFantasy() {
           </div>
         )}
         {error && <div className="nfl-state nfl-state-error" role="alert">{error}</div>}
+
+        {/* ══ JAKE'S PICKS ══════════════════════════════════════════════════════ */}
+        {activeTab === 'jake' && <JakeDraftTool />}
 
         {/* ══ WEEK BY WEEK ══════════════════════════════════════════════════════ */}
         {!loading && !error && activeTab === 'weekly' && (
