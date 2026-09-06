@@ -178,6 +178,13 @@ function buildRankings(games) {
     finalScores[away] += gameScore(awayDiff, ranks[home]);
   }
 
+  // Re-rank from the final scores. The solver loop leaves `ranks` one step
+  // ahead of the scores that produced them, so ranking off `finalScores` is
+  // what keeps the displayed rank and the displayed score in the same order.
+  [...TEAMS]
+    .sort((a, b) => finalScores[b] - finalScores[a])
+    .forEach((t, i) => { ranks[t] = i + 1; });
+
   // Calculate records from games
   const records = {};
   TEAMS.forEach(t => { records[t] = { w: 0, l: 0 }; });
