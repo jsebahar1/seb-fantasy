@@ -79,10 +79,7 @@ function PositionCard({ pos, data }) {
 }
 
 export default function JakeDraftTool() {
-  const [unlocked, setUnlocked] = useState(false);
   const [round, setRound] = useState(1);
-
-  if (!unlocked) return <PasswordGate onUnlock={() => setUnlocked(true)} />;
   const data = JAKE_DRAFT.find(r => r.round === round) ?? JAKE_DRAFT[0];
 
   const specialRounds = { 17: 'D/ST', 18: 'K', 19: 'IDP' };
