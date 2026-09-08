@@ -132,6 +132,10 @@ const INITIAL_GAMES = [
   { home: 'New Mexico State',  away: 'FCS',              homePoints: 51, awayPoints: 14 },
   { home: 'Nevada',            away: 'Western Kentucky', homePoints: 49, awayPoints: 14 },
   { home: 'California',        away: 'UCLA',             homePoints: 24, awayPoints: 45 },
+  { home: 'Notre Dame',        away: 'Wisconsin',        homePoints: 41, awayPoints: 13 },
+  { home: 'Ole Miss',          away: 'Louisville',       homePoints: 41, awayPoints: 38 },
+  { home: 'Washington',        away: 'Washington State', homePoints: 24, awayPoints: 10 },
+  { home: 'Florida State',     away: 'SMU',              homePoints: 24, awayPoints: 27},
 ];
 
 // ── Scoring engine ────────────────────────────────────────────────────────────
