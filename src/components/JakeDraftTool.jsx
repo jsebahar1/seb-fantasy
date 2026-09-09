@@ -3,43 +3,6 @@ import { JAKE_DRAFT } from '../data/draftGuide';
 
 const POS_COLORS = { QB: 'pos-qb', RB: 'pos-rb', WR: 'pos-wr', TE: 'pos-te', DE: 'pos-de', LB: 'pos-lb' };
 
-function PasswordGate({ onUnlock }) {
-  const [pw, setPw] = useState('');
-  const [error, setError] = useState(false);
-
-  function handleSubmit(e) {
-    e.preventDefault();
-    if (pw === 'badboylucas') {
-      onUnlock();
-    } else {
-      setError(true);
-      setPw('');
-    }
-  }
-
-  return (
-    <div className="jdt-gate">
-      <div className="card jdt-gate-card">
-        <p className="eyebrow">Jake's Picks</p>
-        <h2>Draft Playbook</h2>
-        <p className="section-subtext">This section is private until after the draft.</p>
-        <form className="jdt-gate-form" onSubmit={handleSubmit}>
-          <input
-            className={`jdt-gate-input${error ? ' jdt-gate-input--error' : ''}`}
-            type="password"
-            placeholder="Password"
-            value={pw}
-            autoComplete="off"
-            onChange={e => { setPw(e.target.value); setError(false); }}
-          />
-          {error && <p className="jdt-gate-error">Incorrect password.</p>}
-          <button className="btn jdt-gate-btn" type="submit">Unlock</button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
 function PosBadge({ pos }) {
   return <span className={`nfl-position jdt-pos ${POS_COLORS[pos] ?? ''}`}>{pos}</span>;
 }
