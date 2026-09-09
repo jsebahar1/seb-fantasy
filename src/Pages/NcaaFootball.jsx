@@ -6,6 +6,16 @@ import './NcaaFootball.css';
 const M2 = 139;
 const M3 = 140;
 
+// ── Page metadata. Bump LAST_UPDATED whenever new results are added; it feeds
+//    both the visible timestamp and the dateModified in structured data. ──────
+const SEASON = 2026;
+const LAST_UPDATED = '2026-09-08';
+const SITE = 'https://sebfantasy.com';
+
+const UPDATED_LABEL = new Date(`${LAST_UPDATED}T12:00:00Z`).toLocaleDateString('en-US', {
+  month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC',
+});
+
 // ── Full team list ────────────────────────────────────────────────────────────
 const TEAMS = [
   'Air Force', 'Akron', 'Alabama', 'Appalachian State', 'Arizona', 'Arizona State',
@@ -349,6 +359,111 @@ export default function NcaaFootball() {
     ? rankings.filter(r => r.team.toLowerCase().includes(search.toLowerCase()))
     : rankings;
 
+  // 'FCS' is a pooled bucket rather than a real program, so it stays out of
+  // anything presented to search engines as a team.
+  const rated = rankings.filter(r => r.hasGames && r.team !== 'FCS');
+
+  // Memoized so the SEO effect doesn't re-serialize on every keystroke.
+  const structuredData = useMemo(() => ({
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Dataset',
+        name: `${SEASON} College Football Power Rankings`,
+        description:
+          `Strength-of-schedule adjusted power ratings for all ${TEAMS.length - 1} FBS teams, ` +
+          'derived from every completed game. Each result is weighted by the opponent\'s rank, ' +
+          'so wins over strong teams and losses to weak ones move a team furthest.',
+        url: `${SITE}/ncaa-football`,
+        creator: { '@type': 'Person', name: 'Jake Sebahar' },
+        isAccessibleForFree: true,
+        dateModified: LAST_UPDATED,
+        temporalCoverage: String(SEASON),
+        measurementTechnique: 'Iterative strength-of-schedule weighted point differential',
+        variableMeasured: [
+          { '@type': 'PropertyValue', name: 'Power rating', description: 'Sum of opponent-weighted game values' },
+          { '@type': 'PropertyValue', name: 'Rank', description: `Position from 1 to ${TEAMS.length}` },
+          { '@type': 'PropertyValue', name: 'Record', description: 'Wins and losses' },
+        ],
+        keywords: ['college football', 'power rankings', 'FBS', 'strength of schedule', String(SEASON)],
+      },
+      {
+        '@type': 'ItemList',
+        name: `Top 25 College Football Power Rankings — ${SEASON}`,
+        description: `The 25 highest-rated FBS teams as of ${LAST_UPDATED}.`,
+        itemListOrder: 'https://schema.org/ItemListOrderAscending',
+        numberOfItems: Math.min(25, rated.length),
+        itemListElement: rated.slice(0, 25).map((r, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: r.team,
+          item: { '@type': 'SportsTeam', name: r.team, sport: 'American Football' },
+        })),
+      },
+      {
+        '@type': 'FAQPage',
+        mainEntity: [
+          {
+            '@type': 'Question',
+            name: 'How are these college football power rankings calculated?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text:
+                'Every game produces a single value, and a team\'s rating is the sum of those values. ' +
+                'A win is worth ((140 − opponent rank) ÷ 139)² × point differential. A loss is worth ' +
+                '√(opponent rank ÷ 139) × point differential, which is negative. Because scoring a game ' +
+                'requires knowing the opponent\'s rank, the ranks and ratings are solved together by iteration.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'Why is beating a top team worth so much more?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text:
+                'The win multiplier is squared, so it falls off steeply. Beating the number one team carries a ' +
+                'multiplier of 1.0, while beating the lowest ranked team carries roughly 0.00005 — about 19,000 ' +
+                'times less per point of margin. Running up the score against a weak opponent earns almost nothing.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'Why do blowout losses hurt more than blowout wins help?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text:
+                'Losses use a square root rather than a square, so the penalty climbs quickly and then flattens. ' +
+                'A 16 point win over a mid-tier team is worth about 2 points of rating, while a 41 point loss to a ' +
+                'top-35 team costs nearly 20. One bad afternoon moves a team much further than one good one.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'How are FCS opponents handled?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text:
+                'All FCS opponents are pooled into a single entry. That entry absorbs a large negative rating and ' +
+                'settles near the bottom, which drives the win multiplier close to zero. Beating an FCS team is ' +
+                'therefore worth almost nothing regardless of the final margin.',
+            },
+          },
+        ],
+      },
+    ],
+  }), [rated]);
+
+  const seoKeywords = useMemo(() => [
+    `college football power rankings ${SEASON}`,
+    'college football rankings',
+    'CFB power rankings',
+    'FBS power rankings',
+    'college football computer rankings',
+    'strength of schedule rankings',
+    'ncaa football rankings',
+    'college football analytics',
+  ], []);
+
   function rankClass(rank) {
     if (rank <= 3)  return 'cf-rank cf-rank--top3';
     if (rank <= 10) return 'cf-rank cf-rank--top10';
@@ -359,21 +474,29 @@ export default function NcaaFootball() {
   return (
     <main className="page">
       <SEO
-        title="CFB Power Rankings"
+        title={`${SEASON} College Football Power Rankings — All ${TEAMS.length - 1} FBS Teams`}
         path="/ncaa-football"
-        description="Data-driven college football power rankings built on a strength-of-schedule-adjusted scoring model. Updated after every game."
-        keywords={['college football rankings 2026', 'CFB power rankings', 'ncaa football model', 'college football analytics']}
+        description={`Computer power rankings for all ${TEAMS.length - 1} FBS teams, updated ${UPDATED_LABEL}. Every result is weighted by opponent rank, so quality wins count and bad losses hurt. Full methodology and per-game math included.`}
+        keywords={seoKeywords}
+        modifiedDate={LAST_UPDATED}
+        jsonLd={structuredData}
       />
 
       <div className="container">
         {/* Header */}
         <div className="cf-hero">
           <p className="eyebrow">CFB Rankings</p>
-          <h1 className="page-title">College Football Power Rankings</h1>
+          <h1 className="page-title">{SEASON} College Football Power Rankings</h1>
           <p className="cf-sub">
-            A strength-adjusted model where every win and loss is weighted by your
-            opponent's rank. Beating a top team is worth more. Losing to a weak team
-            costs more. Updated after every game.
+            A strength-adjusted computer model covering all {TEAMS.length - 1} FBS teams, where
+            every win and loss is weighted by your opponent's rank. Beating a top team is worth
+            more. Losing to a weak team costs more. Click any team to see the math behind its
+            rating.
+          </p>
+          <p className="cf-updated">
+            Updated <time dateTime={LAST_UPDATED}>{UPDATED_LABEL}</time>
+            <span className="cf-modal-dot">·</span>
+            {INITIAL_GAMES.length} games scored
           </p>
         </div>
 
@@ -392,8 +515,16 @@ export default function NcaaFootball() {
         </div>
 
         {/* Rankings table */}
+        <h2 className="cf-table-heading">
+          Full {SEASON} FBS Power Rankings, 1–{TEAMS.length - 1}
+        </h2>
+
         <div className="cf-table-wrap">
           <table className="cf-table">
+            <caption className="cf-sr-only">
+              {SEASON} college football power rankings for all {TEAMS.length - 1} FBS teams,
+              listing each team's rank, win-loss record, and power rating as of {UPDATED_LABEL}.
+            </caption>
             <thead>
               <tr>
                 <th className="cf-th-rank">Rank</th>

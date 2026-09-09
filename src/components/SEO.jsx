@@ -14,6 +14,9 @@ import { siteConfig } from '../data/siteConfig';
  *   type           — og:type; "website" (default) or "article"
  *   publishedDate  — ISO date for article:published_time, e.g. "2026-03-15"
  *   keywords       — string[] of keywords
+ *   modifiedDate   — ISO date for the last content update, e.g. "2026-09-08"
+ *   jsonLd         — extra structured data emitted alongside the page block.
+ *                    Memoize it, or the effect re-runs on every render.
  */
 export default function SEO({
   title,
@@ -23,6 +26,8 @@ export default function SEO({
   type = 'website',
   publishedDate,
   keywords,
+  modifiedDate,
+  jsonLd,
 }) {
   const fullTitle = title
     ? `${title} | ${siteConfig.name}`
@@ -91,9 +96,14 @@ export default function SEO({
         url: canonicalUrl,
         isPartOf: { '@type': 'WebSite', name: siteConfig.name, url: siteConfig.url },
         author: { '@type': 'Person', name: siteConfig.author },
+        ...(modifiedDate && { dateModified: modifiedDate }),
       });
     }
-  }, [fullTitle, fullDescription, canonicalUrl, ogImage, type, publishedDate, keywords]);
+
+    // ── Page-supplied structured data (rankings, datasets, FAQ, …) ──
+    setJsonLd(jsonLd, 'data-seo-ld-extra');
+    return () => setJsonLd(null, 'data-seo-ld-extra');
+  }, [fullTitle, fullDescription, canonicalUrl, ogImage, type, publishedDate, keywords, modifiedDate, jsonLd]);
 
   return null;
 }
@@ -119,12 +129,16 @@ function setCanonical(href) {
   link.setAttribute('href', href);
 }
 
-function setJsonLd(data) {
-  let el = document.querySelector('script[data-seo-ld]');
+function setJsonLd(data, attr = 'data-seo-ld') {
+  let el = document.querySelector(`script[${attr}]`);
+  if (!data) {
+    el?.remove();
+    return;
+  }
   if (!el) {
     el = document.createElement('script');
     el.setAttribute('type', 'application/ld+json');
-    el.setAttribute('data-seo-ld', 'true');
+    el.setAttribute(attr, 'true');
     document.head.appendChild(el);
   }
   el.textContent = JSON.stringify(data);
