@@ -7,6 +7,7 @@ import Home from './Pages/Home';
 import MarchMadness from './Pages/MarchMadness';
 import NflFantasy from './Pages/NflFantasy';
 import NcaaFootball from './Pages/NcaaFootball';
+import NflRankings from './Pages/NflRankings';
 import Blog from './Pages/Blog';
 import BlogPost from './Pages/BlogPost';
 import About from './Pages/About';
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/march-madness" element={<MarchMadness />} />
         <Route path="/nfl-fantasy" element={<NflFantasy />} />
         <Route path="/ncaa-football" element={<NcaaFootball />} />
+        <Route path="/nfl-rankings" element={<NflRankings />} />
         <Route path="/about" element={<About />} />
         <Route path="/blog-admin" element={<BlogAdmin />} />
       </Routes>

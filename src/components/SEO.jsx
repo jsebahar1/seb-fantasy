@@ -17,6 +17,9 @@ import { siteConfig } from '../data/siteConfig';
  *   modifiedDate   — ISO date for the last content update, e.g. "2026-09-08"
  *   jsonLd         — extra structured data emitted alongside the page block.
  *                    Memoize it, or the effect re-runs on every render.
+ *   noindex        — keep the page out of search results while still following
+ *                    its links. Use for pages with nothing substantive on them
+ *                    yet; an indexed empty page is worse than an unindexed one.
  */
 export default function SEO({
   title,
@@ -28,6 +31,7 @@ export default function SEO({
   keywords,
   modifiedDate,
   jsonLd,
+  noindex = false,
 }) {
   const fullTitle = title
     ? `${title} | ${siteConfig.name}`
@@ -40,7 +44,7 @@ export default function SEO({
     // ── Title & core meta ──
     document.title = fullTitle;
     setMeta('description', fullDescription);
-    setMeta('robots', 'index, follow');
+    setMeta('robots', noindex ? 'noindex, follow' : 'index, follow');
     if (keywords?.length) setMeta('keywords', keywords.join(', '));
 
     // ── Open Graph ──
@@ -103,7 +107,7 @@ export default function SEO({
     // ── Page-supplied structured data (rankings, datasets, FAQ, …) ──
     setJsonLd(jsonLd, 'data-seo-ld-extra');
     return () => setJsonLd(null, 'data-seo-ld-extra');
-  }, [fullTitle, fullDescription, canonicalUrl, ogImage, type, publishedDate, keywords, modifiedDate, jsonLd]);
+  }, [fullTitle, fullDescription, canonicalUrl, ogImage, type, publishedDate, keywords, modifiedDate, jsonLd, noindex]);
 
   return null;
 }
