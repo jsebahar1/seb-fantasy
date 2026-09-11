@@ -28,5 +28,5 @@ export const NFL_TEAMS = [
 export const NFL_GAMES = [
   // week 1
   { home: 'Seattle Seahawks', away: 'New England Patriots', homePoints: 13, awayPoints: 10 },
-  { home: 'Los Angeles Rams', away: 'San Francisco 49ers', homePoints: 27, awayPoints: 7 },
+  { home: 'Los Angeles Rams', away: 'San Francisco 49ers', homePoints: 7, awayPoints: 27 },
 ];
