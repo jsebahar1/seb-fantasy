@@ -31,6 +31,7 @@ export const TEAMS = [
 // ── Game results ──────────────────────────────────────────────────────────────
 // Names must match TEAMS exactly. All entries below are the 2026 opening week.
 export const INITIAL_GAMES = [
+  // week 1
   { home: 'North Carolina',    away: 'TCU',             homePoints: 15, awayPoints: 10 },
   { home: 'USC',               away: 'San Jose State',  homePoints: 42, awayPoints: 26 },
   { home: 'Virginia',          away: 'NC State',        homePoints: 34, awayPoints:  8 },
@@ -130,4 +131,7 @@ export const INITIAL_GAMES = [
   { home: 'Ole Miss',          away: 'Louisville',       homePoints: 41, awayPoints: 38 },
   { home: 'Washington',        away: 'Washington State', homePoints: 24, awayPoints: 10 },
   { home: 'Florida State',     away: 'SMU',              homePoints: 24, awayPoints: 27},
+  // week 2
+  { home: 'Miami (FL)',        away: 'FCS',              homePoints: 77, awayPoints: 7},
+  // week 2
 ];
