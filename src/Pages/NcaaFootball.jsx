@@ -7,7 +7,7 @@ import { TEAMS, INITIAL_GAMES } from '../data/cfbGames';
 // Bump LAST_UPDATED whenever new results are added; it feeds both the visible
 // timestamp and dateModified in structured data.
 const SEASON = 2026;
-const LAST_UPDATED = '2026-09-08';
+const LAST_UPDATED = '2026-09-12';
 const SITE = 'https://sebfantasy.com';
 const FBS_COUNT = TEAMS.length - 1; // TEAMS includes the pooled 'FCS' bucket
 

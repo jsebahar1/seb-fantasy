@@ -7,7 +7,7 @@ import { NFL_TEAMS, NFL_GAMES } from '../data/nflGames';
 // Bump LAST_UPDATED whenever new results are added; it feeds both the visible
 // timestamp and dateModified in structured data.
 const SEASON = 2026;
-const LAST_UPDATED = '2026-09-09';
+const LAST_UPDATED = '2026-09-12';
 const SITE = 'https://sebfantasy.com';
 
 const UPDATED_LABEL = new Date(`${LAST_UPDATED}T12:00:00Z`).toLocaleDateString('en-US', {
