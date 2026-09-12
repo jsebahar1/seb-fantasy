@@ -10,6 +10,7 @@ const SEASON = 2026;
 const LAST_UPDATED = '2026-09-12';
 const SITE = 'https://sebfantasy.com';
 const FBS_COUNT = TEAMS.length - 1; // TEAMS includes the pooled 'FCS' bucket
+const POOLED = ['FCS'];
 
 const UPDATED_LABEL = new Date(`${LAST_UPDATED}T12:00:00Z`).toLocaleDateString('en-US', {
   month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC',
@@ -162,6 +163,7 @@ export default function NcaaFootball() {
           teams={TEAMS}
           games={INITIAL_GAMES}
           onRankings={onRankings}
+          pooled={POOLED}
           tableHeading={`Full ${SEASON} FBS Power Rankings, 1–${FBS_COUNT}`}
           caption={`${SEASON} college football power rankings for all ${FBS_COUNT} FBS teams, listing each team's rank, win-loss record, and power rating as of ${UPDATED_LABEL}.`}
           example={{

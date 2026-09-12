@@ -252,13 +252,14 @@ export default function PowerRankings({
   caption,
   searchLabel = 'Search team…',
   example,
+  pooled,
   pooledNote,
   onRankings,
 }) {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
 
-  const rankings = useMemo(() => buildRankings(teams, games), [teams, games]);
+  const rankings = useMemo(() => buildRankings(teams, games, { pooled }), [teams, games, pooled]);
 
   useEffect(() => { onRankings?.(rankings); }, [rankings, onRankings]);
 
