@@ -27,6 +27,14 @@ export const NFL_TEAMS = [
 //
 export const NFL_GAMES = [
   // week 1
-  { home: 'Seattle Seahawks', away: 'New England Patriots', homePoints: 13, awayPoints: 10 },
-  { home: 'Los Angeles Rams', away: 'San Francisco 49ers', homePoints: 7, awayPoints: 27 },
+  { home: 'Seattle Seahawks',       away: 'New England Patriots',   homePoints: 13, awayPoints: 10 },
+  { home: 'Los Angeles Rams',       away: 'San Francisco 49ers',    homePoints: 7,  awayPoints: 27 },
+  { home: 'Carolina Panthers',      away: 'Chicago Bears',          homePoints: 37, awayPoints: 59 },
+  { home: 'Indianapolis Colts',     away: 'Baltimore Ravens',       homePoints: 23, awayPoints: 41 },
+  { home: 'Pittsburgh Steelers',    away: 'Atlanta Falcons',        homePoints: 20, awayPoints: 13 },
+  { home: 'Jacksonville Jaguars',   away: 'Cleveland Browns',       homePoints: 34, awayPoints: 10 },
+  { home: 'Cincinnati Bengals',     away: 'Tampa Bay Buccaneers',   homePoints: 33, awayPoints: 27 },
+  { home: 'Tennessee Titans',       away: 'New York Jets',          homePoints: 10, awayPoints: 23 },
+  { home: 'Detroit Lions',          away: 'New Orleans Saints',     homePoints: 31, awayPoints: 30 },
+  { home: 'Houston Texans',         away: 'Buffalo Bills',          homePoints: 31, awayPoints: 36 },
 ];
