@@ -1,7 +1,9 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import SEO from '../components/SEO';
 import PowerRankings from '../components/PowerRankings';
 import RelatedRankings from '../components/RelatedRankings';
+import ConferenceRankings from '../components/ConferenceRankings';
+import { buildRankings } from '../lib/powerRankings';
 import { TEAMS, INITIAL_GAMES } from '../data/cfbGames';
 
 // Bump LAST_UPDATED whenever new results are added; it feeds both the visible
@@ -17,8 +19,10 @@ const UPDATED_LABEL = new Date(`${LAST_UPDATED}T12:00:00Z`).toLocaleDateString('
 });
 
 export default function NcaaFootball() {
-  const [rankings, setRankings] = useState([]);
-  const onRankings = useCallback(setRankings, []);
+  const [tab, setTab] = useState('teams');
+  const rankings = useMemo(
+    () => buildRankings(TEAMS, INITIAL_GAMES, { pooled: POOLED }), [],
+  );
 
   // 'FCS' is a pooled bucket rather than a real program, so it stays out of
   // anything presented to search engines as a team.
@@ -159,11 +163,35 @@ export default function NcaaFootball() {
           </p>
         </div>
 
+        <div className="pr-tabs" role="tablist" aria-label="Ranking view">
+          {[
+            { id: 'teams', label: 'Team Rankings' },
+            { id: 'conferences', label: 'Conference Rankings' },
+          ].map(t => (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={tab === t.id}
+              className={`pr-tab${tab === t.id ? ' pr-tab--active' : ''}`}
+              onClick={() => setTab(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'conferences' && (
+          <ConferenceRankings
+            rankings={rankings}
+            games={INITIAL_GAMES}
+            season={SEASON}
+            updatedLabel={UPDATED_LABEL}
+          />
+        )}
+
+        <div hidden={tab !== 'teams'}>
         <PowerRankings
-          teams={TEAMS}
-          games={INITIAL_GAMES}
-          onRankings={onRankings}
-          pooled={POOLED}
+          rankings={rankings}
           tableHeading={`Full ${SEASON} FBS Power Rankings, 1–${FBS_COUNT}`}
           caption={`${SEASON} college football power rankings for all ${FBS_COUNT} FBS teams, listing each team's rank, win-loss record, and power rating as of ${UPDATED_LABEL}.`}
           example={{
@@ -199,6 +227,7 @@ export default function NcaaFootball() {
             </>
           }
         />
+        </div>
 
         <RelatedRankings
           links={[

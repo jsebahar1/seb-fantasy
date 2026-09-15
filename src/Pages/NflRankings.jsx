@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import SEO from '../components/SEO';
 import PowerRankings from '../components/PowerRankings';
 import RelatedRankings from '../components/RelatedRankings';
+import { buildRankings } from '../lib/powerRankings';
 import { NFL_TEAMS, NFL_GAMES } from '../data/nflGames';
 
 // Bump LAST_UPDATED whenever new results are added; it feeds both the visible
@@ -15,8 +16,7 @@ const UPDATED_LABEL = new Date(`${LAST_UPDATED}T12:00:00Z`).toLocaleDateString('
 });
 
 export default function NflRankings() {
-  const [rankings, setRankings] = useState([]);
-  const onRankings = useCallback(setRankings, []);
+  const rankings = useMemo(() => buildRankings(NFL_TEAMS, NFL_GAMES), []);
 
   const rated = rankings.filter(r => r.hasGames);
   const hasData = NFL_GAMES.length > 0;
@@ -156,9 +156,7 @@ export default function NflRankings() {
         )}
 
         <PowerRankings
-          teams={NFL_TEAMS}
-          games={NFL_GAMES}
-          onRankings={onRankings}
+          rankings={rankings}
           searchLabel="Search team…"
           tableHeading={`Full ${SEASON} NFL Power Rankings, 1–32`}
           caption={`${SEASON} NFL power rankings for all 32 teams, listing each team's rank, record, and power rating as of ${UPDATED_LABEL}.`}

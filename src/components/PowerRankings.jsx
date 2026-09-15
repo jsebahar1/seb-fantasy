@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
-import { buildRankings } from '../lib/powerRankings';
+import { useEffect, useState } from 'react';
 import './PowerRankings.css';
 
 /**
@@ -104,8 +103,8 @@ function TeamDetail({ row, onClose }) {
 }
 
 // ── Methodology explainer ─────────────────────────────────────────────────────
-function Explainer({ teams, example, pooledNote }) {
-  const N = teams.length;
+function Explainer({ teamCount, example, pooledNote }) {
+  const N = teamCount;
   const M3 = N + 1;
   const win = r => Math.pow((M3 - r) / N, 2);
   const loss = r => Math.sqrt(r / N);
@@ -246,22 +245,15 @@ function Explainer({ teams, example, pooledNote }) {
 
 // ── Main view ─────────────────────────────────────────────────────────────────
 export default function PowerRankings({
-  teams,
-  games,
+  rankings,
   tableHeading,
   caption,
   searchLabel = 'Search team…',
   example,
-  pooled,
   pooledNote,
-  onRankings,
 }) {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
-
-  const rankings = useMemo(() => buildRankings(teams, games, { pooled }), [teams, games, pooled]);
-
-  useEffect(() => { onRankings?.(rankings); }, [rankings, onRankings]);
 
   const filtered = search.trim()
     ? rankings.filter(r => r.team.toLowerCase().includes(search.toLowerCase()))
@@ -342,7 +334,7 @@ export default function PowerRankings({
         </table>
       </div>
 
-      <Explainer teams={teams} example={example} pooledNote={pooledNote} />
+      <Explainer teamCount={rankings.length} example={example} pooledNote={pooledNote} />
 
       {selected && <TeamDetail row={selected} onClose={() => setSelected(null)} />}
     </>
