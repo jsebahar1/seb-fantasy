@@ -7,17 +7,17 @@ import { siteConfig } from '../data/siteConfig';
  * page-specific JSON-LD structured-data block.
  *
  * Props:
- *   title          — page title (appended with "| SEB Fantasy")
- *   description    — meta description (aim for 150–160 chars)
- *   path           — URL path, e.g. "/blog/my-post"
- *   image          — path to OG image, e.g. "/Bracket.png"
- *   type           — og:type; "website" (default) or "article"
- *   publishedDate  — ISO date for article:published_time, e.g. "2026-03-15"
- *   keywords       — string[] of keywords
- *   modifiedDate   — ISO date for the last content update, e.g. "2026-09-08"
- *   jsonLd         — extra structured data emitted alongside the page block.
- *                    Memoize it, or the effect re-runs on every render.
- *   noindex        — keep the page out of search results while still following
+ *   title:          page title (appended with "| SEB Fantasy")
+ *   description:    meta description (aim for 150-160 chars)
+ *   path:           URL path, e.g. "/blog/my-post"
+ *   image:          path to OG image, e.g. "/Bracket.png"
+ *   type:           og:type; "website" (default) or "article"
+ *   publishedDate:  ISO date for article:published_time, e.g. "2026-03-15"
+ *   keywords:       string[] of keywords
+ *   modifiedDate:   ISO date for the last content update, e.g. "2026-09-08"
+ *   jsonLd:         extra structured data emitted alongside the page block.
+ *                   Memoize it, or the effect re-runs on every render.
+ *   noindex:        keep the page out of search results while still following
  *                    its links. Use for pages with nothing substantive on them
  *                    yet; an indexed empty page is worse than an unindexed one.
  */
@@ -35,7 +35,7 @@ export default function SEO({
 }) {
   const fullTitle = title
     ? `${title} | ${siteConfig.name}`
-    : `${siteConfig.name} — ${siteConfig.tagline}`;
+    : `${siteConfig.name}: ${siteConfig.tagline}`;
   const fullDescription = description || siteConfig.description;
   const canonicalUrl = `${siteConfig.url}${path}`;
   const ogImage = image ? `${siteConfig.url}${image}` : `${siteConfig.url}${siteConfig.logo}`;

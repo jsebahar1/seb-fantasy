@@ -1,7 +1,7 @@
 /* ============================================================
    GLOBAL DESIGN TOKENS
    All CSS custom properties live here. Reference via var(--*)
-   everywhere else — never redeclare :root in other files.
+   everywhere else. Never redeclare :root in other files.
    ============================================================ */
 :root {
   /* Brand colors */

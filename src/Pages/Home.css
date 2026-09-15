@@ -1,9 +1,9 @@
 /* ============================================================
-   HOME PAGE — scoped styles (h- prefix to avoid App.css collision)
+   HOME PAGE: scoped styles (h- prefix to avoid App.css collision)
    ============================================================ */
 
 .home {
-  /* no padding — each section controls its own spacing */
+  /* no padding, each section controls its own spacing */
 }
 
 /* ============================================================
@@ -25,7 +25,7 @@
   pointer-events: none;
 }
 
-/* Green glow — upper right */
+/* Green glow, upper right */
 .h-hero::after {
   content: '';
   position: absolute;
@@ -37,7 +37,7 @@
   pointer-events: none;
 }
 
-/* Second glow — lower left */
+/* Second glow, lower left */
 .h-hero-glow2 {
   position: absolute;
   bottom: -120px;
@@ -559,7 +559,7 @@
   min-height: 360px;
 }
 
-/* Green glow — bottom right */
+/* Green glow, bottom right */
 .h-featured::before {
   content: '';
   position: absolute;
@@ -786,4 +786,68 @@
   .h-nfl-feats {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Rankings philosophy ───────────────────────────────────── */
+.h-unbiased {
+  padding: 66px 0 74px;
+  background: linear-gradient(180deg, rgba(13, 45, 98, 0.035), transparent);
+}
+
+.h-unbiased-head {
+  max-width: 620px;
+  margin: 0 0 32px;
+}
+
+.h-unbiased-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(265px, 1fr));
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.h-unbiased-card {
+  position: relative;
+  padding: 24px 22px 22px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.h-unbiased-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 22px;
+  right: 22px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--green-dark);
+}
+
+.h-unbiased-label {
+  margin: 0 0 10px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--green-dark);
+}
+
+.h-unbiased-body {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text-soft);
+}
+
+.h-unbiased-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 700px) {
+  .h-unbiased { padding: 48px 0; }
 }

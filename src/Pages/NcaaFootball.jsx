@@ -3,6 +3,7 @@ import SEO from '../components/SEO';
 import PowerRankings from '../components/PowerRankings';
 import RelatedRankings from '../components/RelatedRankings';
 import ConferenceRankings from '../components/ConferenceRankings';
+import RankingPrinciples from '../components/RankingPrinciples';
 import { buildRankings } from '../lib/powerRankings';
 import { TEAMS, INITIAL_GAMES } from '../data/cfbGames';
 
@@ -60,7 +61,7 @@ export default function NcaaFootball() {
       },
       ...(rated.length ? [{
         '@type': 'ItemList',
-        name: `Top 25 College Football Power Rankings — ${SEASON}`,
+        name: `Top 25 College Football Power Rankings, ${SEASON}`,
         description: `The 25 highest-rated FBS teams as of ${UPDATED_LABEL}.`,
         itemListOrder: 'https://schema.org/ItemListOrderAscending',
         numberOfItems: Math.min(25, rated.length),
@@ -93,7 +94,7 @@ export default function NcaaFootball() {
               '@type': 'Answer',
               text:
                 'The win multiplier is squared, so it falls off steeply. Beating the number one team carries a ' +
-                'multiplier of 1.0, while beating the lowest ranked team carries roughly 0.00005 — about 19,000 ' +
+                'multiplier of 1.0, while beating the lowest ranked team carries roughly 0.00005, about 19,000 ' +
                 'times less per point of margin. Running up the score against a weak opponent earns almost nothing.',
             },
           },
@@ -138,7 +139,7 @@ export default function NcaaFootball() {
   return (
     <main className="page">
       <SEO
-        title={`${SEASON} College Football Power Rankings — All ${FBS_COUNT} FBS Teams`}
+        title={`${SEASON} College Football Power Rankings: All ${FBS_COUNT} FBS Teams`}
         path="/ncaa-football"
         description={`Computer power rankings for all ${FBS_COUNT} FBS teams, updated ${UPDATED_LABEL}. Every result is weighted by opponent rank, so quality wins count and bad losses hurt. Full methodology and per-game math included.`}
         keywords={seoKeywords}
@@ -151,10 +152,10 @@ export default function NcaaFootball() {
           <p className="eyebrow">CFB Rankings</p>
           <h1 className="page-title">{SEASON} College Football Power Rankings</h1>
           <p className="pr-sub">
-            A strength-adjusted computer model covering all {FBS_COUNT} FBS teams, where
-            every win and loss is weighted by your opponent's rank. Beating a top team is
-            worth more. Losing to a weak team costs more. Click any team to see the math
-            behind its rating.
+            Every team starts the season at zero. No preseason poll, no votes, no
+            committee. The only thing that moves a team is playing games, and the only
+            input is the final score. Beat a good team and you climb. Lose to a bad one
+            and you fall. Click any team to see exactly how it got where it is.
           </p>
           <p className="pr-updated">
             Updated <time dateTime={LAST_UPDATED}>{UPDATED_LABEL}</time>
@@ -162,6 +163,8 @@ export default function NcaaFootball() {
             {INITIAL_GAMES.length} games scored
           </p>
         </div>
+
+        <RankingPrinciples league="college" />
 
         <div className="pr-tabs" role="tablist" aria-label="Ranking view">
           {[
@@ -196,7 +199,7 @@ export default function NcaaFootball() {
           caption={`${SEASON} college football power rankings for all ${FBS_COUNT} FBS teams, listing each team's rank, win-loss record, and power rating as of ${UPDATED_LABEL}.`}
           example={{
             win: {
-              title: 'USC 42, San Jose State 26 — a win over the #91 team',
+              title: 'USC 42, San Jose State 26. A win over the #91 team',
               math:
                 'D = 42 − 26 = 16\n' +
                 '(140 − 91) ÷ 139 = 49 ÷ 139 = 0.352518\n' +
@@ -204,7 +207,7 @@ export default function NcaaFootball() {
                 '0.124269 × 16 = +1.9883',
             },
             loss: {
-              title: 'Clemson 10, LSU 51 — a loss to the #32 team',
+              title: 'Clemson 10, LSU 51. A loss to the #32 team',
               math:
                 'D = 10 − 51 = −41\n' +
                 '32 ÷ 139 = 0.230216\n' +
@@ -221,7 +224,7 @@ export default function NcaaFootball() {
             <>
               <strong>All FCS opponents are pooled into one entry.</strong> Every FCS game
               feeds the same bucket, so that entry absorbs a large negative score and settles
-              near the bottom — which drives the win multiplier close to zero. Beating an FCS
+              near the bottom, which drives the win multiplier close to zero. Beating an FCS
               team is therefore worth almost nothing regardless of the margin, and the size of
               the blowout is effectively discarded.
             </>

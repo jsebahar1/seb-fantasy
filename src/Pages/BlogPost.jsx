@@ -97,7 +97,7 @@ export default function BlogPost() {
             <div className="image-modal-scroll">
               <img
                 src={post.image}
-                alt="March Madness Bracket — enlarged view"
+                alt="March Madness Bracket, enlarged view"
                 className="bracket-image-large"
               />
             </div>

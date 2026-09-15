@@ -1,5 +1,5 @@
 /* ============================================================
-   ABOUT PAGE — scoped styles (ab- prefix)
+   ABOUT PAGE: scoped styles (ab- prefix)
    ============================================================ */
 
 .about {
@@ -7,7 +7,7 @@
 }
 
 /* ============================================================
-   TEAM HERO  (dark, full-bleed — first section on page)
+   TEAM HERO  (dark, full-bleed, first section on page)
    ============================================================ */
 .ab-team {
   background: linear-gradient(145deg, #06163a 0%, #0c2860 55%, #0e3270 100%);
@@ -26,7 +26,7 @@
   pointer-events: none;
 }
 
-/* Green glow — upper right */
+/* Green glow, upper right */
 .ab-team::after {
   content: '';
   position: absolute;

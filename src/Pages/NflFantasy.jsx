@@ -130,9 +130,9 @@ function compareValues(a, b, key) {
   return a[key] - b[key];
 }
 
-const fmt    = (v) => (v === null || v === undefined ? '—' : v.toFixed(1));
-const fmtLev = (v) => (v === null || v === undefined ? '—' : `${v > 0 ? '+' : ''}${v.toFixed(1)}`);
-const fmtPts = (v) => (v === null ? '—' : `${v > 0 ? '+' : ''}${v.toFixed(1)}`);
+const fmt    = (v) => (v === null || v === undefined ? '–' : v.toFixed(1));
+const fmtLev = (v) => (v === null || v === undefined ? '–' : `${v > 0 ? '+' : ''}${v.toFixed(1)}`);
+const fmtPts = (v) => (v === null ? '–' : `${v > 0 ? '+' : ''}${v.toFixed(1)}`);
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -479,7 +479,7 @@ function PlayerModal({ player, effectiveWeights, scoringFormat, pickContext, pos
                     <td>{s.label}</td>
                     <td>{s.value.toFixed(1)}</td>
                     <td className={s.points !== null && s.points < 0 ? 'nfl-modal-pts-neg' : 'nfl-modal-pts-pos'}>
-                      {s.points !== null ? fmtPts(s.points) : '—'}
+                      {s.points !== null ? fmtPts(s.points) : '–'}
                     </td>
                   </tr>
                 ))}
@@ -498,9 +498,9 @@ function PlayerModal({ player, effectiveWeights, scoringFormat, pickContext, pos
             <div className="nfl-modal-metrics">
               <div><span>SEB Rank</span><strong>#{player.sebRank}</strong></div>
               <div><span>Proj. Pts</span><strong>{fmt(player.projectedFantasyPoints)}</strong></div>
-              <div><span>Projected Value</span><strong>{positionWeights[player.position] != null ? fmt(positionWeights[player.position] * player.projectedFantasyPoints) : '—'}</strong></div>
+              <div><span>Projected Value</span><strong>{positionWeights[player.position] != null ? fmt(positionWeights[player.position] * player.projectedFantasyPoints) : '–'}</strong></div>
               <div><span>VOR</span><strong>{fmt(player.valueAboveReplacement)}</strong></div>
-              <div><span>ADP</span><strong>{player.adp != null ? player.adp.toFixed(1) : '—'}</strong></div>
+              <div><span>ADP</span><strong>{player.adp != null ? player.adp.toFixed(1) : '–'}</strong></div>
               <div><span>Leverage (vs market)</span><strong><LeverageValue value={player.leverage} /></strong></div>
               {sebLev !== null && (
                 <>
@@ -1048,7 +1048,7 @@ export default function NflFantasy() {
                             {isPickRow && (
                               <tr className="nfl-pick-separator" ref={pickLineRef}>
                                 <td colSpan={8}>
-                                  <span>Your Pick — Round {safeRound}, #{selectedOverallPick}</span>
+                                  <span>Your Pick, Round {safeRound}, #{selectedOverallPick}</span>
                                 </td>
                               </tr>
                             )}
@@ -1059,7 +1059,7 @@ export default function NflFantasy() {
                                 </button>
                               </td>
                               <td><span className="nfl-position">{player.position}</span></td>
-                              <td>{player.team || '—'}</td>
+                              <td>{player.team || '–'}</td>
                               <td className="nfl-number nfl-rank">{player.sebRank}</td>
                               <td className="nfl-number">{fmt(player.adp)}</td>
                               <td className="nfl-number">{rankingMode === 'vor' ? fmt(player.valueAboveReplacement) : fmt(player.projectedValue)}</td>
@@ -1221,7 +1221,7 @@ export default function NflFantasy() {
                               </button>
                             </td>
                             <td><span className="nfl-position">{player.position}</span></td>
-                            <td>{player.team || '—'}</td>
+                            <td>{player.team || '–'}</td>
                             <td className="nfl-number">{fmt(player.projectedFantasyPoints)}</td>
                             <td className="nfl-number">{fmt(player.adp)}</td>
                             <td className="nfl-number">{fmt(rankingMode === 'vor' ? player.valueAboveReplacement : player.projectedValue)}</td>

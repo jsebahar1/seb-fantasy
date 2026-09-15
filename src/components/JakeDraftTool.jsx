@@ -55,7 +55,7 @@ export default function JakeDraftTool() {
           <p className="eyebrow">Jake's Picks</p>
           <h2>Jake's 2026 Draft Playbook</h2>
           <p className="section-subtext">
-            Round-by-round targets, fallbacks, and players to avoid — with a positional strategy note for each pick. Updated before the season.
+            Round-by-round targets, fallbacks, and players to avoid, with a positional strategy note for each pick. Updated before the season.
           </p>
         </div>
       </div>

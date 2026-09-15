@@ -370,7 +370,7 @@ function BlogEditor() {
 
             <div className="ba-field">
               <label className="ba-label">Meta Description <span className="ba-muted">(defaults to excerpt if blank)</span></label>
-              <textarea className="ba-textarea" rows={2} value={metaDescription} onChange={e => setMetaDescription(e.target.value)} placeholder="SEO description — aim for 120–160 characters." />
+              <textarea className="ba-textarea" rows={2} value={metaDescription} onChange={e => setMetaDescription(e.target.value)} placeholder="SEO description, aim for 120–160 characters." />
             </div>
 
             <div className="ba-field">

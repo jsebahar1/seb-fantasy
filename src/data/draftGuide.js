@@ -15,7 +15,7 @@ export const JAKE_DRAFT = [
   {
     round: 1,
     type: 'pool',
-    strategy: 'Take the highest-ranked player still on the board. This is a deep class at the top — any of these 12 is a safe pick 1.',
+    strategy: 'Take the highest-ranked player still on the board. This is a deep class at the top. Any of these 12 is a safe pick 1.',
     players: [
       { rank: 1,  name: 'Jahmyr Gibbs',         pos: 'RB', team: 'DET' },
       { rank: 2,  name: 'Bijan Robinson',         pos: 'RB', team: 'ATL' },
@@ -33,18 +33,18 @@ export const JAKE_DRAFT = [
   },
 
   // ── Rounds 2–15: tiered by position ───────────────────────────────────────
-  // Targets  = ADP in range, Jake rank is BETTER (undervalued — a steal)
+  // Targets  = ADP in range, Jake rank is BETTER (undervalued, a steal)
   // Fallbacks = ADP and Jake rank both agree on the round
   // Avoids   = ADP in range, Jake rank is WORSE (overvalued by the market)
   {
     round: 2, // ADP 13–24
     type: 'tiered',
-    strategy: 'Took an RB in Round 1? Take the best player available. Took a WR? Lock in your RB1 here — the drop-off after this tier is steep.',
+    strategy: 'Took an RB in Round 1? Take the best player available. Took a WR? Lock in your RB1 here. The drop-off after this tier is steep.',
     positions: {
       QB: {
         targets:   [],
         fallbacks: [],
-        avoids:    ['Josh Allen'], // ADP 16, Jake rank 37 — market overvalues him here
+        avoids:    ['Josh Allen'], // ADP 16, Jake rank 37, market overvalues him here
       },
       RB: {
         targets:   [],
@@ -66,7 +66,7 @@ export const JAKE_DRAFT = [
   {
     round: 3, // ADP 25–36
     type: 'tiered',
-    strategy: 'Lean RB, but peek at TE and WR. If you are sitting at 1 RB / 1 WR you have flexibility — grab the best value, with a slight tilt toward securing your RB2.',
+    strategy: 'Lean RB, but peek at TE and WR. If you are sitting at 1 RB / 1 WR you have flexibility. Grab the best value, with a slight tilt toward securing your RB2.',
     positions: {
       QB: {
         targets:   [],
@@ -84,7 +84,7 @@ export const JAKE_DRAFT = [
         avoids:    ['Tetairoa McMillan'], // ADP 33, Jake rank 41
       },
       TE: {
-        targets:   ['Brock Bowers'], // ADP 21/Jake 23 — fell from R2
+        targets:   ['Brock Bowers'], // ADP 21/Jake 23, fell from R2
         fallbacks: [],
         avoids:    ['Colston Loveland'], // ADP 35, Jake rank 45
       },
@@ -101,12 +101,12 @@ export const JAKE_DRAFT = [
         avoids:    ['Drake Maye', 'Joe Burrow'], // Maye ADP 41 / Jake 69, Burrow ADP 47 / Jake 73
       },
       RB: {
-        targets:   ['Javonte Williams', 'Travis Etienne'], // Williams ADP 34/Jake 29 — fell from R3; Etienne ADP 46/Jake 28
+        targets:   ['Javonte Williams', 'Travis Etienne'], // Williams ADP 34/Jake 29, fell from R3; Etienne ADP 46/Jake 28
         fallbacks: ['Bucky Irving', 'Cam Skattebo'],
         avoids:    ['Josh Jacobs'], // never draft
       },
       WR: {
-        targets:   ['Tee Higgins', 'Terry McLaurin', 'DeVonta Smith', 'Zay Flowers', 'Garrett Wilson'], // Higgins ADP 36/Jake 32 — fell from R3; McLaurin user pick; Smith/Flowers/Wilson round 3 value
+        targets:   ['Tee Higgins', 'Terry McLaurin', 'DeVonta Smith', 'Zay Flowers', 'Garrett Wilson'], // Higgins ADP 36/Jake 32, fell from R3; McLaurin user pick; Smith/Flowers/Wilson round 3 value
         fallbacks: ['Emeka Egbuka', 'Ladd McConkey', 'Jaylen Waddle'],
         avoids:    [],
       },
@@ -120,7 +120,7 @@ export const JAKE_DRAFT = [
   {
     round: 5, // ADP 49–60
     type: 'tiered',
-    strategy: 'Look for fallers at RB and WR first. If nobody dropped, this is the spot to grab a QB — solid options still available here.',
+    strategy: 'Look for fallers at RB and WR first. If nobody dropped, this is the spot to grab a QB. Solid options are still available here.',
     positions: {
       QB: {
         targets:   [],
@@ -128,12 +128,12 @@ export const JAKE_DRAFT = [
         avoids:    ['Jalen Hurts'], // ADP 55, Jake rank 64
       },
       RB: {
-        targets:   ['Travis Etienne', "D'Andre Swift", 'David Montgomery'], // Etienne ADP 46/Jake 28 — fell from R4; Swift ADP 50/Jake 40, Montgomery ADP 52/Jake 47
+        targets:   ['Travis Etienne', "D'Andre Swift", 'David Montgomery'], // Etienne ADP 46/Jake 28, fell from R4; Swift ADP 50/Jake 40, Montgomery ADP 52/Jake 47
         fallbacks: ['Quinshon Judkins', 'TreVeyon Henderson'],
         avoids:    [],
       },
       WR: {
-        targets:   ['Garrett Wilson', 'Jaylen Waddle', 'Terry McLaurin'], // Wilson ADP 45/Jake 33 — fell from R4; Waddle ADP 48/Jake 43 — fell from R4; McLaurin ADP 59/Jake 42
+        targets:   ['Garrett Wilson', 'Jaylen Waddle', 'Terry McLaurin'], // Wilson ADP 45/Jake 33, fell from R4; Waddle ADP 48/Jake 43, fell from R4; McLaurin ADP 59/Jake 42
         fallbacks: ['Davante Adams', 'Luther Burden', 'Jameson Williams', 'DJ Moore'],
         avoids:    [],
       },
@@ -147,12 +147,12 @@ export const JAKE_DRAFT = [
   {
     round: 6, // ADP 61–72
     type: 'tiered',
-    strategy: 'Fill out your roster and grab the best player at value. No strong positional lean here — just take whoever fell.',
+    strategy: 'Fill out your roster and grab the best player at value. No strong positional lean here. Just take whoever fell.',
     positions: {
       QB: {
         targets:   [],
         fallbacks: ['Jayden Daniels'], // ADP 61, Jake rank 62
-        avoids:    ['Caleb Williams'], // Williams ADP 64/Jake 75 — Herbert moved to R7 target
+        avoids:    ['Caleb Williams'], // Williams ADP 64/Jake 75, Herbert moved to R7 target
       },
       RB: {
         targets:   ['Bhayshul Tuten', 'Jadarian Price'], // Tuten ADP 62/Jake 53, Price ADP 69/Jake 58
@@ -160,7 +160,7 @@ export const JAKE_DRAFT = [
         avoids:    [],
       },
       WR: {
-        targets:   ['Luther Burden', 'Jameson Williams', 'Terry McLaurin', 'DJ Moore', 'Mike Evans', 'Christian Watson'], // Burden ADP 57/Jake 49, Williams ADP 58/Jake 52 — fell from R5; McLaurin ADP 59/Jake 42, Moore ADP 60/Jake 55 — fell from R5; Evans ADP 65/Jake 51, Watson ADP 71/Jake 60
+        targets:   ['Luther Burden', 'Jameson Williams', 'Terry McLaurin', 'DJ Moore', 'Mike Evans', 'Christian Watson'], // Burden ADP 57/Jake 49, Williams ADP 58/Jake 52, fell from R5; McLaurin ADP 59/Jake 42, Moore ADP 60/Jake 55, fell from R5; Evans ADP 65/Jake 51, Watson ADP 71/Jake 60
         fallbacks: ['Rome Odunze', 'Carnell Tate'],
         avoids:    [],
       },
@@ -177,17 +177,17 @@ export const JAKE_DRAFT = [
     strategy: "Really think QB if you haven't taken one yet. Don't be afraid to reach for Mahomes or Dak if you're still without a QB.",
     positions: {
       QB: {
-        targets:   ['Justin Herbert'], // ADP 72/Jake 74 — user pick; fell from R6
+        targets:   ['Justin Herbert'], // ADP 72/Jake 74, user pick; fell from R6
         fallbacks: [],
         avoids:    ['Dak Prescott','Patrick Mahomes'], // ADP 76, Jake rank 91
       },
       RB: {
-        targets:   ['Jadarian Price', 'Jaylen Warren', 'Rhamondre Stevenson', 'Tony Pollard'], // Price ADP 69/Jake 58 — fell from R6; all others Jake round 6 value
+        targets:   ['Jadarian Price', 'Jaylen Warren', 'Rhamondre Stevenson', 'Tony Pollard'], // Price ADP 69/Jake 58, fell from R6; all others Jake round 6 value
         fallbacks: ['Marshawn Lloyd'],
         avoids:    ['RJ Harvey'], // ADP 74, Jake rank 90
       },
       WR: {
-        targets:   ['Christian Watson', 'DK Metcalf', 'Brian Thomas Jr', 'Parker Washington'], // Watson ADP 71/Jake 60 — fell from R6; Metcalf Jake 68, Thomas Jake 66, Washington Jake 54
+        targets:   ['Christian Watson', 'DK Metcalf', 'Brian Thomas Jr', 'Parker Washington'], // Watson ADP 71/Jake 60, fell from R6; Metcalf Jake 68, Thomas Jake 66, Washington Jake 54
         fallbacks: ['Marvin Harrison', 'Courtland Sutton'],
         avoids:    [],
       },
@@ -209,7 +209,7 @@ export const JAKE_DRAFT = [
         avoids:    ['Jaxson Dart', 'Matthew Stafford', 'Trevor Lawrence', 'Bo Nix'], // none in Jake's top 100
       },
       RB: {
-        targets:   ['Marshawn Lloyd', 'Rhamondre Stevenson', 'Tony Pollard', 'Rico Dowdle'], // Lloyd — fell from R7; Stevenson/Pollard/Dowdle all round 6-7 value
+        targets:   ['Marshawn Lloyd', 'Rhamondre Stevenson', 'Tony Pollard', 'Rico Dowdle'], // Lloyd, fell from R7; Stevenson/Pollard/Dowdle all round 6-7 value
         fallbacks: ['Chuba Hubbard', 'JK Dobbins'],
         avoids:    [],
       },
@@ -231,7 +231,7 @@ export const JAKE_DRAFT = [
     strategy: 'Without a TE at this point, it needs to be a priority. Goedert is a good option or anyone who has fallen, I dont mind Fergeson or anyone else in that camp',
     positions: {
       QB: {
-        targets:   ['Patrick Mahomes'], // ADP 93/Jake 94 — fell from R8
+        targets:   ['Patrick Mahomes'], // ADP 93/Jake 94, fell from R8
         fallbacks: [],
         avoids:    ['Brock Purdy'], // not in Jake's top 100
       },
@@ -241,7 +241,7 @@ export const JAKE_DRAFT = [
         avoids:    ['Kyle Monangai'], // not in Jake's top 100
       },
       WR: {
-        targets:   ['Michael Wilson', 'Chris Godwin', 'Jayden Reed', 'Jordan Addison'], // Wilson ADP 94/Jake 86 — fell from R8; Godwin/Reed/Addison all Jake rank 76-85
+        targets:   ['Michael Wilson', 'Chris Godwin', 'Jayden Reed', 'Jordan Addison'], // Wilson ADP 94/Jake 86, fell from R8; Godwin/Reed/Addison all Jake rank 76-85
         fallbacks: ['Alec Pierce'],
         avoids:    ['Jordyn Tyson'], // not in Jake's top 100
       },

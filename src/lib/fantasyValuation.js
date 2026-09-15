@@ -65,8 +65,8 @@ export function getReplacementBenchmarks(players, scoringFormat = SCORING_FORMAT
  * Calculates projected points, Value Above Replacement, and a single SEB rank across
  * all supported fantasy positions for the selected scoring format.
  *
- * @param {object[]|null} customWeights  — Custom scoring weights from Advanced Settings; null = use scoringFormat defaults
- * @param {object|null}   customReplacementLevels — Custom VOR thresholds; null = use REPLACEMENT_LEVELS defaults
+ * @param {object[]|null} customWeights , Custom scoring weights from Advanced Settings; null = use scoringFormat defaults
+ * @param {object|null}   customReplacementLevels, Custom VOR thresholds; null = use REPLACEMENT_LEVELS defaults
  */
 export function buildFantasyRankings(
   players,

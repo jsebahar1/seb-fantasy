@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import SEO from '../components/SEO';
 import PowerRankings from '../components/PowerRankings';
 import RelatedRankings from '../components/RelatedRankings';
+import RankingPrinciples from '../components/RankingPrinciples';
 import { buildRankings } from '../lib/powerRankings';
 import { NFL_TEAMS, NFL_GAMES } from '../data/nflGames';
 
@@ -53,7 +54,7 @@ export default function NflRankings() {
       },
       ...(rated.length ? [{
         '@type': 'ItemList',
-        name: `NFL Power Rankings — ${SEASON}`,
+        name: `NFL Power Rankings, ${SEASON}`,
         description: `All 32 NFL teams ranked by power rating as of ${UPDATED_LABEL}.`,
         itemListOrder: 'https://schema.org/ItemListOrderAscending',
         numberOfItems: rated.length,
@@ -121,9 +122,9 @@ export default function NflRankings() {
   return (
     <main className="page">
       <SEO
-        title={`${SEASON} NFL Power Rankings — All 32 Teams`}
+        title={`${SEASON} NFL Power Rankings: All 32 Teams`}
         path="/nfl-rankings"
-        description={`Computer NFL power rankings for all 32 teams, updated ${UPDATED_LABEL}. Every result is weighted by opponent rank, so quality wins count and bad losses hurt. No voting, no opinion — full methodology and per-game math included.`}
+        description={`Computer NFL power rankings for all 32 teams, updated ${UPDATED_LABEL}. Every result is weighted by opponent rank, so quality wins count and bad losses hurt. No voting and no opinion. Full methodology and per-game math included.`}
         keywords={seoKeywords}
         modifiedDate={LAST_UPDATED}
         jsonLd={structuredData}
@@ -135,10 +136,10 @@ export default function NflRankings() {
           <p className="eyebrow">NFL Rankings</p>
           <h1 className="page-title">{SEASON} NFL Power Rankings</h1>
           <p className="pr-sub">
-            The same strength-adjusted model behind the college rankings, run over all 32
-            NFL teams. Every win and loss is weighted by your opponent's rank — beating a
-            top team is worth more, losing to a weak one costs more. No voting, no opinion.
-            Click any team to see the math behind its rating.
+            All 32 teams start the season at zero. It does not matter who won last year
+            or who the league put in prime time. The only input is the final score, and
+            the only way to move is to play. Click any team to see exactly how it got
+            where it is.
           </p>
           <p className="pr-updated">
             Updated <time dateTime={LAST_UPDATED}>{UPDATED_LABEL}</time>
@@ -150,10 +151,12 @@ export default function NflRankings() {
         {!hasData && (
           <div className="pr-notice">
             <strong>No results yet for the {SEASON} season.</strong> Every team sits at 0.00
-            until games are added — the table below shows the model standing by. Rankings
+            until games are added. The table below shows the model standing by. Rankings
             will populate as soon as scores are in.
           </div>
         )}
+
+        <RankingPrinciples league="nfl" />
 
         <PowerRankings
           rankings={rankings}

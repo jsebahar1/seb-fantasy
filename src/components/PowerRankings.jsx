@@ -121,8 +121,8 @@ function Explainer({ teamCount, example, pooledNote }) {
       <p className="pr-explain-lead">
         Every game a team plays produces one number. A team's rating is just the sum of
         those numbers. What makes a game worth more or less is the <em>rank of the
-        opponent</em> — so the rating and the ranks are solved together, each feeding
-        the other until they agree.
+        opponent</em>. The rating and the ranks get solved together, each feeding the
+        other until they agree.
       </p>
 
       <h3 className="pr-explain-h3">The two formulas</h3>
@@ -145,7 +145,7 @@ function Explainer({ teamCount, example, pooledNote }) {
 
       <p className="pr-explain-p">
         The {N} and {M3} are the league size and one more than it. On a loss,
-        <code> D</code> is negative, so the result is negative — no separate sign
+        <code> D</code> is negative, so the result is negative. No separate sign
         handling is needed.
       </p>
 
@@ -177,8 +177,7 @@ function Explainer({ teamCount, example, pooledNote }) {
         <strong> {loss(N).toFixed(4)}</strong> for losing to #{N}. A square root is
         concave, so the penalty climbs fast at first and then flattens out. Losing to a
         top team is nearly free; losing to anyone in the bottom half costs close to the
-        full margin, and there is little difference between the bad losses — they are
-        all bad.
+        full margin. There is little difference between the bad losses. They are all bad.
       </p>
 
       <div className="pr-scale">
@@ -213,15 +212,14 @@ function Explainer({ teamCount, example, pooledNote }) {
       <p className="pr-explain-p">
         There is a chicken-and-egg problem here: scoring a game needs the opponent's
         rank, but ranks come from scores. The model resolves it by iterating. Every team
-        starts at rank {Math.ceil(N / 2)} — dead center, so no one is assumed good or
-        bad. Then it repeatedly scores all games, re-sorts, and feeds the new ranks
+        starts at rank {Math.ceil(N / 2)}, dead center, so no one is assumed good or bad. Then it repeatedly scores all games, re-sorts, and feeds the new ranks
         back in.
       </p>
       <p className="pr-explain-p">
         Moving each team straight onto its new rank each pass makes the loop oscillate
         forever and never settle. So each pass moves a team only 25% of the way toward
-        its new position. That damping lets the system reach a fixed point — a set of
-        ranks that reproduces itself — in about 30 passes. Everything is then snapped to
+        its new position. That damping lets the system reach a fixed point, a set of
+        ranks that reproduces itself, in about 30 passes. Everything is then snapped to
         whole-number ranks and allowed to settle again, which guarantees the opponent
         ranks shown when you click a team are the same ranks the formula actually used,
         and that a team's game values sum exactly to its rating.
@@ -320,7 +318,7 @@ export default function PowerRankings({
                     ? <span className={row.score >= 0 ? 'pr-score--pos' : 'pr-score--neg'}>
                         {fmt(row.score)}
                       </span>
-                    : <span className="pr-idle">—</span>}
+                    : <span className="pr-idle">–</span>}
                 </td>
               </tr>
             ))}

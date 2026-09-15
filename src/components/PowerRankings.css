@@ -1,5 +1,5 @@
 /* ============================================================
-   POWER RANKINGS (shared: NCAA + NFL)  — pr- prefix
+   POWER RANKINGS (shared: NCAA + NFL): pr- prefix
    ============================================================ */
 
 /* ── Hero / header ─────────────────────────────────────────── */
@@ -756,4 +756,127 @@
 
 @media (max-width: 600px) {
   .pr-tab { padding: 9px 13px; font-size: 0.86rem; }
+}
+
+/* ── Ranking principles ────────────────────────────────────── */
+.pr-principles {
+  margin: 0 0 34px;
+}
+
+.pr-zero {
+  display: grid;
+  grid-template-columns: minmax(0, 200px) minmax(0, 1fr);
+  gap: 26px;
+  align-items: center;
+  padding: 26px 28px;
+  border-radius: var(--radius-md, 12px);
+  background: linear-gradient(135deg, rgba(13, 45, 98, 0.055), rgba(13, 45, 98, 0.02));
+  border-left: 4px solid var(--green-dark);
+}
+
+.pr-zero-mark {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  text-align: center;
+  padding: 18px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(13, 45, 98, 0.07));
+}
+
+.pr-zero-num {
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.pr-zero-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.pr-zero-title {
+  margin: 0 0 9px;
+  font-size: 1.3rem;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  color: var(--navy);
+}
+
+.pr-zero-lead {
+  margin: 0 0 9px;
+  font-size: 0.93rem;
+  line-height: 1.7;
+  color: var(--text-soft);
+}
+
+.pr-zero-lead:last-child { margin-bottom: 0; }
+
+.pr-principle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.pr-principle {
+  position: relative;
+  padding: 20px 20px 18px;
+  border-radius: var(--radius-sm);
+  background: rgba(13, 45, 98, 0.035);
+}
+
+.pr-principle-num {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--green-dark);
+  margin-bottom: 7px;
+}
+
+.pr-principle-title {
+  margin: 0 0 9px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--navy);
+}
+
+.pr-principle-body {
+  margin: 0 0 9px;
+  font-size: 0.855rem;
+  line-height: 1.65;
+  color: var(--text-soft);
+}
+
+.pr-principle-body:last-child { margin-bottom: 0; }
+
+.pr-principles-foot {
+  margin: 14px 0 0;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  background: rgba(132, 198, 42, 0.09);
+  font-size: 0.87rem;
+  line-height: 1.65;
+  color: var(--text-soft);
+}
+
+@media (max-width: 720px) {
+  .pr-zero {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 20px;
+  }
+  .pr-zero-mark { padding: 14px; }
+  .pr-zero-num { font-size: 1.8rem; }
 }

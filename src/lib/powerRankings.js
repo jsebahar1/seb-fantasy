@@ -12,7 +12,7 @@
 
 // How far each pass may move a team toward its newly sorted position.
 // Snapping teams straight onto their new rank (a value of 1) turns the feedback
-// loop into a permanent oscillation — the ranks never settle, and the scores you
+// loop into a permanent oscillation, the ranks never settle, and the scores you
 // display end up computed from a different set of ranks than the ones you show.
 // Easing into each new position instead reaches a real fixed point.
 const DAMPING = 0.25;
@@ -22,8 +22,8 @@ export function makeScorer(teamCount) {
   const M3 = teamCount + 1;
 
   return function gameScore(diff, opponentRank) {
-    // Win:  ((M3 - opp_rank) / M2)^2 * diff   — squared, so quality wins spike
-    // Loss: SQRT(opp_rank / M2) * diff        — diff is negative here
+    // Win:  ((M3 - opp_rank) / M2)^2 * diff  , squared, so quality wins spike
+    // Loss: SQRT(opp_rank / M2) * diff       , diff is negative here
     return diff > 0
       ? Math.pow((M3 - opponentRank) / M2, 2) * diff
       : Math.sqrt(opponentRank / M2) * diff;
@@ -46,7 +46,7 @@ function scoreAll(teams, games, teamSet, ranks, gameScore) {
 const H2H_SEP = '|'; // safe: no team name contains a pipe
 
 /**
- * Who beat whom. A pair that split their meetings is left out — there is no
+ * Who beat whom. A pair that split their meetings is left out, there is no
  * winner to defer to.
  */
 function headToHead(games, teamSet, pooled) {
@@ -124,8 +124,8 @@ function solveRanks(teams, games, teamSet, gameScore, beatenBy) {
   // Ranks are a discrete function of scores while scores are a continuous
   // function of ranks, so for two near-identical teams the pass can swap them
   // back and forth forever and no integer fixed point exists. When that
-  // happens, keep whichever state is self-consistent — the one where no team
-  // is ranked above another with a higher score — rather than whichever state
+  // happens, keep whichever state is self-consistent, the one where no team
+  // is ranked above another with a higher score, rather than whichever state
   // the loop happened to stop on.
   let ranks = rankOrder(
     teams,
@@ -159,7 +159,7 @@ function solveRanks(teams, games, teamSet, gameScore, beatenBy) {
 
 /**
  * Adjacent pairs where the lower-ranked team actually scored higher. A pair
- * held in place by head-to-head doesn't count — that ordering is deliberate.
+ * held in place by head-to-head doesn't count, that ordering is deliberate.
  */
 function countInversions(teams, ranks, scores, beatenBy) {
   const byRank = [...teams].sort((a, b) => ranks[a] - ranks[b]);

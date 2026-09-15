@@ -174,12 +174,12 @@ export default function ConferenceRankings({ rankings, games, season, updatedLab
                 <td className="pr-td-num">{row.members.length}</td>
                 <td className="pr-td-num">{row.avgRank.toFixed(1)}</td>
                 <td className="pr-td-best">
-                  {row.best ? <>#{row.best.rank} {row.best.team}</> : '—'}
+                  {row.best ? <>#{row.best.rank} {row.best.team}</> : '–'}
                 </td>
                 <td className="pr-td-record">{formatRecord(row.record)}</td>
                 <td className="pr-td-score">
                   {row.winPct === null
-                    ? <span className="pr-idle">—</span>
+                    ? <span className="pr-idle">–</span>
                     : <span className={row.winPct >= 0.5 ? 'pr-score--pos' : 'pr-score--neg'}>
                         {(row.winPct * 100).toFixed(1)}%
                       </span>}
@@ -193,9 +193,8 @@ export default function ConferenceRankings({ rankings, games, season, updatedLab
       <p className="pr-explain-p pr-conf-note">
         Conferences are ordered by the average power ranking of every member, so a
         league is only as strong as its full membership rather than its best few teams.
-        The non-conference record counts only games against teams from another league —
-        the games that actually compare one conference to another. Independents and FCS
-        are pooled into a single group, which is why it sits where it does.
+        The non-conference record counts only games against teams from another league.
+        Those are the games that actually compare one league to another.
       </p>
 
       {selected && <ConferenceDetail row={selected} onClose={() => setSelected(null)} />}
