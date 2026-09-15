@@ -195,31 +195,9 @@ export default function NcaaFootball() {
         <div hidden={tab !== 'teams'}>
         <PowerRankings
           rankings={rankings}
+          pooled={POOLED}
           tableHeading={`Full ${SEASON} FBS Power Rankings, 1–${FBS_COUNT}`}
           caption={`${SEASON} college football power rankings for all ${FBS_COUNT} FBS teams, listing each team's rank, win-loss record, and power rating as of ${UPDATED_LABEL}.`}
-          example={{
-            win: {
-              title: 'USC 42, San Jose State 26. A win over the #91 team',
-              math:
-                'D = 42 − 26 = 16\n' +
-                '(140 − 91) ÷ 139 = 49 ÷ 139 = 0.352518\n' +
-                '0.352518² = 0.124269\n' +
-                '0.124269 × 16 = +1.9883',
-            },
-            loss: {
-              title: 'Clemson 10, LSU 51. A loss to the #32 team',
-              math:
-                'D = 10 − 51 = −41\n' +
-                '32 ÷ 139 = 0.230216\n' +
-                '√0.230216 = 0.479808\n' +
-                '0.479808 × −41 = −19.6721',
-            },
-            note:
-              "Note how asymmetric those are. USC's 16-point win over a mid-tier team earned " +
-              "about 2 points; Clemson's 41-point loss cost nearly 20. Blowout losses are " +
-              'punished far harder than blowout wins are rewarded, which is why one bad ' +
-              'afternoon sinks a team so far down the table.',
-          }}
           pooledNote={
             <>
               <strong>All FCS opponents are pooled into one entry.</strong> Every FCS game

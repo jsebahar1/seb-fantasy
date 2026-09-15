@@ -163,28 +163,6 @@ export default function NflRankings() {
           searchLabel="Search team…"
           tableHeading={`Full ${SEASON} NFL Power Rankings, 1–32`}
           caption={`${SEASON} NFL power rankings for all 32 teams, listing each team's rank, record, and power rating as of ${UPDATED_LABEL}.`}
-          example={{
-            win: {
-              title: 'A 7-point win over the #4 team',
-              math:
-                'D = 7\n' +
-                '(33 − 4) ÷ 32 = 29 ÷ 32 = 0.906250\n' +
-                '0.906250² = 0.821289\n' +
-                '0.821289 × 7 = +5.7490',
-            },
-            loss: {
-              title: 'A 21-point loss to the #28 team',
-              math:
-                'D = −21\n' +
-                '28 ÷ 32 = 0.875000\n' +
-                '√0.875000 = 0.935414\n' +
-                '0.935414 × −21 = −19.6437',
-            },
-            note:
-              'Note how asymmetric those are. A solid win over a good team is worth under 6 ' +
-              'points; a blowout loss to a bad one costs nearly 20. In a 17-game season that ' +
-              'gap is what separates the contenders from everyone else.',
-          }}
         />
 
         <RelatedRankings

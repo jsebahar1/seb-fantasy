@@ -102,9 +102,65 @@ function TeamDetail({ row, onClose }) {
   );
 }
 
+/**
+ * Worked examples pulled from real results, so they can never drift out of date
+ * the way hand-written ones do. Picks the most valuable win and the costliest
+ * loss in the data, which also happens to show the win/loss asymmetry clearly.
+ */
+function deriveExamples(rankings, N, pooled) {
+  const M3 = N + 1;
+  const skip = new Set(pooled ?? []);
+  let bestWin = null;
+  let worstLoss = null;
+
+  for (const row of rankings) {
+    // A pooled bucket is not a real team, so it never headlines an example.
+    if (skip.has(row.team)) continue;
+    for (const g of row.games) {
+      const entry = { team: row.team, ...g };
+      if (g.result === 'W' && (!bestWin || g.value > bestWin.value)) bestWin = entry;
+      if (g.result === 'L' && (!worstLoss || g.value < worstLoss.value)) worstLoss = entry;
+    }
+  }
+  if (!bestWin || !worstLoss) return null;
+
+  const line = (g) => `${g.team} ${g.pointsFor}, ${g.opponent} ${g.pointsAgainst}`;
+  const signed = (v) => `${v >= 0 ? '+' : ''}${v.toFixed(4)}`;
+
+  const wD = bestWin.pointsFor - bestWin.pointsAgainst;
+  const wFrac = (M3 - bestWin.oppRank) / N;
+  const lD = worstLoss.pointsFor - worstLoss.pointsAgainst;
+  const lFrac = worstLoss.oppRank / N;
+
+  return {
+    win: {
+      title: `${line(bestWin)}. A win over the #${bestWin.oppRank} team`,
+      math:
+        `D = ${bestWin.pointsFor} - ${bestWin.pointsAgainst} = ${wD}\n` +
+        `(${M3} - ${bestWin.oppRank}) / ${N} = ${M3 - bestWin.oppRank} / ${N} = ${wFrac.toFixed(6)}\n` +
+        `${wFrac.toFixed(6)} squared = ${(wFrac * wFrac).toFixed(6)}\n` +
+        `${(wFrac * wFrac).toFixed(6)} x ${wD} = ${signed(bestWin.value)}`,
+    },
+    loss: {
+      title: `${line(worstLoss)}. A loss to the #${worstLoss.oppRank} team`,
+      math:
+        `D = ${worstLoss.pointsFor} - ${worstLoss.pointsAgainst} = ${lD}\n` +
+        `${worstLoss.oppRank} / ${N} = ${lFrac.toFixed(6)}\n` +
+        `square root of ${lFrac.toFixed(6)} = ${Math.sqrt(lFrac).toFixed(6)}\n` +
+        `${Math.sqrt(lFrac).toFixed(6)} x ${lD} = ${signed(worstLoss.value)}`,
+    },
+    note:
+      `Those two are worth comparing. The best win in the data is worth ` +
+      `${bestWin.value.toFixed(2)} points of rating. The worst loss costs ` +
+      `${Math.abs(worstLoss.value).toFixed(2)}. Losses move a team further than wins do, ` +
+      `which is why one bad afternoon undoes several good ones.`,
+  };
+}
+
 // ── Methodology explainer ─────────────────────────────────────────────────────
-function Explainer({ teamCount, example, pooledNote }) {
-  const N = teamCount;
+function Explainer({ rankings, pooled, pooledNote }) {
+  const N = rankings.length;
+  const example = deriveExamples(rankings, N, pooled);
   const M3 = N + 1;
   const win = r => Math.pow((M3 - r) / N, 2);
   const loss = r => Math.sqrt(r / N);
@@ -247,7 +303,7 @@ export default function PowerRankings({
   tableHeading,
   caption,
   searchLabel = 'Search team…',
-  example,
+  pooled,
   pooledNote,
 }) {
   const [search, setSearch] = useState('');
@@ -332,7 +388,7 @@ export default function PowerRankings({
         </table>
       </div>
 
-      <Explainer teamCount={rankings.length} example={example} pooledNote={pooledNote} />
+      <Explainer rankings={rankings} pooled={pooled} pooledNote={pooledNote} />
 
       {selected && <TeamDetail row={selected} onClose={() => setSelected(null)} />}
     </>

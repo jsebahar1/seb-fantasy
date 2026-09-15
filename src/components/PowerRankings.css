@@ -880,3 +880,6 @@
   .pr-zero-mark { padding: 14px; }
   .pr-zero-num { font-size: 1.8rem; }
 }
+
+/* Conference record sits quieter than the overall record beside it */
+.pr-mt-conf { color: var(--text-muted); }

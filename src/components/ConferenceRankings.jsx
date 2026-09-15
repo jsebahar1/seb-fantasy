@@ -16,13 +16,28 @@ function buildConferenceRows(rankings, games) {
   const records = {};
   Object.keys(CONFERENCES).forEach(c => { records[c] = { w: 0, l: 0, t: 0 }; });
 
-  // Only games between teams from different conferences say anything about how
-  // one league stacks up against another.
+  // Per-team record against opponents from its own conference.
+  const teamConfRecord = {};
+  rankings.forEach(r => { teamConfRecord[r.team] = { w: 0, l: 0, t: 0 }; });
+
   for (const { home, away, homePoints, awayPoints } of games) {
     const hc = TEAM_CONFERENCE[home];
     const ac = TEAM_CONFERENCE[away];
-    if (!hc || !ac || hc === ac) continue;
+    if (!hc || !ac) continue;
 
+    if (hc === ac) {
+      // League game: counts toward each team's conference record only.
+      const h = teamConfRecord[home];
+      const a = teamConfRecord[away];
+      if (!h || !a) continue;
+      if (homePoints > awayPoints) { h.w++; a.l++; }
+      else if (awayPoints > homePoints) { a.w++; h.l++; }
+      else { h.t++; a.t++; }
+      continue;
+    }
+
+    // Games between conferences are the ones that say anything about how one
+    // league stacks up against another.
     if (homePoints > awayPoints) { records[hc].w++; records[ac].l++; }
     else if (awayPoints > homePoints) { records[ac].w++; records[hc].l++; }
     else { records[hc].t++; records[ac].t++; }
@@ -32,6 +47,7 @@ function buildConferenceRows(rankings, games) {
     const members = teams
       .map(t => byTeam[t])
       .filter(Boolean)
+      .map(m => ({ ...m, confRecord: teamConfRecord[m.team] ?? { w: 0, l: 0, t: 0 } }))
       .sort((a, b) => a.rank - b.rank);
     const avgRank = members.length
       ? members.reduce((sum, m) => sum + m.rank, 0) / members.length
@@ -96,7 +112,8 @@ function ConferenceDetail({ row, onClose }) {
               <tr>
                 <th className="pr-mt-num">Rank</th>
                 <th>Team</th>
-                <th className="pr-mt-res">Record</th>
+                <th className="pr-mt-res">Conf</th>
+                <th className="pr-mt-res">Overall</th>
                 <th className="pr-mt-num">Rating</th>
               </tr>
             </thead>
@@ -105,6 +122,7 @@ function ConferenceDetail({ row, onClose }) {
                 <tr key={m.team}>
                   <td className="pr-mt-num">{m.rank}</td>
                   <td className="pr-mt-opp">{m.team}</td>
+                  <td className="pr-mt-res pr-mt-conf">{formatRecord(m.confRecord)}</td>
                   <td className="pr-mt-res">{m.hasGames ? formatRecord(m.record) : '0–0'}</td>
                   <td className={`pr-mt-num ${m.score >= 0 ? 'pr-score--pos' : 'pr-score--neg'}`}>
                     {m.score >= 0 ? '+' : ''}{m.score.toFixed(4)}
