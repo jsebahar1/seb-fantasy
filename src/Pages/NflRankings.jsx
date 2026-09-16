@@ -9,6 +9,7 @@ import {
 } from '../data/nflStructure';
 import { buildRankings } from '../lib/powerRankings';
 import { NFL_TEAMS, NFL_GAMES } from '../data/nflGames';
+import { NFL_UPCOMING } from '../data/nflSchedule';
 
 // Bump LAST_UPDATED whenever new results are added; it feeds both the visible
 // timestamp and dateModified in structured data.
@@ -229,6 +230,7 @@ export default function NflRankings() {
         <div hidden={tab !== 'teams'}>
         <PowerRankings
           rankings={rankings}
+          upcomingGames={NFL_UPCOMING}
           searchLabel="Search team…"
           tableHeading={`Full ${SEASON} NFL Power Rankings, 1–32`}
           caption={`${SEASON} NFL power rankings for all 32 teams, listing each team's rank, record, and power rating as of ${UPDATED_LABEL}.`}
