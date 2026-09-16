@@ -1,58 +1,79 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CONFERENCES, TEAM_CONFERENCE } from '../data/cfbConferences';
 
 /**
- * Conferences ordered by the average rank of their members, alongside how they
- * have fared against everyone outside the league.
+ * Ranks groups of teams (conferences, divisions) by the average rank of their
+ * members, and shows how the group has done against everyone outside it.
+ *
+ * Props
+ *   groups        { 'AFC East': ['Buffalo Bills', ...], ... }
+ *   extraRecords  [{ label: 'Div', map: teamToDivision }] adds a per-team record
+ *                 column counting only games where both teams share that group.
+ *   outsideLabel  header for the group's record against teams outside it.
  */
 
 function formatRecord({ w, l, t }) {
   return t > 0 ? `${w}–${l}–${t}` : `${w}–${l}`;
 }
 
-function buildConferenceRows(rankings, games) {
+const blank = () => ({ w: 0, l: 0, t: 0 });
+
+function credit(rec, result) {
+  if (result === 'w') rec.w++;
+  else if (result === 'l') rec.l++;
+  else rec.t++;
+}
+
+function buildGroupRows(rankings, games, groups, extraRecords) {
   const byTeam = Object.fromEntries(rankings.map(r => [r.team, r]));
+  const teamGroup = Object.fromEntries(
+    Object.entries(groups).flatMap(([name, teams]) => teams.map(t => [t, name])),
+  );
 
-  const records = {};
-  Object.keys(CONFERENCES).forEach(c => { records[c] = { w: 0, l: 0, t: 0 }; });
+  // Group-level record against teams from a different group.
+  const outside = {};
+  Object.keys(groups).forEach(g => { outside[g] = blank(); });
 
-  // Per-team record against opponents from its own conference.
-  const teamConfRecord = {};
-  rankings.forEach(r => { teamConfRecord[r.team] = { w: 0, l: 0, t: 0 }; });
+  // One per-team tally per configured record column.
+  const perTeam = extraRecords.map(() => {
+    const m = {};
+    rankings.forEach(r => { m[r.team] = blank(); });
+    return m;
+  });
 
   for (const { home, away, homePoints, awayPoints } of games) {
-    const hc = TEAM_CONFERENCE[home];
-    const ac = TEAM_CONFERENCE[away];
-    if (!hc || !ac) continue;
+    if (homePoints === undefined || awayPoints === undefined) continue;
+    const homeResult = homePoints > awayPoints ? 'w' : homePoints < awayPoints ? 'l' : 't';
+    const awayResult = homeResult === 'w' ? 'l' : homeResult === 'l' ? 'w' : 't';
 
-    if (hc === ac) {
-      // League game: counts toward each team's conference record only.
-      const h = teamConfRecord[home];
-      const a = teamConfRecord[away];
-      if (!h || !a) continue;
-      if (homePoints > awayPoints) { h.w++; a.l++; }
-      else if (awayPoints > homePoints) { a.w++; h.l++; }
-      else { h.t++; a.t++; }
-      continue;
-    }
+    extraRecords.forEach(({ map }, i) => {
+      const h = map[home];
+      const a = map[away];
+      if (!h || !a || h !== a) return; // only games inside the same group count
+      if (perTeam[i][home]) credit(perTeam[i][home], homeResult);
+      if (perTeam[i][away]) credit(perTeam[i][away], awayResult);
+    });
 
-    // Games between conferences are the ones that say anything about how one
-    // league stacks up against another.
-    if (homePoints > awayPoints) { records[hc].w++; records[ac].l++; }
-    else if (awayPoints > homePoints) { records[ac].w++; records[hc].l++; }
-    else { records[hc].t++; records[ac].t++; }
+    const hg = teamGroup[home];
+    const ag = teamGroup[away];
+    if (!hg || !ag || hg === ag) continue;
+    credit(outside[hg], homeResult);
+    credit(outside[ag], awayResult);
   }
 
-  const rows = Object.entries(CONFERENCES).map(([name, teams]) => {
+  const rows = Object.entries(groups).map(([name, teams]) => {
     const members = teams
       .map(t => byTeam[t])
       .filter(Boolean)
-      .map(m => ({ ...m, confRecord: teamConfRecord[m.team] ?? { w: 0, l: 0, t: 0 } }))
+      .map(m => ({
+        ...m,
+        extras: extraRecords.map((_, i) => perTeam[i][m.team] ?? blank()),
+      }))
       .sort((a, b) => a.rank - b.rank);
+
     const avgRank = members.length
       ? members.reduce((sum, m) => sum + m.rank, 0) / members.length
       : Infinity;
-    const rec = records[name];
+    const rec = outside[name];
     const decided = rec.w + rec.l;
 
     return {
@@ -70,7 +91,7 @@ function buildConferenceRows(rankings, games) {
     .map((r, i) => ({ ...r, rank: i + 1 }));
 }
 
-function ConferenceDetail({ row, onClose }) {
+function GroupDetail({ row, extraRecords, outsideLabel, onClose }) {
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose(); }
     document.addEventListener('keydown', onKey);
@@ -101,7 +122,7 @@ function ConferenceDetail({ row, onClose }) {
               <span className="pr-modal-dot">·</span>
               avg rank {row.avgRank.toFixed(1)}
               <span className="pr-modal-dot">·</span>
-              {formatRecord(row.record)} non-conf
+              {formatRecord(row.record)} {outsideLabel.toLowerCase()}
             </p>
           </div>
         </div>
@@ -112,8 +133,10 @@ function ConferenceDetail({ row, onClose }) {
               <tr>
                 <th className="pr-mt-num">Rank</th>
                 <th>Team</th>
-                <th className="pr-mt-res">Conf</th>
                 <th className="pr-mt-res">Overall</th>
+                {extraRecords.map(r => (
+                  <th key={r.label} className="pr-mt-res">{r.label}</th>
+                ))}
                 <th className="pr-mt-num">Rating</th>
               </tr>
             </thead>
@@ -122,8 +145,12 @@ function ConferenceDetail({ row, onClose }) {
                 <tr key={m.team}>
                   <td className="pr-mt-num">{m.rank}</td>
                   <td className="pr-mt-opp">{m.team}</td>
-                  <td className="pr-mt-res pr-mt-conf">{formatRecord(m.confRecord)}</td>
-                  <td className="pr-mt-res">{m.hasGames ? formatRecord(m.record) : '0–0'}</td>
+                  <td className="pr-mt-res">
+                    {m.hasGames ? formatRecord(m.record) : '0–0'}
+                  </td>
+                  {m.extras.map((rec, i) => (
+                    <td key={i} className="pr-mt-res pr-mt-conf">{formatRecord(rec)}</td>
+                  ))}
                   <td className={`pr-mt-num ${m.score >= 0 ? 'pr-score--pos' : 'pr-score--neg'}`}>
                     {m.score >= 0 ? '+' : ''}{m.score.toFixed(4)}
                   </td>
@@ -137,9 +164,22 @@ function ConferenceDetail({ row, onClose }) {
   );
 }
 
-export default function ConferenceRankings({ rankings, games, season, updatedLabel }) {
+export default function GroupRankings({
+  rankings,
+  games,
+  groups,
+  extraRecords = [],
+  groupNoun = 'Conference',
+  outsideLabel = 'Non-Conf',
+  heading,
+  caption,
+  note,
+}) {
   const [selected, setSelected] = useState(null);
-  const rows = useMemo(() => buildConferenceRows(rankings, games), [rankings, games]);
+  const rows = useMemo(
+    () => buildGroupRows(rankings, games, groups, extraRecords),
+    [rankings, games, groups, extraRecords],
+  );
 
   function rankClass(rank) {
     if (rank <= 3) return 'pr-rank pr-rank--top3';
@@ -149,25 +189,19 @@ export default function ConferenceRankings({ rankings, games, season, updatedLab
 
   return (
     <>
-      <h2 className="pr-table-heading">
-        {season} Conference Power Rankings, 1–{rows.length}
-      </h2>
+      <h2 className="pr-table-heading">{heading}</h2>
 
       <div className="pr-table-wrap">
         <table className="pr-table">
-          <caption className="pr-sr-only">
-            {season} college football conference rankings, ordered by the average power
-            ranking of each league's members, with records against non-conference
-            opponents as of {updatedLabel}.
-          </caption>
+          {caption && <caption className="pr-sr-only">{caption}</caption>}
           <thead>
             <tr>
               <th className="pr-th-rank">Rank</th>
-              <th className="pr-th-team">Conference</th>
+              <th className="pr-th-team">{groupNoun}</th>
               <th className="pr-th-num">Teams</th>
               <th className="pr-th-num">Avg Rank</th>
               <th className="pr-th-team">Best Team</th>
-              <th className="pr-th-record">Non-Conf</th>
+              <th className="pr-th-record">{outsideLabel}</th>
               <th className="pr-th-score">Win %</th>
             </tr>
           </thead>
@@ -208,14 +242,16 @@ export default function ConferenceRankings({ rankings, games, season, updatedLab
         </table>
       </div>
 
-      <p className="pr-explain-p pr-conf-note">
-        Conferences are ordered by the average power ranking of every member, so a
-        league is only as strong as its full membership rather than its best few teams.
-        The non-conference record counts only games against teams from another league.
-        Those are the games that actually compare one league to another.
-      </p>
+      {note && <p className="pr-explain-p pr-conf-note">{note}</p>}
 
-      {selected && <ConferenceDetail row={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <GroupDetail
+          row={selected}
+          extraRecords={extraRecords}
+          outsideLabel={outsideLabel}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </>
   );
 }

@@ -1,8 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import SEO from '../components/SEO';
 import PowerRankings from '../components/PowerRankings';
 import RelatedRankings from '../components/RelatedRankings';
 import RankingPrinciples from '../components/RankingPrinciples';
+import GroupRankings from '../components/GroupRankings';
+import {
+  NFL_CONFERENCES, NFL_DIVISIONS, TEAM_CONFERENCE, TEAM_DIVISION,
+} from '../data/nflStructure';
 import { buildRankings } from '../lib/powerRankings';
 import { NFL_TEAMS, NFL_GAMES } from '../data/nflGames';
 
@@ -16,7 +20,14 @@ const UPDATED_LABEL = new Date(`${LAST_UPDATED}T12:00:00Z`).toLocaleDateString('
   month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC',
 });
 
+// Both grouping tabs show the same three records per team.
+const NFL_RECORDS = [
+  { label: 'Conf', map: TEAM_CONFERENCE },
+  { label: 'Div', map: TEAM_DIVISION },
+];
+
 export default function NflRankings() {
+  const [tab, setTab] = useState('teams');
   const rankings = useMemo(() => buildRankings(NFL_TEAMS, NFL_GAMES), []);
 
   const rated = rankings.filter(r => r.hasGames);
@@ -158,12 +169,71 @@ export default function NflRankings() {
 
         <RankingPrinciples league="nfl" />
 
+        <div className="pr-tabs" role="tablist" aria-label="Ranking view">
+          {[
+            { id: 'teams', label: 'Team Rankings' },
+            { id: 'conference', label: 'Conference Rankings' },
+            { id: 'division', label: 'Division Rankings' },
+          ].map(t => (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={tab === t.id}
+              className={`pr-tab${tab === t.id ? ' pr-tab--active' : ''}`}
+              onClick={() => setTab(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'conference' && (
+          <GroupRankings
+            rankings={rankings}
+            games={NFL_GAMES}
+            groups={NFL_CONFERENCES}
+            extraRecords={NFL_RECORDS}
+            groupNoun="Conference"
+            outsideLabel="Inter-Conf"
+            heading={`${SEASON} AFC vs NFC`}
+            caption={`${SEASON} NFL conference rankings by the average power ranking of their teams, as of ${UPDATED_LABEL}.`}
+            note={
+              'Conferences are ranked on the average power ranking of all 16 teams, so ' +
+              'depth counts as much as the team at the top. The record shown is against ' +
+              'the other conference, since those are the only games that compare the two. ' +
+              'Click a conference to see every team with its overall, conference and ' +
+              'division record.'
+            }
+          />
+        )}
+
+        {tab === 'division' && (
+          <GroupRankings
+            rankings={rankings}
+            games={NFL_GAMES}
+            groups={NFL_DIVISIONS}
+            extraRecords={NFL_RECORDS}
+            groupNoun="Division"
+            outsideLabel="Non-Div"
+            heading={`${SEASON} NFL Division Rankings, 1\u20138`}
+            caption={`${SEASON} NFL division rankings by the average power ranking of their four teams, as of ${UPDATED_LABEL}.`}
+            note={
+              'All eight divisions are ranked on the average power ranking of their four ' +
+              'teams. The record shown is against teams outside the division. Division ' +
+              'games also count toward the conference record, the way they do in the ' +
+              'standings.'
+            }
+          />
+        )}
+
+        <div hidden={tab !== 'teams'}>
         <PowerRankings
           rankings={rankings}
           searchLabel="Search team…"
           tableHeading={`Full ${SEASON} NFL Power Rankings, 1–32`}
           caption={`${SEASON} NFL power rankings for all 32 teams, listing each team's rank, record, and power rating as of ${UPDATED_LABEL}.`}
         />
+        </div>
 
         <RelatedRankings
           links={[

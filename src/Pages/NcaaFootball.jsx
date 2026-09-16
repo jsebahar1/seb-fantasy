@@ -2,11 +2,12 @@ import { useMemo, useState } from 'react';
 import SEO from '../components/SEO';
 import PowerRankings from '../components/PowerRankings';
 import RelatedRankings from '../components/RelatedRankings';
-import ConferenceRankings from '../components/ConferenceRankings';
+import GroupRankings from '../components/GroupRankings';
 import RankingPrinciples from '../components/RankingPrinciples';
 import { buildRankings } from '../lib/powerRankings';
 import { TEAMS, INITIAL_GAMES } from '../data/cfbGames';
 import { UPCOMING_GAMES } from '../data/cfbSchedule';
+import { CONFERENCES, TEAM_CONFERENCE } from '../data/cfbConferences';
 
 // Bump LAST_UPDATED whenever new results are added; it feeds both the visible
 // timestamp and dateModified in structured data.
@@ -15,6 +16,7 @@ const LAST_UPDATED = '2026-09-13';
 const SITE = 'https://sebfantasy.com';
 const FBS_COUNT = TEAMS.length - 1; // TEAMS includes the pooled 'FCS' bucket
 const POOLED = ['FCS'];
+const CFB_RECORDS = [{ label: 'Conf', map: TEAM_CONFERENCE }];
 
 const UPDATED_LABEL = new Date(`${LAST_UPDATED}T12:00:00Z`).toLocaleDateString('en-US', {
   month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC',
@@ -185,11 +187,22 @@ export default function NcaaFootball() {
         </div>
 
         {tab === 'conferences' && (
-          <ConferenceRankings
+          <GroupRankings
             rankings={rankings}
             games={INITIAL_GAMES}
-            season={SEASON}
-            updatedLabel={UPDATED_LABEL}
+            groups={CONFERENCES}
+            extraRecords={CFB_RECORDS}
+            groupNoun="Conference"
+            outsideLabel="Non-Conf"
+            heading={`${SEASON} Conference Power Rankings`}
+            caption={`${SEASON} college football conference rankings, ordered by the average power ranking of each league's members, as of ${UPDATED_LABEL}.`}
+            note={
+              'Conferences are ordered by the average power ranking of every member, so a ' +
+              'league is only as strong as its full membership rather than its best few ' +
+              'teams. The non-conference record counts only games against teams from ' +
+              'another league. Those are the games that actually compare one league to ' +
+              'another.'
+            }
           />
         )}
 
