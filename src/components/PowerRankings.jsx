@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './PowerRankings.css';
 
 /**
@@ -18,7 +18,7 @@ function formatRecord(rec) {
 }
 
 // ── Team detail dialog ────────────────────────────────────────────────────────
-function TeamDetail({ row, onClose }) {
+function TeamDetail({ row, upcoming, onClose }) {
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose(); }
     document.addEventListener('keydown', onKey);
@@ -61,6 +61,7 @@ function TeamDetail({ row, onClose }) {
             <table className="pr-modal-table">
               <thead>
                 <tr>
+                  <th className="pr-mt-wk">Wk</th>
                   <th>Opponent</th>
                   <th className="pr-mt-num">Rank</th>
                   <th className="pr-mt-num">Score</th>
@@ -71,6 +72,7 @@ function TeamDetail({ row, onClose }) {
               <tbody>
                 {row.games.map((g, i) => (
                   <tr key={i}>
+                    <td className="pr-mt-wk">{g.week ?? ''}</td>
                     <td className="pr-mt-opp">
                       <span className="pr-mt-loc">{g.atHome ? 'vs' : '@'}</span>
                       {g.opponent}
@@ -88,13 +90,32 @@ function TeamDetail({ row, onClose }) {
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan={4}>Total</td>
+                  <td colSpan={5}>Total</td>
                   <td className={`pr-mt-num ${row.score >= 0 ? 'pr-score--pos' : 'pr-score--neg'}`}>
                     {fmt(row.score)}
                   </td>
                 </tr>
               </tfoot>
             </table>
+          </div>
+        )}
+
+        {upcoming?.length > 0 && (
+          <div className="pr-upcoming">
+            <p className="pr-upcoming-head">Upcoming</p>
+            <ul className="pr-upcoming-list">
+              {upcoming.map((g, i) => (
+                <li key={i} className="pr-upcoming-row">
+                  <span className="pr-upcoming-wk">{g.week != null ? `Wk ${g.week}` : ''}</span>
+                  <span className="pr-mt-loc">{g.atHome ? 'vs' : '@'}</span>
+                  <span className="pr-upcoming-opp">{g.opponent}</span>
+                  <span className="pr-upcoming-rank">
+                    {g.oppRank ? `#${g.oppRank}` : ''}
+                  </span>
+                  <span className="pr-upcoming-rec">{g.oppRecord ?? ''}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>
@@ -300,6 +321,7 @@ function Explainer({ rankings, pooled, pooledNote }) {
 // ── Main view ─────────────────────────────────────────────────────────────────
 export default function PowerRankings({
   rankings,
+  upcomingGames,
   tableHeading,
   caption,
   searchLabel = 'Search team…',
@@ -308,6 +330,28 @@ export default function PowerRankings({
 }) {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
+
+  // Opponent rank and record are read off the current standings, so the
+  // schedule shows who a team still has to play and how good they are today.
+  const scheduleByTeam = useMemo(() => {
+    const byTeam = Object.fromEntries(rankings.map(r => [r.team, r]));
+    const out = {};
+    const add = (team, opponent, atHome, week) => {
+      const opp = byTeam[opponent];
+      (out[team] ??= []).push({
+        opponent,
+        atHome,
+        week,
+        oppRank: opp?.rank ?? null,
+        oppRecord: opp?.hasGames ? formatRecord(opp.record) : null,
+      });
+    };
+    for (const { home, away, week } of upcomingGames ?? []) {
+      if (byTeam[home]) add(home, away, true, week);
+      if (byTeam[away]) add(away, home, false, week);
+    }
+    return out;
+  }, [rankings, upcomingGames]);
 
   const filtered = search.trim()
     ? rankings.filter(r => r.team.toLowerCase().includes(search.toLowerCase()))
@@ -390,7 +434,13 @@ export default function PowerRankings({
 
       <Explainer rankings={rankings} pooled={pooled} pooledNote={pooledNote} />
 
-      {selected && <TeamDetail row={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <TeamDetail
+          row={selected}
+          upcoming={scheduleByTeam[selected.team]}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </>
   );
 }

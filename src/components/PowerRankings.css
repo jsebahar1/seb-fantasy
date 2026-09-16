@@ -883,3 +883,78 @@
 
 /* Conference record sits quieter than the overall record beside it */
 .pr-mt-conf { color: var(--text-muted); }
+
+/* ── Upcoming schedule ─────────────────────────────────────── */
+.pr-upcoming {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1.5px solid var(--border-mid);
+}
+
+.pr-upcoming-head {
+  margin: 0 0 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.pr-upcoming-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pr-upcoming-row {
+  display: grid;
+  grid-template-columns: 42px 26px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  background: rgba(13, 45, 98, 0.035);
+  font-size: 0.85rem;
+}
+
+.pr-upcoming-opp {
+  font-weight: 600;
+  color: var(--navy);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pr-upcoming-rank {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.pr-upcoming-rec {
+  min-width: 34px;
+  text-align: right;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.pr-mt-wk {
+  text-align: center;
+  width: 30px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+}
+
+.pr-upcoming-wk {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}

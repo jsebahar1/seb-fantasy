@@ -189,18 +189,18 @@ export function buildRankings(teams, games, { pooled = [] } = {}) {
   const records = {};
   teams.forEach(t => { logs[t] = []; records[t] = { w: 0, l: 0, t: 0 }; });
 
-  for (const { home, away, homePoints, awayPoints } of games) {
+  for (const { home, away, homePoints, awayPoints, week } of games) {
     if (!teamSet.has(home) || !teamSet.has(away)) continue;
     const diff = homePoints - awayPoints;
 
     logs[home].push({
-      opponent: away, atHome: true, oppRank: ranks[away],
+      opponent: away, atHome: true, oppRank: ranks[away], week,
       pointsFor: homePoints, pointsAgainst: awayPoints,
       result: diff > 0 ? 'W' : diff < 0 ? 'L' : 'T',
       value: gameScore(diff, ranks[away]),
     });
     logs[away].push({
-      opponent: home, atHome: false, oppRank: ranks[home],
+      opponent: home, atHome: false, oppRank: ranks[home], week,
       pointsFor: awayPoints, pointsAgainst: homePoints,
       result: diff < 0 ? 'W' : diff > 0 ? 'L' : 'T',
       value: gameScore(-diff, ranks[home]),

@@ -6,11 +6,12 @@ import ConferenceRankings from '../components/ConferenceRankings';
 import RankingPrinciples from '../components/RankingPrinciples';
 import { buildRankings } from '../lib/powerRankings';
 import { TEAMS, INITIAL_GAMES } from '../data/cfbGames';
+import { UPCOMING_GAMES } from '../data/cfbSchedule';
 
 // Bump LAST_UPDATED whenever new results are added; it feeds both the visible
 // timestamp and dateModified in structured data.
 const SEASON = 2026;
-const LAST_UPDATED = '2026-09-12';
+const LAST_UPDATED = '2026-09-13';
 const SITE = 'https://sebfantasy.com';
 const FBS_COUNT = TEAMS.length - 1; // TEAMS includes the pooled 'FCS' bucket
 const POOLED = ['FCS'];
@@ -195,6 +196,7 @@ export default function NcaaFootball() {
         <div hidden={tab !== 'teams'}>
         <PowerRankings
           rankings={rankings}
+          upcomingGames={UPCOMING_GAMES}
           pooled={POOLED}
           tableHeading={`Full ${SEASON} FBS Power Rankings, 1–${FBS_COUNT}`}
           caption={`${SEASON} college football power rankings for all ${FBS_COUNT} FBS teams, listing each team's rank, win-loss record, and power rating as of ${UPDATED_LABEL}.`}
