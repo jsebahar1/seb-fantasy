@@ -8,15 +8,19 @@ import { buildRankings } from '../lib/powerRankings';
 import { TEAMS, INITIAL_GAMES } from '../data/cfbGames';
 import { UPCOMING_GAMES } from '../data/cfbSchedule';
 import { CONFERENCES, TEAM_CONFERENCE } from '../data/cfbConferences';
+import { CFB_LOGOS } from '../data/cfbLogos';
 
 // Bump LAST_UPDATED whenever new results are added; it feeds both the visible
 // timestamp and dateModified in structured data.
 const SEASON = 2026;
 const LAST_UPDATED = '2026-09-13';
 const SITE = 'https://sebfantasy.com';
+const MODEL_COUNT = TEAMS.length;
 const FBS_COUNT = TEAMS.length - 1; // TEAMS includes the pooled 'FCS' bucket
 const POOLED = ['FCS'];
 const CFB_RECORDS = [{ label: 'Conf', map: TEAM_CONFERENCE }];
+const CFB_CONFERENCES = Object.keys(CONFERENCES).filter(name => name !== 'FCS');
+const CFB_TEAM_LABELS = { FCS: 'FCS' };
 
 const UPDATED_LABEL = new Date(`${LAST_UPDATED}T12:00:00Z`).toLocaleDateString('en-US', {
   month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC',
@@ -46,7 +50,8 @@ export default function NcaaFootball() {
         '@type': 'Dataset',
         name: `${SEASON} College Football Power Rankings`,
         description:
-          `Strength-of-schedule adjusted power ratings for all ${FBS_COUNT} FBS teams, ` +
+          `Strength-of-schedule adjusted power ratings for ${FBS_COUNT} FBS teams plus ` +
+          `one pooled FCS entry (${MODEL_COUNT} model entries total), ` +
           "derived from every completed game. Each result is weighted by the opponent's rank, " +
           'so wins over strong teams and losses to weak ones move a team furthest.',
         url: `${SITE}/ncaa-football`,
@@ -142,9 +147,9 @@ export default function NcaaFootball() {
   return (
     <main className="page">
       <SEO
-        title={`${SEASON} College Football Power Rankings: All ${FBS_COUNT} FBS Teams`}
+        title={`${SEASON} College Football Power Rankings: ${MODEL_COUNT} Model Entries`}
         path="/ncaa-football"
-        description={`Computer power rankings for all ${FBS_COUNT} FBS teams, updated ${UPDATED_LABEL}. Every result is weighted by opponent rank, so quality wins count and bad losses hurt. Full methodology and per-game math included.`}
+        description={`Computer power rankings for ${FBS_COUNT} FBS teams plus one pooled FCS entry (${MODEL_COUNT} model entries), updated ${UPDATED_LABEL}. Every result is weighted by opponent rank, so quality wins count and bad losses hurt.`}
         keywords={seoKeywords}
         modifiedDate={LAST_UPDATED}
         jsonLd={structuredData}
@@ -211,8 +216,12 @@ export default function NcaaFootball() {
           rankings={rankings}
           upcomingGames={UPCOMING_GAMES}
           pooled={POOLED}
-          tableHeading={`Full ${SEASON} FBS Power Rankings, 1–${FBS_COUNT}`}
-          caption={`${SEASON} college football power rankings for all ${FBS_COUNT} FBS teams, listing each team's rank, win-loss record, and power rating as of ${UPDATED_LABEL}.`}
+          teamLabels={CFB_TEAM_LABELS}
+          teamLogos={CFB_LOGOS}
+          conferenceMap={TEAM_CONFERENCE}
+          conferenceOptions={CFB_CONFERENCES}
+          tableHeading={`${SEASON} College Football Power Rankings, 1–${MODEL_COUNT-1}`}
+          caption={`${SEASON} college football power rankings for ${MODEL_COUNT} model entries—${FBS_COUNT} FBS teams and one pooled FCS entry—listing each entry's rank, record, and power rating as of ${UPDATED_LABEL}.`}
           pooledNote={
             <>
               <strong>All FCS opponents are pooled into one entry.</strong> Every FCS game

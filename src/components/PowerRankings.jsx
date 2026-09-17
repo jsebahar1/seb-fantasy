@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { rankBadgeClass } from '../lib/rankBadge';
 import './PowerRankings.css';
 
 /**
@@ -17,8 +18,36 @@ function formatRecord(rec) {
   return rec.t > 0 ? `${rec.w}–${rec.l}–${rec.t}` : `${rec.w}–${rec.l}`;
 }
 
+function teamLabel(team, labels) {
+  return labels?.[team] ?? team;
+}
+
+const DEFAULT_RANK_FILTERS = [
+  { value: '10', label: 'Top 10' },
+  { value: '25', label: 'Top 25' },
+  { value: '50', label: 'Top 50' },
+];
+
+function matchesRecordFilter(record, filter) {
+  if (filter === 'undefeated') return record.l === 0;
+  const games = record.w + record.l + record.t;
+  const twiceWinValue = (2 * record.w) + record.t;
+  if (filter === 'winning') return twiceWinValue > games;
+  if (filter === 'even') return twiceWinValue === games;
+  if (filter === 'losing') return twiceWinValue < games;
+  return true;
+}
+
+function divisionsForConference(options, divisionMap, conferenceMap, conference) {
+  if (!options?.length || conference === 'all') return options ?? [];
+
+  return options.filter(division => Object.keys(divisionMap ?? {}).some(team => (
+    divisionMap[team] === division && conferenceMap?.[team] === conference
+  )));
+}
+
 // ── Team detail dialog ────────────────────────────────────────────────────────
-function TeamDetail({ row, upcoming, onClose }) {
+function TeamDetail({ row, upcoming, teamLabels, onClose }) {
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose(); }
     document.addEventListener('keydown', onKey);
@@ -35,7 +64,7 @@ function TeamDetail({ row, upcoming, onClose }) {
         className="pr-modal"
         role="dialog"
         aria-modal="true"
-        aria-label={`${row.team} rating detail`}
+        aria-label={`${teamLabel(row.team, teamLabels)} rating detail`}
         onClick={e => e.stopPropagation()}
       >
         <button className="pr-modal-close" onClick={onClose} aria-label="Close">×</button>
@@ -43,7 +72,7 @@ function TeamDetail({ row, upcoming, onClose }) {
         <div className="pr-modal-head">
           <span className="pr-modal-rank">#{row.rank}</span>
           <div>
-            <h3 className="pr-modal-team">{row.team}</h3>
+            <h3 className="pr-modal-team">{teamLabel(row.team, teamLabels)}</h3>
             <p className="pr-modal-meta">
               {formatRecord(row.record)}
               <span className="pr-modal-dot">·</span>
@@ -75,7 +104,7 @@ function TeamDetail({ row, upcoming, onClose }) {
                     <td className="pr-mt-wk">{g.week ?? ''}</td>
                     <td className="pr-mt-opp">
                       <span className="pr-mt-loc">{g.atHome ? 'vs' : '@'}</span>
-                      {g.opponent}
+                      {teamLabel(g.opponent, teamLabels)}
                     </td>
                     <td className="pr-mt-num">{g.oppRank}</td>
                     <td className="pr-mt-num">{g.pointsFor}–{g.pointsAgainst}</td>
@@ -108,7 +137,7 @@ function TeamDetail({ row, upcoming, onClose }) {
                 <li key={i} className="pr-upcoming-row">
                   <span className="pr-upcoming-wk">{g.week != null ? `Wk ${g.week}` : ''}</span>
                   <span className="pr-mt-loc">{g.atHome ? 'vs' : '@'}</span>
-                  <span className="pr-upcoming-opp">{g.opponent}</span>
+                  <span className="pr-upcoming-opp">{teamLabel(g.opponent, teamLabels)}</span>
                   <span className="pr-upcoming-rank">
                     {g.oppRank ? `#${g.oppRank}` : ''}
                   </span>
@@ -327,9 +356,31 @@ export default function PowerRankings({
   searchLabel = 'Search team…',
   pooled,
   pooledNote,
+  teamLabels,
+  teamLogos,
+  conferenceMap,
+  conferenceOptions,
+  divisionMap,
+  divisionOptions,
+  rankOptions = DEFAULT_RANK_FILTERS,
+  rankBadgeCutoffs,
 }) {
   const [search, setSearch] = useState('');
+  const [conferenceFilter, setConferenceFilter] = useState('all');
+  const [divisionFilter, setDivisionFilter] = useState('all');
+  const [rankFilter, setRankFilter] = useState('all');
+  const [recordFilter, setRecordFilter] = useState('all');
   const [selected, setSelected] = useState(null);
+  const hasConferenceFilter = Boolean(conferenceMap && conferenceOptions?.length);
+  const hasDivisionFilter = Boolean(divisionMap && divisionOptions?.length);
+  const hasTableFilters = hasConferenceFilter || hasDivisionFilter;
+
+  const availableDivisionOptions = useMemo(() => divisionsForConference(
+    divisionOptions,
+    divisionMap,
+    conferenceMap,
+    conferenceFilter,
+  ), [divisionOptions, divisionMap, conferenceMap, conferenceFilter]);
 
   // Opponent rank and record are read off the current standings, so the
   // schedule shows who a team still has to play and how good they are today.
@@ -353,28 +404,124 @@ export default function PowerRankings({
     return out;
   }, [rankings, upcomingGames]);
 
-  const filtered = search.trim()
-    ? rankings.filter(r => r.team.toLowerCase().includes(search.toLowerCase()))
-    : rankings;
+  const filtered = useMemo(() => {
+    const searchTerm = search.trim().toLowerCase();
+    const rankLimit = rankFilter === 'all' ? Infinity : Number(rankFilter);
 
-  function rankClass(rank) {
-    if (rank <= 3) return 'pr-rank pr-rank--top3';
-    if (rank <= 10) return 'pr-rank pr-rank--top10';
-    if (rank <= 25) return 'pr-rank pr-rank--top25';
-    return 'pr-rank';
+    return rankings.filter(row => {
+      const displayedName = teamLabel(row.team, teamLabels).toLowerCase();
+      if (searchTerm && !displayedName.includes(searchTerm)) return false;
+      if (conferenceFilter !== 'all' && conferenceMap?.[row.team] !== conferenceFilter) {
+        return false;
+      }
+      if (divisionFilter !== 'all' && divisionMap?.[row.team] !== divisionFilter) {
+        return false;
+      }
+      if (row.rank > rankLimit) return false;
+      if (!matchesRecordFilter(row.record, recordFilter)) return false;
+      return true;
+    });
+  }, [
+    rankings,
+    search,
+    teamLabels,
+    conferenceFilter,
+    conferenceMap,
+    divisionFilter,
+    divisionMap,
+    rankFilter,
+    recordFilter,
+  ]);
+
+  function handleConferenceChange(event) {
+    const nextConference = event.target.value;
+    setConferenceFilter(nextConference);
+
+    const nextDivisions = divisionsForConference(
+      divisionOptions,
+      divisionMap,
+      conferenceMap,
+      nextConference,
+    );
+    if (divisionFilter !== 'all' && !nextDivisions.includes(divisionFilter)) {
+      setDivisionFilter('all');
+    }
   }
 
   return (
     <>
       <div className="pr-controls">
-        <input
-          className="pr-search"
-          type="text"
-          placeholder={searchLabel}
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-        {search && <button className="pr-clear" onClick={() => setSearch('')}>×</button>}
+        <div className="pr-search-wrap">
+          <input
+            className="pr-search"
+            type="text"
+            placeholder={searchLabel}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {search && (
+            <button className="pr-clear" onClick={() => setSearch('')} aria-label="Clear team search">
+              ×
+            </button>
+          )}
+        </div>
+
+        {hasTableFilters && (
+          <>
+            {hasConferenceFilter && (
+              <select
+                className="pr-filter-select pr-filter-select--conference"
+                aria-label="Filter teams by conference"
+                value={conferenceFilter}
+                onChange={handleConferenceChange}
+              >
+                <option value="all">All Conferences</option>
+                {conferenceOptions.map(conference => (
+                  <option key={conference} value={conference}>{conference}</option>
+                ))}
+              </select>
+            )}
+
+            {hasDivisionFilter && (
+              <select
+                className="pr-filter-select pr-filter-select--division"
+                aria-label="Filter teams by division"
+                value={divisionFilter}
+                onChange={event => setDivisionFilter(event.target.value)}
+              >
+                <option value="all">All Divisions</option>
+                {availableDivisionOptions.map(division => (
+                  <option key={division} value={division}>{division}</option>
+                ))}
+              </select>
+            )}
+
+            <select
+              className="pr-filter-select"
+              aria-label="Filter teams by overall rank"
+              value={rankFilter}
+              onChange={event => setRankFilter(event.target.value)}
+            >
+              <option value="all">All Teams</option>
+              {rankOptions.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+
+            <select
+              className="pr-filter-select"
+              aria-label="Filter teams by record"
+              value={recordFilter}
+              onChange={event => setRecordFilter(event.target.value)}
+            >
+              <option value="all">All Records</option>
+              <option value="undefeated">Undefeated</option>
+              <option value="winning">Winning Record</option>
+              <option value="even">.500</option>
+              <option value="losing">Losing Record</option>
+            </select>
+          </>
+        )}
       </div>
 
       {tableHeading && <h2 className="pr-table-heading">{tableHeading}</h2>}
@@ -397,7 +544,7 @@ export default function PowerRankings({
                 className={`pr-tr--clickable ${row.hasGames ? 'pr-tr--active' : 'pr-tr--idle'}`}
                 tabIndex={0}
                 role="button"
-                aria-label={`${row.team} detail`}
+                aria-label={`${teamLabel(row.team, teamLabels)} detail`}
                 onClick={() => setSelected(row)}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -406,8 +553,25 @@ export default function PowerRankings({
                   }
                 }}
               >
-                <td><span className={rankClass(row.rank)}>{row.rank}</span></td>
-                <td className="pr-td-team">{row.team}</td>
+                <td>
+                  <span className={rankBadgeClass(row.rank, rankBadgeCutoffs)}>{row.rank}</span>
+                </td>
+                <td className="pr-td-team">
+                  <span className="pr-team-cell">
+                    <span>{teamLabel(row.team, teamLabels)}</span>
+                    {teamLogos?.[row.team] && (
+                      <img
+                        src={teamLogos[row.team]}
+                        alt=""
+                        className="pr-team-logo"
+                        width="24"
+                        height="24"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    )}
+                  </span>
+                </td>
                 <td className="pr-td-record">
                   {row.hasGames
                     ? formatRecord(row.record)
@@ -425,7 +589,11 @@ export default function PowerRankings({
 
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={4} className="pr-empty">No teams match "{search}"</td>
+                <td colSpan={4} className="pr-empty">
+                  {hasTableFilters
+                    ? 'No teams match the selected filters.'
+                    : `No teams match "${search}"`}
+                </td>
               </tr>
             )}
           </tbody>
@@ -438,6 +606,7 @@ export default function PowerRankings({
         <TeamDetail
           row={selected}
           upcoming={scheduleByTeam[selected.team]}
+          teamLabels={teamLabels}
           onClose={() => setSelected(null)}
         />
       )}

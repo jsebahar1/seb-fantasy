@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "audit-cfb": "node scripts/auditCfbData.js",
+    "verify-cfb-logos": "node scripts/verifyCfbLogos.js",
+    "verify-nfl-logos": "node scripts/verifyNflLogos.js",
     "preview": "vite preview"
   },
   "dependencies": {

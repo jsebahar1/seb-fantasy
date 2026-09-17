@@ -10,6 +10,7 @@ import {
 import { buildRankings } from '../lib/powerRankings';
 import { NFL_TEAMS, NFL_GAMES } from '../data/nflGames';
 import { NFL_UPCOMING } from '../data/nflSchedule';
+import { NFL_LOGOS } from '../data/nflLogos';
 
 // Bump LAST_UPDATED whenever new results are added; it feeds both the visible
 // timestamp and dateModified in structured data.
@@ -26,6 +27,15 @@ const NFL_RECORDS = [
   { label: 'Conf', map: TEAM_CONFERENCE },
   { label: 'Div', map: TEAM_DIVISION },
 ];
+
+const NFL_CONFERENCE_FILTERS = Object.keys(NFL_CONFERENCES);
+const NFL_DIVISION_FILTERS = Object.keys(NFL_DIVISIONS);
+const NFL_RANK_FILTERS = [
+  { value: '5', label: 'Top 5' },
+  { value: '10', label: 'Top 10' },
+  { value: '16', label: 'Top 16' },
+];
+const NFL_RANK_BADGE_CUTOFFS = [3, 8, 15, 25];
 
 export default function NflRankings() {
   const [tab, setTab] = useState('teams');
@@ -232,6 +242,13 @@ export default function NflRankings() {
           rankings={rankings}
           upcomingGames={NFL_UPCOMING}
           searchLabel="Search team…"
+          teamLogos={NFL_LOGOS}
+          conferenceMap={TEAM_CONFERENCE}
+          conferenceOptions={NFL_CONFERENCE_FILTERS}
+          divisionMap={TEAM_DIVISION}
+          divisionOptions={NFL_DIVISION_FILTERS}
+          rankOptions={NFL_RANK_FILTERS}
+          rankBadgeCutoffs={NFL_RANK_BADGE_CUTOFFS}
           tableHeading={`Full ${SEASON} NFL Power Rankings, 1–32`}
           caption={`${SEASON} NFL power rankings for all 32 teams, listing each team's rank, record, and power rating as of ${UPDATED_LABEL}.`}
         />

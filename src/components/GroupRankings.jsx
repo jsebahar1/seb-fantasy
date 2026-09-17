@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { rankBadgeClass } from '../lib/rankBadge';
 
 /**
  * Ranks groups of teams (conferences, divisions) by the average rank of their
@@ -181,12 +182,6 @@ export default function GroupRankings({
     [rankings, games, groups, extraRecords],
   );
 
-  function rankClass(rank) {
-    if (rank <= 3) return 'pr-rank pr-rank--top3';
-    if (rank <= 5) return 'pr-rank pr-rank--top10';
-    return 'pr-rank';
-  }
-
   return (
     <>
       <h2 className="pr-table-heading">{heading}</h2>
@@ -221,7 +216,7 @@ export default function GroupRankings({
                   }
                 }}
               >
-                <td><span className={rankClass(row.rank)}>{row.rank}</span></td>
+                <td><span className={rankBadgeClass(row.rank)}>{row.rank}</span></td>
                 <td className="pr-td-team">{row.name}</td>
                 <td className="pr-td-num">{row.members.length}</td>
                 <td className="pr-td-num">{row.avgRank.toFixed(1)}</td>
