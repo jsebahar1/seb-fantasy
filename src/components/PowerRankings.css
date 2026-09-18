@@ -450,6 +450,9 @@
 .pr-mt-res { text-align: center; }
 
 .pr-mt-opp {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-weight: 600;
   color: var(--navy);
   width: 100%;
@@ -965,7 +968,7 @@
 
 .pr-upcoming-row {
   display: grid;
-  grid-template-columns: 42px 26px minmax(0, 1fr) auto auto;
+  grid-template-columns: 42px 26px 20px minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 8px;
   padding: 7px 8px;
@@ -1011,4 +1014,19 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-muted);
+}
+
+/* ── Logos inside the team dialog ──────────────────────────── */
+.pr-logo-inline {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.pr-modal-logo {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  flex-shrink: 0;
 }

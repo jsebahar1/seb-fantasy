@@ -14,6 +14,22 @@ function fmt(n) {
   return `${n >= 0 ? '+' : ''}${n.toFixed(4)}`;
 }
 
+function Logo({ team, logos, size = 20, className = 'pr-logo-inline' }) {
+  const src = logos?.[team];
+  if (!src) return null;
+  return (
+    <img
+      src={src}
+      alt=""
+      className={className}
+      width={size}
+      height={size}
+      loading="lazy"
+      decoding="async"
+    />
+  );
+}
+
 function formatRecord(rec) {
   return rec.t > 0 ? `${rec.w}–${rec.l}–${rec.t}` : `${rec.w}–${rec.l}`;
 }
@@ -47,7 +63,7 @@ function divisionsForConference(options, divisionMap, conferenceMap, conference)
 }
 
 // ── Team detail dialog ────────────────────────────────────────────────────────
-function TeamDetail({ row, upcoming, teamLabels, onClose }) {
+function TeamDetail({ row, upcoming, teamLabels, teamLogos, onClose }) {
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose(); }
     document.addEventListener('keydown', onKey);
@@ -71,6 +87,7 @@ function TeamDetail({ row, upcoming, teamLabels, onClose }) {
 
         <div className="pr-modal-head">
           <span className="pr-modal-rank">#{row.rank}</span>
+          <Logo team={row.team} logos={teamLogos} size={38} className="pr-modal-logo" />
           <div>
             <h3 className="pr-modal-team">{teamLabel(row.team, teamLabels)}</h3>
             <p className="pr-modal-meta">
@@ -104,6 +121,7 @@ function TeamDetail({ row, upcoming, teamLabels, onClose }) {
                     <td className="pr-mt-wk">{g.week ?? ''}</td>
                     <td className="pr-mt-opp">
                       <span className="pr-mt-loc">{g.atHome ? 'vs' : '@'}</span>
+                      <Logo team={g.opponent} logos={teamLogos} />
                       {teamLabel(g.opponent, teamLabels)}
                     </td>
                     <td className="pr-mt-num">{g.oppRank}</td>
@@ -137,6 +155,7 @@ function TeamDetail({ row, upcoming, teamLabels, onClose }) {
                 <li key={i} className="pr-upcoming-row">
                   <span className="pr-upcoming-wk">{g.week != null ? `Wk ${g.week}` : ''}</span>
                   <span className="pr-mt-loc">{g.atHome ? 'vs' : '@'}</span>
+                  <Logo team={g.opponent} logos={teamLogos} />
                   <span className="pr-upcoming-opp">{teamLabel(g.opponent, teamLabels)}</span>
                   <span className="pr-upcoming-rank">
                     {g.oppRank ? `#${g.oppRank}` : ''}
@@ -607,6 +626,7 @@ export default function PowerRankings({
           row={selected}
           upcoming={scheduleByTeam[selected.team]}
           teamLabels={teamLabels}
+          teamLogos={teamLogos}
           onClose={() => setSelected(null)}
         />
       )}
