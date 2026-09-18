@@ -43,11 +43,19 @@
   letter-spacing: 0.06em;
 }
 
-/* ── Search bar ────────────────────────────────────────────── */
+/* ── Search and filters ────────────────────────────────────── */
 .pr-controls {
-  position: relative;
-  max-width: 320px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
   margin: 0 0 20px;
+}
+
+.pr-search-wrap {
+  position: relative;
+  flex: 1 1 240px;
+  max-width: 320px;
 }
 
 .pr-search {
@@ -62,11 +70,28 @@
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.pr-search:focus {
+.pr-search:focus,
+.pr-filter-select:focus {
   outline: none;
   border-color: var(--green-dark);
   box-shadow: 0 0 0 3px rgba(125, 200, 32, 0.14);
 }
+
+.pr-filter-select {
+  min-width: 128px;
+  padding: 9px 12px;
+  border: 1.5px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  font-size: 0.86rem;
+  color: var(--navy);
+  background: var(--bg-panel);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.pr-filter-select--conference { min-width: 170px; }
+.pr-filter-select--division { min-width: 150px; }
 
 .pr-clear {
   position: absolute;
@@ -154,31 +179,52 @@
   font-size: 0.8rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  background: rgba(13, 45, 98, 0.07);
-  color: var(--text-muted);
 }
 
 .pr-rank--top3 {
-  background: linear-gradient(135deg, #c9a227, #e8c547);
-  color: #4a3200;
-  box-shadow: 0 2px 6px rgba(201, 162, 39, 0.3);
+  background: linear-gradient(135deg, #197832, #0F872D);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(21, 90, 57, 0.28);
 }
 
 .pr-rank--top10 {
-  background: linear-gradient(135deg, var(--green-dark), #5aa016);
-  color: white;
-  box-shadow: 0 2px 6px rgba(125, 200, 32, 0.25);
+  background: linear-gradient(135deg, #9ACC56, #8AD43F);
+  color: var(--navy);
+  box-shadow: 0 2px 6px rgba(93, 145, 47, 0.2);
 }
 
 .pr-rank--top25 {
-  background: rgba(13, 45, 98, 0.12);
+  background: linear-gradient(135deg, #d8ad35, #e5c45b);
   color: var(--navy);
+}
+
+.pr-rank--top50 {
+  background: linear-gradient(135deg, #a95026, #b45f2a);
+  color: #fff;
+}
+
+.pr-rank--bottom {
+  background: linear-gradient(135deg, #813936, #8f3f3b);
+  color: #fff;
 }
 
 /* ── Team cell ─────────────────────────────────────────────── */
 .pr-td-team {
   font-weight: 600;
   color: var(--navy);
+}
+
+.pr-team-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pr-team-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 /* ── Record cell ───────────────────────────────────────────── */
@@ -224,7 +270,15 @@
   .pr-hero { padding: 24px 0 20px; }
   .pr-stats { gap: 20px; }
   .pr-stat-val { font-size: 1.3rem; }
-  .pr-controls { max-width: 100%; }
+  .pr-controls { gap: 8px; }
+  .pr-search-wrap {
+    flex-basis: 100%;
+    max-width: none;
+  }
+  .pr-filter-select {
+    flex: 1 1 145px;
+    min-width: 0;
+  }
   .pr-table th, .pr-table td { padding: 10px 12px; }
 }
 

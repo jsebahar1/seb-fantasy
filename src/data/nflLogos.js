@@ -1,0 +1,38 @@
+/**
+ * NFL team logo paths keyed by the exact team names in nflGames.js.
+ * Source and usage notes: public/team-logos/nfl/ATTRIBUTION.md
+ */
+export const NFL_LOGOS = {
+  'Buffalo Bills': '/team-logos/nfl/buffalo-bills.png',
+  'Miami Dolphins': '/team-logos/nfl/miami-dolphins.png',
+  'New England Patriots': '/team-logos/nfl/new-england-patriots.png',
+  'New York Jets': '/team-logos/nfl/new-york-jets.png',
+  'Baltimore Ravens': '/team-logos/nfl/baltimore-ravens.png',
+  'Cincinnati Bengals': '/team-logos/nfl/cincinnati-bengals.png',
+  'Cleveland Browns': '/team-logos/nfl/cleveland-browns.png',
+  'Pittsburgh Steelers': '/team-logos/nfl/pittsburgh-steelers.png',
+  'Houston Texans': '/team-logos/nfl/houston-texans.png',
+  'Indianapolis Colts': '/team-logos/nfl/indianapolis-colts.png',
+  'Jacksonville Jaguars': '/team-logos/nfl/jacksonville-jaguars.png',
+  'Tennessee Titans': '/team-logos/nfl/tennessee-titans.png',
+  'Denver Broncos': '/team-logos/nfl/denver-broncos.png',
+  'Kansas City Chiefs': '/team-logos/nfl/kansas-city-chiefs.png',
+  'Las Vegas Raiders': '/team-logos/nfl/las-vegas-raiders.png',
+  'Los Angeles Chargers': '/team-logos/nfl/los-angeles-chargers.png',
+  'Dallas Cowboys': '/team-logos/nfl/dallas-cowboys.png',
+  'New York Giants': '/team-logos/nfl/new-york-giants.png',
+  'Philadelphia Eagles': '/team-logos/nfl/philadelphia-eagles.png',
+  'Washington Commanders': '/team-logos/nfl/washington-commanders.png',
+  'Chicago Bears': '/team-logos/nfl/chicago-bears.png',
+  'Detroit Lions': '/team-logos/nfl/detroit-lions.png',
+  'Green Bay Packers': '/team-logos/nfl/green-bay-packers.png',
+  'Minnesota Vikings': '/team-logos/nfl/minnesota-vikings.png',
+  'Atlanta Falcons': '/team-logos/nfl/atlanta-falcons.png',
+  'Carolina Panthers': '/team-logos/nfl/carolina-panthers.png',
+  'New Orleans Saints': '/team-logos/nfl/new-orleans-saints.png',
+  'Tampa Bay Buccaneers': '/team-logos/nfl/tampa-bay-buccaneers.png',
+  'Arizona Cardinals': '/team-logos/nfl/arizona-cardinals.png',
+  'Los Angeles Rams': '/team-logos/nfl/los-angeles-rams.png',
+  'San Francisco 49ers': '/team-logos/nfl/san-francisco-49ers.png',
+  'Seattle Seahawks': '/team-logos/nfl/seattle-seahawks.png',
+};
