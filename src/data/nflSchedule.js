@@ -5,7 +5,6 @@
 // When a game is played, move it into nflGames.js with its final score and
 // delete the line here.
 export const NFL_UPCOMING = [
-  { home: 'Buffalo Bills',          away: 'Detroit Lions',          week: 2 },
   { home: 'Tennessee Titans',       away: 'Philadelphia Eagles',    week: 2 },
   { home: 'New England Patriots',   away: 'Pittsburgh Steelers',    week: 2 },
   { home: 'Chicago Bears',          away: 'Minnesota Vikings',      week: 2 },

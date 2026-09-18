@@ -43,4 +43,6 @@ export const NFL_GAMES = [
   { home: 'Philadelphia Eagles',    away: 'Washington Commanders',  homePoints: 24, awayPoints: 22, week: 1 },
   { home: 'New York Giants',        away: 'Dallas Cowboys',         homePoints: 28, awayPoints: 20, week: 1 },
   { home: 'Kansas City Chiefs',     away: 'Denver Broncos',         homePoints: 31, awayPoints: 10, week: 1 },
+  // Week 2
+  { home: 'Buffalo Bills',          away: 'Detroit Lions',          homePoints: 41, awayPoints: 31, week: 2 },
 ];

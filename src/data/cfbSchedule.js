@@ -6,7 +6,6 @@
 // When a game is played, move it into cfbGames.js with its final score and
 // delete the line here.
 export const UPCOMING_GAMES = [
-  { home: 'Pittsburgh',            away: 'Syracuse',             week: 3 },
   { home: 'Wake Forest',           away: 'Miami (FL)',           week: 3 },
   { home: 'Texas Tech',            away: 'Houston',              week: 3 },
   { home: 'Oregon',                away: 'FCS',                  week: 3 },
