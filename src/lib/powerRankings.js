@@ -49,7 +49,7 @@ const H2H_SEP = '|'; // safe: no team name contains a pipe
  * Who beat whom. A pair that split their meetings is left out, there is no
  * winner to defer to.
  */
-function headToHead(games, teamSet, pooled) {
+function headToHead(games, teamSet) {
   const tally = new Map();
   const bump = (a, b, key) => {
     const k = a + H2H_SEP + b;
@@ -61,9 +61,6 @@ function headToHead(games, teamSet, pooled) {
   for (const { home, away, homePoints, awayPoints } of games) {
     if (!teamSet.has(home) || !teamSet.has(away)) continue;
     if (homePoints === awayPoints) continue;
-    // A pooled bucket stands in for many different opponents, so "it" beating
-    // someone says nothing about one team being better than another.
-    if (pooled?.has(home) || pooled?.has(away)) continue;
     const [winner, loser] = homePoints > awayPoints ? [home, away] : [away, home];
     bump(winner, loser, 'w');
     bump(loser, winner, 'l');
@@ -79,10 +76,12 @@ function headToHead(games, teamSet, pooled) {
 function rankOrder(teams, scores, beatenBy) {
   const order = [...teams].sort((a, b) => scores[b] - scores[a]);
 
-  // Head-to-head outranks a hairline score gap. Two teams that played each
-  // other have ratings that depend on each other's rank, which can leave them
-  // swapping places forever with no stable ordering; deferring to the result on
-  // the field breaks that and matches how anyone would actually rank them.
+  // Head-to-head outranks a score gap between neighbours, whatever its size.
+  // Two teams that played each other have ratings that depend on each other's
+  // rank, which can leave them swapping places forever with no stable ordering;
+  // deferring to the result on the field breaks that and matches how anyone
+  // would actually rank them. This applies to a pooled bucket too: if it beat
+  // the team directly below it, it belongs ahead of them.
   // Bounded, since a rock-paper-scissors triangle has no valid ordering at all.
   if (beatenBy) {
     for (let pass = 0; pass < order.length; pass++) {
@@ -175,14 +174,15 @@ function countInversions(teams, ranks, scores, beatenBy) {
 /**
  * @param {string[]} teams  every team tracked, including any pooled bucket
  * @param {Array}    games  { home, away, homePoints, awayPoints }
- * @param {string[]} pooled team names that stand in for many opponents (e.g. 'FCS')
- *                         and so are excluded from head-to-head tiebreaks
+ * @param {string[]} pooled team names that stand in for many opponents (e.g. 'FCS').
+ *                         Still eligible for head-to-head: if a pooled entry beat
+ *                         a team and the two land adjacent, it ranks ahead.
  * @returns rows sorted by rank, each with a per-game log that sums to `score`
  */
 export function buildRankings(teams, games, { pooled = [] } = {}) {
   const teamSet = new Set(teams);
   const gameScore = makeScorer(teams.length);
-  const beatenBy = headToHead(games, teamSet, new Set(pooled));
+  const beatenBy = headToHead(games, teamSet);
   const { ranks, scores } = solveRanks(teams, games, teamSet, gameScore, beatenBy);
 
   const logs = {};
