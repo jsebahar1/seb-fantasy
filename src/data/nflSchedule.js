@@ -5,20 +5,6 @@
 // When a game is played, move it into nflGames.js with its final score and
 // delete the line here.
 export const NFL_UPCOMING = [
-  { home: 'Tennessee Titans',       away: 'Philadelphia Eagles',    week: 2 },
-  { home: 'New England Patriots',   away: 'Pittsburgh Steelers',    week: 2 },
-  { home: 'Chicago Bears',          away: 'Minnesota Vikings',      week: 2 },
-  { home: 'Atlanta Falcons',        away: 'Carolina Panthers',      week: 2 },
-  { home: 'New York Jets',          away: 'Green Bay Packers',      week: 2 },
-  { home: 'Baltimore Ravens',       away: 'New Orleans Saints',     week: 2 },
-  { home: 'Houston Texans',         away: 'Cincinnati Bengals',     week: 2 },
-  { home: 'Tampa Bay Buccaneers',   away: 'Cleveland Browns',       week: 2 },
-  { home: 'Denver Broncos',         away: 'Jacksonville Jaguars',   week: 2 },
-  { home: 'Los Angeles Chargers',   away: 'Las Vegas Raiders',      week: 2 },
-  { home: 'Arizona Cardinals',      away: 'Seattle Seahawks',       week: 2 },
-  { home: 'San Francisco 49ers',    away: 'Miami Dolphins',         week: 2 },
-  { home: 'Dallas Cowboys',         away: 'Washington Commanders',  week: 2 },
-  { home: 'Kansas City Chiefs',     away: 'Indianapolis Colts',     week: 2 },
   { home: 'Los Angeles Rams',       away: 'New York Giants',        week: 2 },
   { home: 'Green Bay Packers',      away: 'Atlanta Falcons',        week: 3 },
   { home: 'Miami Dolphins',         away: 'Kansas City Chiefs',     week: 3 },
