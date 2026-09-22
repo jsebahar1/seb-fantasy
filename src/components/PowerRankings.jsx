@@ -30,6 +30,23 @@ function Logo({ team, logos, size = 20, className = 'pr-logo-inline' }) {
   );
 }
 
+/**
+ * Record against opponents that share a grouping with this team, read off the
+ * game log so no extra pass over the raw games is needed.
+ */
+function subRecord(row, map) {
+  const mine = map?.[row.team];
+  const rec = { w: 0, l: 0, t: 0 };
+  if (!mine) return rec;
+  for (const g of row.games) {
+    if (map[g.opponent] !== mine) continue;
+    if (g.result === 'W') rec.w++;
+    else if (g.result === 'L') rec.l++;
+    else rec.t++;
+  }
+  return rec;
+}
+
 function formatRecord(rec) {
   return rec.t > 0 ? `${rec.w}–${rec.l}–${rec.t}` : `${rec.w}–${rec.l}`;
 }
@@ -63,7 +80,7 @@ function divisionsForConference(options, divisionMap, conferenceMap, conference)
 }
 
 // ── Team detail dialog ────────────────────────────────────────────────────────
-function TeamDetail({ row, upcoming, teamLabels, teamLogos, onClose }) {
+function TeamDetail({ row, upcoming, teamLabels, teamLogos, extraRecords = [], onClose }) {
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose(); }
     document.addEventListener('keydown', onKey);
@@ -92,6 +109,13 @@ function TeamDetail({ row, upcoming, teamLabels, teamLogos, onClose }) {
             <h3 className="pr-modal-team">{teamLabel(row.team, teamLabels)}</h3>
             <p className="pr-modal-meta">
               {formatRecord(row.record)}
+              {extraRecords.map(r => (
+                <span key={r.label}>
+                  <span className="pr-modal-dot">·</span>
+                  <span className="pr-modal-sub">{r.label} </span>
+                  {formatRecord(subRecord(row, r.map))}
+                </span>
+              ))}
               <span className="pr-modal-dot">·</span>
               <span className={row.score >= 0 ? 'pr-score--pos' : 'pr-score--neg'}>
                 {fmt(row.score)}
@@ -387,6 +411,7 @@ export default function PowerRankings({
   tableHeading,
   caption,
   searchLabel = 'Search team…',
+  extraRecords = [],
   curve,
   pooled,
   pooledNote,
@@ -568,6 +593,9 @@ export default function PowerRankings({
               <th className="pr-th-rank">Rank</th>
               <th className="pr-th-team">Team</th>
               <th className="pr-th-record">Record</th>
+              {extraRecords.map(r => (
+                <th key={r.label} className="pr-th-record">{r.label}</th>
+              ))}
               <th className="pr-th-score">Score</th>
             </tr>
           </thead>
@@ -611,6 +639,11 @@ export default function PowerRankings({
                     ? formatRecord(row.record)
                     : <span className="pr-idle">0–0</span>}
                 </td>
+                {extraRecords.map(r => (
+                  <td key={r.label} className="pr-td-record pr-td-subrec">
+                    {formatRecord(subRecord(row, r.map))}
+                  </td>
+                ))}
                 <td className="pr-td-score">
                   {row.hasGames
                     ? <span className={row.score >= 0 ? 'pr-score--pos' : 'pr-score--neg'}>
@@ -623,7 +656,7 @@ export default function PowerRankings({
 
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={4} className="pr-empty">
+                <td colSpan={4 + extraRecords.length} className="pr-empty">
                   {hasTableFilters
                     ? 'No teams match the selected filters.'
                     : `No teams match "${search}"`}
@@ -642,6 +675,7 @@ export default function PowerRankings({
           upcoming={scheduleByTeam[selected.team]}
           teamLabels={teamLabels}
           teamLogos={teamLogos}
+          extraRecords={extraRecords}
           onClose={() => setSelected(null)}
         />
       )}

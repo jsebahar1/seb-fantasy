@@ -1030,3 +1030,7 @@
   object-fit: contain;
   flex-shrink: 0;
 }
+
+/* Conference and division records sit quieter than the overall record */
+.pr-td-subrec { color: var(--text-muted); font-weight: 600; }
+.pr-modal-sub { color: var(--text-muted); font-size: 0.78rem; }

@@ -242,6 +242,7 @@ export default function NflRankings() {
         <div hidden={tab !== 'teams'}>
         <PowerRankings
           rankings={rankings}
+          extraRecords={NFL_RECORDS}
           curve={CURVE_LINEAR}
           upcomingGames={NFL_UPCOMING}
           searchLabel="Search team…"
