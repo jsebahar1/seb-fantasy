@@ -7,7 +7,7 @@ import GroupRankings from '../components/GroupRankings';
 import {
   NFL_CONFERENCES, NFL_DIVISIONS, TEAM_CONFERENCE, TEAM_DIVISION,
 } from '../data/nflStructure';
-import { buildRankings } from '../lib/powerRankings';
+import { buildRankings, CURVE_LINEAR } from '../lib/powerRankings';
 import { NFL_TEAMS, NFL_GAMES } from '../data/nflGames';
 import { NFL_UPCOMING } from '../data/nflSchedule';
 import { NFL_LOGOS } from '../data/nflLogos';
@@ -39,7 +39,9 @@ const NFL_RANK_BADGE_CUTOFFS = [3, 8, 15, 25];
 
 export default function NflRankings() {
   const [tab, setTab] = useState('teams');
-  const rankings = useMemo(() => buildRankings(NFL_TEAMS, NFL_GAMES), []);
+  const rankings = useMemo(
+    () => buildRankings(NFL_TEAMS, NFL_GAMES, { curve: CURVE_LINEAR }), [],
+  );
 
   const rated = rankings.filter(r => r.hasGames);
   const hasData = NFL_GAMES.length > 0;
@@ -240,6 +242,7 @@ export default function NflRankings() {
         <div hidden={tab !== 'teams'}>
         <PowerRankings
           rankings={rankings}
+          curve={CURVE_LINEAR}
           upcomingGames={NFL_UPCOMING}
           searchLabel="Search team…"
           teamLogos={NFL_LOGOS}

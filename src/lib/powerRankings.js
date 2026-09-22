@@ -17,16 +17,32 @@
 // Easing into each new position instead reaches a real fixed point.
 const DAMPING = 0.25;
 
-export function makeScorer(teamCount) {
+// Exponents applied to the rank fraction. The defaults are the college shape:
+// squaring makes a win over a good team spike, and a square root makes the loss
+// penalty climb fast then flatten. A league with less spread between best and
+// worst wants both closer to 1, where rank scales the margin directly.
+export const CURVE_COLLEGE = { winExponent: 2, lossExponent: 0.5 };
+export const CURVE_LINEAR = { winExponent: 1, lossExponent: 1 };
+
+// Exact forms for the common exponents, so swapping in a curve cannot perturb
+// existing numbers through a different floating point path.
+function curve(base, exponent) {
+  if (exponent === 1) return base;
+  if (exponent === 2) return base * base;
+  if (exponent === 0.5) return Math.sqrt(base);
+  return Math.pow(base, exponent);
+}
+
+export function makeScorer(teamCount, { winExponent = 2, lossExponent = 0.5 } = {}) {
   const M2 = teamCount;
   const M3 = teamCount + 1;
 
   return function gameScore(diff, opponentRank) {
-    // Win:  ((M3 - opp_rank) / M2)^2 * diff  , squared, so quality wins spike
-    // Loss: SQRT(opp_rank / M2) * diff       , diff is negative here
+    // Win:  ((M3 - opp_rank) / M2)^winExponent  * diff
+    // Loss: (opp_rank / M2)^lossExponent * diff , diff is negative here
     return diff > 0
-      ? Math.pow((M3 - opponentRank) / M2, 2) * diff
-      : Math.sqrt(opponentRank / M2) * diff;
+      ? curve((M3 - opponentRank) / M2, winExponent) * diff
+      : curve(opponentRank / M2, lossExponent) * diff;
   };
 }
 
@@ -177,11 +193,13 @@ function countInversions(teams, ranks, scores, beatenBy) {
  * @param {string[]} pooled team names that stand in for many opponents (e.g. 'FCS').
  *                         Still eligible for head-to-head: if a pooled entry beat
  *                         a team and the two land adjacent, it ranks ahead.
+ * @param {object}   curve  { winExponent, lossExponent }; defaults to the college
+ *                         shape. Pass CURVE_LINEAR for a league with less spread.
  * @returns rows sorted by rank, each with a per-game log that sums to `score`
  */
-export function buildRankings(teams, games, { pooled = [] } = {}) {
+export function buildRankings(teams, games, { pooled = [], curve: shape } = {}) {
   const teamSet = new Set(teams);
-  const gameScore = makeScorer(teams.length);
+  const gameScore = makeScorer(teams.length, shape);
   const beatenBy = headToHead(games, teamSet);
   const { ranks, scores } = solveRanks(teams, games, teamSet, gameScore, beatenBy);
 

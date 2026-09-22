@@ -176,7 +176,7 @@ function TeamDetail({ row, upcoming, teamLabels, teamLogos, onClose }) {
  * the way hand-written ones do. Picks the most valuable win and the costliest
  * loss in the data, which also happens to show the win/loss asymmetry clearly.
  */
-function deriveExamples(rankings, N, pooled) {
+function deriveExamples(rankings, N, pooled, { winExponent = 2, lossExponent = 0.5 } = {}) {
   const M3 = N + 1;
   const skip = new Set(pooled ?? []);
   let bestWin = null;
@@ -207,16 +207,20 @@ function deriveExamples(rankings, N, pooled) {
       math:
         `D = ${bestWin.pointsFor} - ${bestWin.pointsAgainst} = ${wD}\n` +
         `(${M3} - ${bestWin.oppRank}) / ${N} = ${M3 - bestWin.oppRank} / ${N} = ${wFrac.toFixed(6)}\n` +
-        `${wFrac.toFixed(6)} squared = ${(wFrac * wFrac).toFixed(6)}\n` +
-        `${(wFrac * wFrac).toFixed(6)} x ${wD} = ${signed(bestWin.value)}`,
+        (winExponent === 1
+          ? ''
+          : `${wFrac.toFixed(6)} ${winExponent === 2 ? 'squared' : '^' + winExponent} = ${Math.pow(wFrac, winExponent).toFixed(6)}\n`) +
+        `${Math.pow(wFrac, winExponent).toFixed(6)} x ${wD} = ${signed(bestWin.value)}`,
     },
     loss: {
       title: `${line(worstLoss)}. A loss to the #${worstLoss.oppRank} team`,
       math:
         `D = ${worstLoss.pointsFor} - ${worstLoss.pointsAgainst} = ${lD}\n` +
         `${worstLoss.oppRank} / ${N} = ${lFrac.toFixed(6)}\n` +
-        `square root of ${lFrac.toFixed(6)} = ${Math.sqrt(lFrac).toFixed(6)}\n` +
-        `${Math.sqrt(lFrac).toFixed(6)} x ${lD} = ${signed(worstLoss.value)}`,
+        (lossExponent === 1
+          ? ''
+          : `${lossExponent === 0.5 ? 'square root of ' : '^' + lossExponent + ' of '}${lFrac.toFixed(6)} = ${Math.pow(lFrac, lossExponent).toFixed(6)}\n`) +
+        `${Math.pow(lFrac, lossExponent).toFixed(6)} x ${lD} = ${signed(worstLoss.value)}`,
     },
     note:
       `Those two are worth comparing. The best win in the data is worth ` +
@@ -227,12 +231,14 @@ function deriveExamples(rankings, N, pooled) {
 }
 
 // ── Methodology explainer ─────────────────────────────────────────────────────
-function Explainer({ rankings, pooled, pooledNote }) {
+function Explainer({ rankings, pooled, pooledNote, curve }) {
   const N = rankings.length;
-  const example = deriveExamples(rankings, N, pooled);
+  const { winExponent = 2, lossExponent = 0.5 } = curve ?? {};
+  const example = deriveExamples(rankings, N, pooled, curve);
   const M3 = N + 1;
-  const win = r => Math.pow((M3 - r) / N, 2);
-  const loss = r => Math.sqrt(r / N);
+  const win = r => Math.pow((M3 - r) / N, winExponent);
+  const loss = r => Math.pow(r / N, lossExponent);
+  const sup = e => (e === 1 ? null : <sup>{e === 0.5 ? '½' : e}</sup>);
   const ratio = Math.round(win(1) / win(N));
 
   // Sample points spread across the table, skipping any that collide.
@@ -260,11 +266,13 @@ function Explainer({ rankings, pooled, pooledNote }) {
       <div className="pr-eq">
         <div className="pr-eq-row">
           <span className="pr-eq-label pr-eq-label--win">Win</span>
-          <code className="pr-eq-math">value = (({M3} − R) ÷ {N})<sup>2</sup> × D</code>
+          <code className="pr-eq-math">value = (({M3} − R) ÷ {N}){sup(winExponent)} × D</code>
         </div>
         <div className="pr-eq-row">
           <span className="pr-eq-label pr-eq-label--loss">Loss</span>
-          <code className="pr-eq-math">value = √(R ÷ {N}) × D</code>
+          <code className="pr-eq-math">
+            value = {lossExponent === 0.5 ? '√' : ''}(R ÷ {N}){lossExponent === 0.5 ? null : sup(lossExponent)} × D
+          </code>
         </div>
       </div>
 
@@ -274,16 +282,18 @@ function Explainer({ rankings, pooled, pooledNote }) {
         handling is needed.
       </p>
 
-      <h3 className="pr-explain-h3">Why wins are squared</h3>
+      <h3 className="pr-explain-h3">
+        {winExponent === 1 ? 'How the win multiplier scales' : 'Why wins are squared'}
+      </h3>
       <p className="pr-explain-p">
-        The win multiplier <code>(({M3} − R) ÷ {N})<sup>2</sup></code> runs from
+        The win multiplier <code>(({M3} − R) ÷ {N}){sup(winExponent)}</code> runs from
         <strong> {win(1).toFixed(4)}</strong> for beating the #1 team down to
-        <strong> {win(N).toFixed(6)}</strong> for beating #{N}. Squaring makes that
-        falloff steep rather than gradual: beating the top team is worth roughly
-        <strong> {ratio.toLocaleString()}×</strong> more per point of margin than
-        beating the worst team. The practical effect is that running up the score on a
-        bad opponent earns you almost nothing, while a narrow win over a good one is
-        worth a great deal.
+        <strong> {win(N).toFixed(6)}</strong> for beating #{N}. Beating the top team is
+        worth <strong>{ratio.toLocaleString()}×</strong> more per point of margin than
+        beating the worst one.{' '}
+        {winExponent === 1
+          ? 'Because the multiplier is linear, that gap tracks the rank gap directly. Opponent quality matters, but it does not overwhelm the margin the way a steeper curve would.'
+          : 'Squaring makes that falloff steep rather than gradual, so running up the score on a bad opponent earns almost nothing while a narrow win over a good one is worth a great deal.'}
       </p>
 
       <div className="pr-scale">
@@ -295,9 +305,13 @@ function Explainer({ rankings, pooled, pooledNote }) {
         ))}
       </div>
 
-      <h3 className="pr-explain-h3">Why losses use a square root</h3>
+      <h3 className="pr-explain-h3">
+        {lossExponent === 1 ? 'How the loss multiplier scales' : 'Why losses use a square root'}
+      </h3>
       <p className="pr-explain-p">
-        The loss multiplier <code>√(R ÷ {N})</code> runs the other direction, from
+        The loss multiplier <code>
+          {lossExponent === 0.5 ? '√' : ''}(R ÷ {N}){lossExponent === 0.5 ? null : sup(lossExponent)}
+        </code> runs the other direction, from
         <strong> {loss(1).toFixed(4)}</strong> for losing to #1 up to
         <strong> {loss(N).toFixed(4)}</strong> for losing to #{N}. A square root is
         concave, so the penalty climbs fast at first and then flattens out. Losing to a
@@ -373,6 +387,7 @@ export default function PowerRankings({
   tableHeading,
   caption,
   searchLabel = 'Search team…',
+  curve,
   pooled,
   pooledNote,
   teamLabels,
@@ -619,7 +634,7 @@ export default function PowerRankings({
         </table>
       </div>
 
-      <Explainer rankings={rankings} pooled={pooled} pooledNote={pooledNote} />
+      <Explainer rankings={rankings} pooled={pooled} pooledNote={pooledNote} curve={curve} />
 
       {selected && (
         <TeamDetail
