@@ -81,6 +81,9 @@ function divisionsForConference(options, divisionMap, conferenceMap, conference)
 
 // ── Team detail dialog ────────────────────────────────────────────────────────
 function TeamDetail({ row, upcoming, teamLabels, teamLogos, extraRecords = [], onClose }) {
+  // The rank the formula consumed differs from the opponent's shown rank only
+  // when the model scores a game against the opponent's record without it.
+  const showEff = row.games.some(g => g.effRank != null && g.effRank !== g.oppRank);
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose(); }
     document.addEventListener('keydown', onKey);
@@ -134,6 +137,7 @@ function TeamDetail({ row, upcoming, teamLabels, teamLogos, extraRecords = [], o
                   <th className="pr-mt-wk">Wk</th>
                   <th>Opponent</th>
                   <th className="pr-mt-num">Rank</th>
+                  {showEff && <th className="pr-mt-num" title="Opponent's rank with this game removed, which is what the formula uses">Eff</th>}
                   <th className="pr-mt-num">Score</th>
                   <th className="pr-mt-res">Res</th>
                   <th className="pr-mt-num">Points</th>
@@ -149,6 +153,11 @@ function TeamDetail({ row, upcoming, teamLabels, teamLogos, extraRecords = [], o
                       {teamLabel(g.opponent, teamLabels)}
                     </td>
                     <td className="pr-mt-num">{g.oppRank}</td>
+                    {showEff && (
+                      <td className={`pr-mt-num pr-mt-eff${g.effRank !== g.oppRank ? ' pr-mt-eff--moved' : ''}`}>
+                        {g.effRank}
+                      </td>
+                    )}
                     <td className="pr-mt-num">{g.pointsFor}–{g.pointsAgainst}</td>
                     <td className="pr-mt-res">
                       <span className={`pr-res pr-res--${g.result.toLowerCase()}`}>{g.result}</span>

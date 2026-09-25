@@ -117,6 +117,100 @@ function rankOrder(teams, scores, beatenBy) {
   return ranks;
 }
 
+// How far a per-game value moves toward its newly computed target each pass,
+// when solving with effective opponent ranks. Values are damped rather than
+// scores: an effective rank is a step function of a leave-one-out score, and
+// letting the values jump makes roughly half the table oscillate forever.
+const VALUE_DAMPING = 0.2;
+
+/**
+ * Solve with "effective" opponent ranks: the rank an opponent would hold if the
+ * game in question were removed from their record.
+ *
+ * Using an opponent's current rank lets a game inflate its own worth. Beating a
+ * team drags them down, which makes the win look weaker, which drags them down
+ * further. Scoring each game against the opponent's rank *without* that game
+ * breaks the loop, so the result reflects who beat whom rather than the order
+ * the feedback happened to settle into.
+ */
+function solveEffective(teams, games, teamSet, gameScore, beatenBy) {
+  const N = teams.length;
+  const index = Object.fromEntries(teams.map((t, i) => [t, i]));
+
+  const G = [];
+  for (const g of games) {
+    if (!teamSet.has(g.home) || !teamSet.has(g.away)) continue;
+    G.push({ h: index[g.home], a: index[g.away], diff: g.homePoints - g.awayPoints, ref: g });
+  }
+
+  const vh = new Float64Array(G.length);
+  const va = new Float64Array(G.length);
+  const mid = Math.ceil(N / 2);
+  G.forEach((g, i) => { vh[i] = gameScore(g.diff, mid); va[i] = gameScore(-g.diff, mid); });
+
+  const score = new Float64Array(N);
+  const total = () => {
+    score.fill(0);
+    for (let i = 0; i < G.length; i++) { score[G[i].h] += vh[i]; score[G[i].a] += va[i]; }
+  };
+  total();
+
+  // Sorted descending once per pass, so a leave-one-out rank is a binary search
+  // rather than a scan over every team.
+  let sorted = Float64Array.from(score).sort().reverse();
+  const resort = () => { sorted = Float64Array.from(score).sort().reverse(); };
+
+  // Teams strictly above `adj`, not counting `t` itself.
+  const effRank = (t, adj) => {
+    let lo = 0, hi = sorted.length;
+    while (lo < hi) {
+      const m = (lo + hi) >> 1;
+      if (sorted[m] > adj) lo = m + 1; else hi = m;
+    }
+    return lo + 1 - (score[t] > adj ? 1 : 0);
+  };
+
+  let prev = null, stable = 0;
+  for (let pass = 0; pass < 500 && stable < 25; pass++) {
+    resort();
+    for (let i = 0; i < G.length; i++) {
+      const g = G[i];
+      const tH = gameScore(g.diff, effRank(g.a, score[g.a] - va[i]));
+      const tA = gameScore(-g.diff, effRank(g.h, score[g.h] - vh[i]));
+      vh[i] = (1 - VALUE_DAMPING) * vh[i] + VALUE_DAMPING * tH;
+      va[i] = (1 - VALUE_DAMPING) * va[i] + VALUE_DAMPING * tA;
+    }
+    total();
+    const order = Array.from(score.keys()).sort((x, y) => score[y] - score[x]).join(',');
+    stable = order === prev ? stable + 1 : 0;
+    prev = order;
+  }
+
+  // Final pass with no damping, so every published value is exactly
+  // gameScore(diff, effectiveRank) and a team's values sum to its rating.
+  resort();
+  const effH = new Int32Array(G.length), effA = new Int32Array(G.length);
+  for (let i = 0; i < G.length; i++) {
+    effA[i] = effRank(G[i].a, score[G[i].a] - va[i]);
+    effH[i] = effRank(G[i].h, score[G[i].h] - vh[i]);
+  }
+  for (let i = 0; i < G.length; i++) {
+    vh[i] = gameScore(G[i].diff, effA[i]);
+    va[i] = gameScore(-G[i].diff, effH[i]);
+  }
+  total();
+
+  const scores = Object.fromEntries(teams.map((t, i) => [t, score[i]]));
+  const ranks = rankOrder(teams, scores, beatenBy);
+
+  // effective opponent rank per game side, keyed for the log builder
+  const effective = new Map();
+  for (let i = 0; i < G.length; i++) {
+    effective.set(G[i].ref, { home: effA[i], away: effH[i] });
+  }
+  return { ranks, scores, effective };
+}
+
 function solveRanks(teams, games, teamSet, gameScore, beatenBy) {
   // Every team starts at the midpoint so nobody is assumed strong or weak.
   const mid = Math.ceil(teams.length / 2);
@@ -197,31 +291,42 @@ function countInversions(teams, ranks, scores, beatenBy) {
  *                         shape. Pass CURVE_LINEAR for a league with less spread.
  * @returns rows sorted by rank, each with a per-game log that sums to `score`
  */
-export function buildRankings(teams, games, { pooled = [], curve: shape } = {}) {
+export function buildRankings(teams, games, { pooled = [], curve: shape, effectiveOpponentRank = false } = {}) {
   const teamSet = new Set(teams);
   const gameScore = makeScorer(teams.length, shape);
   const beatenBy = headToHead(games, teamSet);
-  const { ranks, scores } = solveRanks(teams, games, teamSet, gameScore, beatenBy);
+  const solved = effectiveOpponentRank
+    ? solveEffective(teams, games, teamSet, gameScore, beatenBy)
+    : solveRanks(teams, games, teamSet, gameScore, beatenBy);
+  const { ranks, scores, effective } = solved;
 
   const logs = {};
   const records = {};
   teams.forEach(t => { logs[t] = []; records[t] = { w: 0, l: 0, t: 0 }; });
 
-  for (const { home, away, homePoints, awayPoints, week } of games) {
+  for (const game of games) {
+    const { home, away, homePoints, awayPoints, week } = game;
     if (!teamSet.has(home) || !teamSet.has(away)) continue;
     const diff = homePoints - awayPoints;
 
+    // Which opponent rank the formula actually consumed. With effective ranks
+    // that is the opponent's rank minus this game; otherwise it is their rank
+    // as shown, and the two columns read the same.
+    const eff = effective?.get(game);
+    const rankForHome = eff ? eff.home : ranks[away];
+    const rankForAway = eff ? eff.away : ranks[home];
+
     logs[home].push({
-      opponent: away, atHome: true, oppRank: ranks[away], week,
+      opponent: away, atHome: true, oppRank: ranks[away], effRank: rankForHome, week,
       pointsFor: homePoints, pointsAgainst: awayPoints,
       result: diff > 0 ? 'W' : diff < 0 ? 'L' : 'T',
-      value: gameScore(diff, ranks[away]),
+      value: gameScore(diff, rankForHome),
     });
     logs[away].push({
-      opponent: home, atHome: false, oppRank: ranks[home], week,
+      opponent: home, atHome: false, oppRank: ranks[home], effRank: rankForAway, week,
       pointsFor: awayPoints, pointsAgainst: homePoints,
       result: diff < 0 ? 'W' : diff > 0 ? 'L' : 'T',
-      value: gameScore(-diff, ranks[home]),
+      value: gameScore(-diff, rankForAway),
     });
 
     if (diff > 0) { records[home].w++; records[away].l++; }

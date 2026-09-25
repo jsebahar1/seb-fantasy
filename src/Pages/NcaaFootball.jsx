@@ -29,7 +29,10 @@ const UPDATED_LABEL = new Date(`${LAST_UPDATED}T12:00:00Z`).toLocaleDateString('
 export default function NcaaFootball() {
   const [tab, setTab] = useState('teams');
   const rankings = useMemo(
-    () => buildRankings(TEAMS, INITIAL_GAMES, { pooled: POOLED }), [],
+    () => buildRankings(TEAMS, INITIAL_GAMES, {
+      pooled: POOLED,
+      effectiveOpponentRank: true,
+    }), [],
   );
 
   // 'FCS' is a pooled bucket rather than a real program, so it stays out of
