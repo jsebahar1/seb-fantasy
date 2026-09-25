@@ -15,7 +15,7 @@ import { NFL_LOGOS } from '../data/nflLogos';
 // Bump LAST_UPDATED whenever new results are added; it feeds both the visible
 // timestamp and dateModified in structured data.
 const SEASON = 2026;
-const LAST_UPDATED = '2026-09-21';
+const LAST_UPDATED = '2026-09-24';
 const SITE = 'https://sebfantasy.com';
 
 const UPDATED_LABEL = new Date(`${LAST_UPDATED}T12:00:00Z`).toLocaleDateString('en-US', {
