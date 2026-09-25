@@ -40,7 +40,10 @@ const NFL_RANK_BADGE_CUTOFFS = [3, 8, 15, 25];
 export default function NflRankings() {
   const [tab, setTab] = useState('teams');
   const rankings = useMemo(
-    () => buildRankings(NFL_TEAMS, NFL_GAMES, { curve: CURVE_LINEAR }), [],
+    () => buildRankings(NFL_TEAMS, NFL_GAMES, {
+      curve: CURVE_LINEAR,
+      effectiveOpponentRank: true,
+    }), [],
   );
 
   const rated = rankings.filter(r => r.hasGames);
@@ -99,10 +102,24 @@ export default function NflRankings() {
               '@type': 'Answer',
               text:
                 "Every game produces a single value, and a team's rating is the sum of those " +
-                'values. A win is worth ((33 − opponent rank) ÷ 32)² × point differential. A ' +
-                'loss is worth √(opponent rank ÷ 32) × point differential, which is negative. ' +
-                "Because scoring a game requires knowing the opponent's rank, the ranks and " +
-                'ratings are solved together by iteration.',
+                'values. A win is worth ((33 − opponent rank) ÷ 32) × point differential and a ' +
+                'loss is worth (opponent rank ÷ 32) × point differential, which is negative. Both ' +
+                'scale directly with rank, without the steeper curve the college model uses, because ' +
+                'NFL teams are far closer in quality. The opponent rank used is their effective rank, ' +
+                'meaning their rank with that game removed, so a game cannot inflate its own value.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'What is an effective opponent rank?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text:
+                "Each game is scored against the opponent's rank with that game removed from " +
+                'their record. Using their current rank would let a game inflate its own worth: ' +
+                'beating a team drags them down the table, which makes the win look weaker, which ' +
+                'drags them down again. Removing the game first breaks that loop. Clicking any team ' +
+                'shows the effective rank used for every game it played.',
             },
           },
           {

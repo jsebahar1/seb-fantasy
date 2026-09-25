@@ -94,8 +94,22 @@ export default function NcaaFootball() {
               text:
                 "Every game produces a single value, and a team's rating is the sum of those values. " +
                 'A win is worth ((140 − opponent rank) ÷ 139)² × point differential. A loss is worth ' +
-                '√(opponent rank ÷ 139) × point differential, which is negative. Because scoring a game ' +
-                "requires knowing the opponent's rank, the ranks and ratings are solved together by iteration.",
+                '√(opponent rank ÷ 139) × point differential, which is negative. The opponent rank used ' +
+                'is their effective rank, meaning their rank with that game removed from their record, ' +
+                'so a game cannot inflate its own value. Ranks and ratings are solved together by iteration.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'What is an effective opponent rank?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text:
+                "Each game is scored against the opponent's rank with that game removed from " +
+                'their record. Using their current rank would let a game inflate its own worth: ' +
+                'beating a team drags them down the table, which makes the win look weaker, which ' +
+                'drags them down again. Removing the game first breaks that loop. Clicking any team ' +
+                'shows the effective rank used for every game it played.',
             },
           },
           {

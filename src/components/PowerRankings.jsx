@@ -229,27 +229,33 @@ function deriveExamples(rankings, N, pooled, { winExponent = 2, lossExponent = 0
   const line = (g) => `${g.team} ${g.pointsFor}, ${g.opponent} ${g.pointsAgainst}`;
   const signed = (v) => `${v >= 0 ? '+' : ''}${v.toFixed(4)}`;
 
+  // The rank the formula consumed, which is the effective rank when the model
+  // scores a game against the opponent's record without it.
+  const wRank = bestWin.effRank ?? bestWin.oppRank;
+  const lRank = worstLoss.effRank ?? worstLoss.oppRank;
+  const usesEff = wRank !== bestWin.oppRank || lRank !== worstLoss.oppRank;
+
   const wD = bestWin.pointsFor - bestWin.pointsAgainst;
-  const wFrac = (M3 - bestWin.oppRank) / N;
+  const wFrac = (M3 - wRank) / N;
   const lD = worstLoss.pointsFor - worstLoss.pointsAgainst;
-  const lFrac = worstLoss.oppRank / N;
+  const lFrac = lRank / N;
 
   return {
     win: {
-      title: `${line(bestWin)}. A win over the #${bestWin.oppRank} team`,
+      title: `${line(bestWin)}. A win over the ${usesEff ? 'effective ' : ''}#${wRank} team`,
       math:
         `D = ${bestWin.pointsFor} - ${bestWin.pointsAgainst} = ${wD}\n` +
-        `(${M3} - ${bestWin.oppRank}) / ${N} = ${M3 - bestWin.oppRank} / ${N} = ${wFrac.toFixed(6)}\n` +
+        `(${M3} - ${wRank}) / ${N} = ${M3 - wRank} / ${N} = ${wFrac.toFixed(6)}\n` +
         (winExponent === 1
           ? ''
           : `${wFrac.toFixed(6)} ${winExponent === 2 ? 'squared' : '^' + winExponent} = ${Math.pow(wFrac, winExponent).toFixed(6)}\n`) +
         `${Math.pow(wFrac, winExponent).toFixed(6)} x ${wD} = ${signed(bestWin.value)}`,
     },
     loss: {
-      title: `${line(worstLoss)}. A loss to the #${worstLoss.oppRank} team`,
+      title: `${line(worstLoss)}. A loss to the ${usesEff ? 'effective ' : ''}#${lRank} team`,
       math:
         `D = ${worstLoss.pointsFor} - ${worstLoss.pointsAgainst} = ${lD}\n` +
-        `${worstLoss.oppRank} / ${N} = ${lFrac.toFixed(6)}\n` +
+        `${lRank} / ${N} = ${lFrac.toFixed(6)}\n` +
         (lossExponent === 1
           ? ''
           : `${lossExponent === 0.5 ? 'square root of ' : '^' + lossExponent + ' of '}${lFrac.toFixed(6)} = ${Math.pow(lFrac, lossExponent).toFixed(6)}\n`) +
@@ -268,6 +274,29 @@ function Explainer({ rankings, pooled, pooledNote, curve }) {
   const N = rankings.length;
   const { winExponent = 2, lossExponent = 0.5 } = curve ?? {};
   const example = deriveExamples(rankings, N, pooled, curve);
+
+  // Pick the game where stripping it out moves the opponent furthest, since
+  // that is where the difference is easiest to see.
+  const effExample = useMemo(() => {
+    let best = null;
+    for (const row of rankings) {
+      for (const g of row.games) {
+        if (g.effRank == null || g.effRank === g.oppRank) continue;
+        const gap = Math.abs(g.oppRank - g.effRank);
+        if (!best || gap > best.gap) best = { gap, team: row.team, g };
+      }
+    }
+    if (!best) return null;
+    const { team, g } = best;
+    return {
+      headline: `${team} ${g.pointsFor}, ${g.opponent} ${g.pointsAgainst}`,
+      body:
+        `${g.opponent} is listed at #${g.oppRank}\n` +
+        `part of why they sit there is this loss\n` +
+        `remove it and they are a #${g.effRank} team\n` +
+        `so the win is scored against #${g.effRank}, worth ${g.value >= 0 ? '+' : ''}${g.value.toFixed(4)}`,
+    };
+  }, [rankings]);
   const M3 = N + 1;
   const win = r => Math.pow((M3 - r) / N, winExponent);
   const loss = r => Math.pow(r / N, lossExponent);
@@ -377,6 +406,35 @@ function Explainer({ rankings, pooled, pooledNote, curve }) {
             </div>
           )}
           {example.note && <p className="pr-explain-p">{example.note}</p>}
+        </>
+      )}
+
+      {effExample && (
+        <>
+          <h3 className="pr-explain-h3">The opponent's rank leaves your game out</h3>
+          <p className="pr-explain-p">
+            There is a trap in scoring a game against the opponent's current rank: that
+            rank already includes the game being scored. Beat a team and you push them
+            down the table, which makes your own win look weaker, which pushes them down
+            again. It runs the other way too. Lose to a strong team and your loss props
+            them up, which makes the loss look better than it was. Left alone, the table
+            stops being about who beat whom and starts being about who the feedback loop
+            happened to favour.
+          </p>
+          <p className="pr-explain-p">
+            So every game is scored against the opponent's <strong>effective rank</strong>:
+            where that opponent would sit if this one game were struck from their record,
+            with everyone else left alone.
+          </p>
+          <div className="pr-work">
+            <p className="pr-work-head">{effExample.headline}</p>
+            <code className="pr-work-math">{effExample.body}</code>
+          </div>
+          <p className="pr-explain-p">
+            Click any team and the game table carries an <code>Eff</code> column showing
+            this for every game it played. Where that number differs from the opponent's
+            listed rank, the difference is the game itself.
+          </p>
         </>
       )}
 
