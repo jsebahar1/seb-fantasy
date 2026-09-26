@@ -297,4 +297,10 @@ export const INITIAL_GAMES = [
   { home: 'UCLA',                  away: 'Purdue',               homePoints: 52, awayPoints: 38, week: 3 },
   // Week 4
   { home: 'Coastal Carolina',      away: 'Liberty',              homePoints: 17, awayPoints: 34, week: 4 },
+  { home: 'Akron',                 away: 'UNLV',                 homePoints: 10, awayPoints: 38, week: 4 },
+  { home: 'Indiana',               away: 'Northwestern',         homePoints: 29, awayPoints: 23, week: 4 },
+  { home: 'Temple',                away: 'Army',                 homePoints: 17, awayPoints: 21, week: 4 },
+  { home: 'UAB',                   away: 'Navy',                 homePoints: 24, awayPoints: 20, week: 4 },
+  { home: 'Rutgers',               away: 'FCS',                  homePoints: 58, awayPoints:  7, week: 4 },
+  { home: 'California',            away: 'Clemson',              homePoints: 10, awayPoints: 24, week: 4 },
 ];
