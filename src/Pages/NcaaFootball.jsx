@@ -232,6 +232,7 @@ export default function NcaaFootball() {
         <PowerRankings
           rankings={rankings}
           upcomingGames={UPCOMING_GAMES}
+          extraRecords={CFB_RECORDS}
           pooled={POOLED}
           teamLabels={CFB_TEAM_LABELS}
           teamLogos={CFB_LOGOS}
