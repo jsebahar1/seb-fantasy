@@ -79,20 +79,29 @@ export function buildStandings({ rankings, games, conferences, teamConference, e
       const p = pct(conf[b]) - pct(conf[a]);
       if (Math.abs(p) > 1e-9) return p;
 
-      // 2. head to head, when one of the tied pair beat the other
+      // 2. more conference wins, then fewer conference losses. Early in the
+      // season teams have played different numbers of league games, so 2-0 and
+      // 1-0 both read as 1.000 and 0-1 and 0-2 both read as .000. Without this
+      // the tiebreakers below would decide an order that record alone settles.
+      const w = conf[b].w - conf[a].w;
+      if (w !== 0) return w;
+      const l = conf[a].l - conf[b].l;
+      if (l !== 0) return l;
+
+      // 3. head to head, when one of the tied pair beat the other
       if (beat[a].has(b) && !beat[b].has(a)) return -1;
       if (beat[b].has(a) && !beat[a].has(b)) return 1;
 
-      // 3. record against the other teams on the same conference record
+      // 4. record against the other teams on the same conference record
       const tiedWith = new Set(members.filter(t =>
-        t !== a && t !== b && Math.abs(pct(conf[t]) - pct(conf[a])) < 1e-9));
+        t !== a && t !== b && conf[t].w === conf[a].w && conf[t].l === conf[a].l));
       if (tiedWith.size) {
         const c = pct(recordAgainst(b, tiedWith, games, teamConference))
                 - pct(recordAgainst(a, tiedWith, games, teamConference));
         if (Math.abs(c) > 1e-9) return c;
       }
 
-      // 4. overall record, then 5. the power rating
+      // 5. overall record, then 6. the power rating
       const o = pct(overall[b]) - pct(overall[a]);
       if (Math.abs(o) > 1e-9) return o;
       return byTeam[a].rank - byTeam[b].rank;
@@ -168,17 +177,27 @@ export function buildPlayoffField({ standings, rankings, exclude = [] }) {
     .sort((a, b) => rankOf[a.team] - rankOf[b.team])
     .map((e, i) => ({ ...e, seed: i + 1, rank: rankOf[e.team] }));
 
-  const firstRound = [
-    [5, 12], [6, 11], [7, 10], [8, 9],
-  ].map(([a, b]) => ({
-    high: seeded.find(s => s.seed === a),
-    low: seeded.find(s => s.seed === b),
+  // Standard bracket: the top seed draws the 8/9 winner, 2 draws 7/10, 3 draws
+  // 6/11 and 4 draws 5/12.
+  const pairings = [
+    { bye: 1, game: [8, 9] },
+    { bye: 2, game: [7, 10] },
+    { bye: 3, game: [6, 11] },
+    { bye: 4, game: [5, 12] },
+  ];
+  const at = seed => seeded.find(s => s.seed === seed);
+  const quarterfinals = pairings.map(({ bye, game: [a, b] }) => ({
+    bye: at(bye),
+    high: at(a),
+    low: at(b),
   }));
+  const firstRound = quarterfinals.map(({ high, low }) => ({ high, low }));
 
   return {
     seeded,
     byes: seeded.filter(s => s.seed <= 4),
     firstRound,
+    quarterfinals,
     // teams that just missed, useful context next to the field
     nextOut: byRank.filter(r => !taken.has(r.team)).slice(0, 4),
   };

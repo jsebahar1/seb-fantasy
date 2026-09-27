@@ -41,27 +41,26 @@ export default function PlayoffBracket({
         is rated rather than by winning a conference.
       </p>
 
-      <h3 className="pr-explain-h3">First-round byes</h3>
-      <div className="pr-bracket-byes">
-        {field.byes.map(b => (
-          <div key={b.team} className="pr-bracket-bye">
-            <span className="pr-bracket-seed pr-bracket-seed--bye">{b.seed}</span>
-            <Logo team={b.team} logos={teamLogos} size={30} />
-            <div>
-              <p className="pr-bracket-bye-team">{b.team}</p>
-              <p className="pr-bracket-bye-why">{b.reason}</p>
+      <h3 className="pr-explain-h3">Byes and the quarterfinal they feed</h3>
+      <div className="pr-bracket-grid">
+        {field.quarterfinals.map(q => (
+          <div key={q.bye?.seed} className="pr-bracket-path">
+            <div className="pr-bracket-bye">
+              <span className="pr-bracket-seed pr-bracket-seed--bye">{q.bye?.seed}</span>
+              <Logo team={q.bye?.team} logos={teamLogos} size={30} />
+              <div>
+                <p className="pr-bracket-bye-team">{q.bye?.team}</p>
+                <p className="pr-bracket-bye-why">{q.bye?.reason}</p>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
 
-      <h3 className="pr-explain-h3">First round</h3>
-      <div className="pr-bracket-round">
-        {field.firstRound.map((m, i) => (
-          <div key={i} className="pr-bracket-game">
-            <Slot entry={m.high} logos={teamLogos} />
-            <span className="pr-bracket-vs">vs</span>
-            <Slot entry={m.low} logos={teamLogos} />
+            <p className="pr-bracket-plays">plays the winner of</p>
+
+            <div className="pr-bracket-game">
+              <Slot entry={q.high} logos={teamLogos} />
+              <span className="pr-bracket-vs">vs</span>
+              <Slot entry={q.low} logos={teamLogos} />
+            </div>
           </div>
         ))}
       </div>
