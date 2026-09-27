@@ -3,6 +3,8 @@ import SEO from '../components/SEO';
 import PowerRankings from '../components/PowerRankings';
 import RelatedRankings from '../components/RelatedRankings';
 import GroupRankings from '../components/GroupRankings';
+import ConferenceStandings from '../components/ConferenceStandings';
+import PlayoffBracket from '../components/PlayoffBracket';
 import RankingPrinciples from '../components/RankingPrinciples';
 import { buildRankings } from '../lib/powerRankings';
 import { TEAMS, INITIAL_GAMES } from '../data/cfbGames';
@@ -13,7 +15,7 @@ import { CFB_LOGOS } from '../data/cfbLogos';
 // Bump LAST_UPDATED whenever new results are added; it feeds both the visible
 // timestamp and dateModified in structured data.
 const SEASON = 2026;
-const LAST_UPDATED = '2026-09-26';
+const LAST_UPDATED = '2026-09-27';
 const SITE = 'https://sebfantasy.com';
 const MODEL_COUNT = TEAMS.length;
 const FBS_COUNT = TEAMS.length - 1; // TEAMS includes the pooled 'FCS' bucket
@@ -195,6 +197,8 @@ export default function NcaaFootball() {
           {[
             { id: 'teams', label: 'Team Rankings' },
             { id: 'conferences', label: 'Conference Rankings' },
+            { id: 'standings', label: 'Standings' },
+            { id: 'bracket', label: 'SEB Playoff Bracket' },
           ].map(t => (
             <button
               key={t.id}
@@ -207,6 +211,30 @@ export default function NcaaFootball() {
             </button>
           ))}
         </div>
+
+        {tab === 'standings' && (
+          <ConferenceStandings
+            rankings={rankings}
+            games={INITIAL_GAMES}
+            conferences={CONFERENCES}
+            teamConference={TEAM_CONFERENCE}
+            teamLogos={CFB_LOGOS}
+            exclude={POOLED}
+            season={SEASON}
+          />
+        )}
+
+        {tab === 'bracket' && (
+          <PlayoffBracket
+            rankings={rankings}
+            games={INITIAL_GAMES}
+            conferences={CONFERENCES}
+            teamConference={TEAM_CONFERENCE}
+            teamLogos={CFB_LOGOS}
+            exclude={POOLED}
+            season={SEASON}
+          />
+        )}
 
         {tab === 'conferences' && (
           <GroupRankings

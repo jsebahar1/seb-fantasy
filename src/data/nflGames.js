@@ -62,4 +62,13 @@ export const NFL_GAMES = [
   { home: 'Los Angeles Rams',      away: 'New York Giants',      homePoints: 28, awayPoints:  6, week: 2 },
   // Week 3
   { home: 'Green Bay Packers',     away: 'Atlanta Falcons',      homePoints: 14, awayPoints: 35, week: 3 },
+  { home: 'Miami Dolphins',        away: 'Kansas City Chiefs',   homePoints: 10, awayPoints: 24, week: 3 },
+  { home: 'Cleveland Browns',      away: 'Carolina Panthers',    homePoints: 21, awayPoints: 18, week: 3 },
+  { home: 'New York Giants',       away: 'Tennessee Titans',     homePoints: 12, awayPoints:  7, week: 3 },
+  { home: 'Jacksonville Jaguars',  away: 'New England Patriots', homePoints: 35, awayPoints:  6, week: 3 },
+  { home: 'Buffalo Bills',         away: 'Los Angeles Chargers', homePoints: 24, awayPoints: 16, week: 3 },
+  { home: 'Detroit Lions',         away: 'New York Jets',        homePoints: 31, awayPoints: 24, week: 3 },
+  { home: 'Indianapolis Colts',    away: 'Houston Texans',       homePoints: 19, awayPoints: 17, week: 3 },
+  { home: 'Washington Commanders', away: 'Seattle Seahawks',     homePoints: 33, awayPoints: 31, week: 3 },
+  { home: 'Pittsburgh Steelers',   away: 'Cincinnati Bengals',   homePoints: 30, awayPoints: 27, week: 3 },
 ];
