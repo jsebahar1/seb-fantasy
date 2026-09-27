@@ -70,7 +70,7 @@ export const INITIAL_GAMES = [
   { home: 'Texas Tech',        away: 'FCS',              homePoints: 33, awayPoints: 10, week: 1 },
   { home: 'Alabama',           away: 'East Carolina',    homePoints: 48, awayPoints: 10, week: 1 },
   { home: 'BYU',               away: 'FCS',              homePoints: 63, awayPoints:  7, week: 1 },
-  { home: 'Michigan',          away: 'Western Michigan', homePoints: 13, awayPoints: 12, week: 1 },
+  { home: 'Michigan',          away: 'Western Michigan', homePoints: 7, awayPoints: 12, week: 1 },
   { home: 'Penn State',        away: 'Marshall',         homePoints: 45, awayPoints:  0, week: 1 },
   { home: 'Tennessee',         away: 'FCS',              homePoints: 56, awayPoints:  9, week: 1 },
   { home: 'Iowa',              away: 'Northern Illinois',homePoints: 40, awayPoints:  0, week: 1 },
