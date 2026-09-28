@@ -71,4 +71,8 @@ export const NFL_GAMES = [
   { home: 'Indianapolis Colts',    away: 'Houston Texans',       homePoints: 19, awayPoints: 17, week: 3 },
   { home: 'Washington Commanders', away: 'Seattle Seahawks',     homePoints: 33, awayPoints: 31, week: 3 },
   { home: 'Pittsburgh Steelers',   away: 'Cincinnati Bengals',   homePoints: 30, awayPoints: 27, week: 3 },
+  { home: 'San Francisco 49ers',   away: 'Arizona Cardinals',    homePoints: 36, awayPoints: 30, week: 3 },
+  { home: 'Tampa Bay Buccaneers',  away: 'Minnesota Vikings',    homePoints: 16, awayPoints: 23, week: 3 },
+  { home: 'New Orleans Saints',    away: 'Las Vegas Raiders',    homePoints: 27, awayPoints: 35, week: 3 },
+  { home: 'Dallas Cowboys',        away: 'Baltimore Ravens',     homePoints: 31, awayPoints: 34, week: 3 },
 ];
