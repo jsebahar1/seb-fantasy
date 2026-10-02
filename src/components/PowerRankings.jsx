@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { MARGIN_SCALE, marginValue, marginBand } from '../lib/powerRankings';
 import { rankBadgeClass } from '../lib/rankBadge';
 import './PowerRankings.css';
 
@@ -236,30 +237,33 @@ function deriveExamples(rankings, N, pooled, { winExponent = 2, lossExponent = 0
   const usesEff = wRank !== bestWin.oppRank || lRank !== worstLoss.oppRank;
 
   const wD = bestWin.pointsFor - bestWin.pointsAgainst;
+  const wCredit = marginValue(wD);
   const wFrac = (M3 - wRank) / N;
   const lD = worstLoss.pointsFor - worstLoss.pointsAgainst;
+  const lCredit = marginValue(lD);
   const lFrac = lRank / N;
 
   return {
     win: {
       title: `${line(bestWin)}. A win over the ${usesEff ? 'effective ' : ''}#${wRank} team`,
       math:
-        `D = ${bestWin.pointsFor} - ${bestWin.pointsAgainst} = ${wD}\n` +
+        `margin = ${bestWin.pointsFor} - ${bestWin.pointsAgainst} = ${wD}, ` +
+        `${marginBand(wD)?.label}, worth ${wCredit}\n` +
         `(${M3} - ${wRank}) / ${N} = ${M3 - wRank} / ${N} = ${wFrac.toFixed(6)}\n` +
         (winExponent === 1
           ? ''
           : `${wFrac.toFixed(6)} ${winExponent === 2 ? 'squared' : '^' + winExponent} = ${Math.pow(wFrac, winExponent).toFixed(6)}\n`) +
-        `${Math.pow(wFrac, winExponent).toFixed(6)} x ${wD} = ${signed(bestWin.value)}`,
+        `${Math.pow(wFrac, winExponent).toFixed(6)} x ${wCredit} = ${signed(bestWin.value)}`,
     },
     loss: {
       title: `${line(worstLoss)}. A loss to the ${usesEff ? 'effective ' : ''}#${lRank} team`,
       math:
-        `D = ${worstLoss.pointsFor} - ${worstLoss.pointsAgainst} = ${lD}\n` +
+        `margin = ${Math.abs(lD)}, ${marginBand(lD)?.label}, worth ${lCredit}\n` +
         `${lRank} / ${N} = ${lFrac.toFixed(6)}\n` +
         (lossExponent === 1
           ? ''
           : `${lossExponent === 0.5 ? 'square root of ' : '^' + lossExponent + ' of '}${lFrac.toFixed(6)} = ${Math.pow(lFrac, lossExponent).toFixed(6)}\n`) +
-        `${Math.pow(lFrac, lossExponent).toFixed(6)} x ${lD} = ${signed(worstLoss.value)}`,
+        `${Math.pow(lFrac, lossExponent).toFixed(6)} x -${lCredit} = ${signed(worstLoss.value)}`,
     },
     note:
       `Those two are worth comparing. The best win in the data is worth ` +
@@ -320,28 +324,57 @@ function Explainer({ rankings, pooled, pooledNote, curve }) {
 
       <h3 className="pr-explain-h3">The two formulas</h3>
       <p className="pr-explain-p">
-        Let <code>D</code> be the point differential (your points minus theirs) and
-        <code> R</code> be the opponent's rank, from 1 to {N}. Wins and losses use
-        deliberately different shapes:
+        Let <code>M</code> be the margin credit from the table above and <code>R</code>
+        be the opponent's rank, from 1 to {N}. Wins and losses use deliberately
+        different shapes:
       </p>
 
       <div className="pr-eq">
         <div className="pr-eq-row">
           <span className="pr-eq-label pr-eq-label--win">Win</span>
-          <code className="pr-eq-math">value = (({M3} − R) ÷ {N}){sup(winExponent)} × D</code>
+          <code className="pr-eq-math">value = (({M3} − R) ÷ {N}){sup(winExponent)} × M</code>
         </div>
         <div className="pr-eq-row">
           <span className="pr-eq-label pr-eq-label--loss">Loss</span>
           <code className="pr-eq-math">
-            value = {lossExponent === 0.5 ? '√' : ''}(R ÷ {N}){lossExponent === 0.5 ? null : sup(lossExponent)} × D
+            value = −{lossExponent === 0.5 ? '√' : ''}(R ÷ {N}){lossExponent === 0.5 ? null : sup(lossExponent)} × M
           </code>
         </div>
       </div>
 
       <p className="pr-explain-p">
-        The {N} and {M3} are the league size and one more than it. On a loss,
-        <code> D</code> is negative, so the result is negative. No separate sign
-        handling is needed.
+        The {N} and {M3} are the league size and one more than it. A loss carries the
+        same margin credit as a win of the same size, just subtracted instead of added.
+      </p>
+
+      <h3 className="pr-explain-h3">Margin is counted in scores, not points</h3>
+      <p className="pr-explain-p">
+        A one-point win and a three-point win are the same game. A field goal decided it.
+        Using the raw differential made that narrow win over a good team worth almost
+        nothing, which gets the football backwards. So the margin is converted first into
+        how many scores separated the teams, and that number is what the opponent
+        multiplier scales.
+      </p>
+
+      <div className="pr-margin-scale">
+        {MARGIN_SCALE.map((band, i) => {
+          const from = i === 0 ? 1 : MARGIN_SCALE[i - 1].upTo + 1;
+          return (
+            <div className="pr-margin-band" key={band.value}>
+              <span className="pr-margin-range">
+                {Number.isFinite(band.upTo) ? `${from}\u2013${band.upTo}` : `${from}+`}
+              </span>
+              <span className="pr-margin-value">{band.value}</span>
+              <span className="pr-margin-label">{band.label}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <p className="pr-explain-p">
+        A tie is worth nothing to either side. The ceiling at 10 means a 61-point win and
+        a 90-point win are treated the same, because past a certain point the scoreboard
+        has stopped telling you anything new.
       </p>
 
       <h3 className="pr-explain-h3">

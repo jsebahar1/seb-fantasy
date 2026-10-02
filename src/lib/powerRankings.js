@@ -24,6 +24,46 @@ const DAMPING = 0.25;
 export const CURVE_COLLEGE = { winExponent: 2, lossExponent: 0.5 };
 export const CURVE_LINEAR = { winExponent: 1, lossExponent: 1 };
 
+/**
+ * Margin converted to football context rather than used as a raw number.
+ *
+ * A one-point win and a three-point win are the same game: a field goal decided
+ * it. Treating margin linearly made a narrow win over a good team worth almost
+ * nothing, which is backwards. These buckets count how many scores separated the
+ * teams, so the gap that matters is "how far ahead were you" rather than the
+ * exact number on the board.
+ *
+ * A 12-point margin is two touchdowns with no conversions, so it sits with the
+ * two-touchdown bucket rather than the touchdown-and-field-goal one.
+ */
+export const MARGIN_SCALE = [
+  { upTo: 3, value: 1, label: 'a field goal' },
+  { upTo: 8, value: 2, label: 'one score' },
+  { upTo: 11, value: 3, label: 'a touchdown and a field goal' },
+  { upTo: 16, value: 4, label: 'two touchdowns' },
+  { upTo: 24, value: 5, label: 'three scores' },
+  { upTo: 32, value: 6, label: 'four scores' },
+  { upTo: 40, value: 7, label: 'five scores' },
+  { upTo: 50, value: 8, label: 'six scores' },
+  { upTo: 60, value: 9, label: 'seven scores' },
+  { upTo: Infinity, value: 10, label: 'eight scores or more' },
+];
+
+/** Points of credit a margin is worth, 0 for a tie and 10 at the top. */
+export function marginValue(margin) {
+  const m = Math.abs(margin);
+  if (m === 0) return 0;
+  for (const band of MARGIN_SCALE) if (m <= band.upTo) return band.value;
+  return MARGIN_SCALE[MARGIN_SCALE.length - 1].value;
+}
+
+/** The band a margin falls in, for showing the reasoning alongside a number. */
+export function marginBand(margin) {
+  const m = Math.abs(margin);
+  if (m === 0) return null;
+  return MARGIN_SCALE.find(band => m <= band.upTo) ?? MARGIN_SCALE[MARGIN_SCALE.length - 1];
+}
+
 // Exact forms for the common exponents, so swapping in a curve cannot perturb
 // existing numbers through a different floating point path.
 function curve(base, exponent) {
@@ -38,11 +78,13 @@ export function makeScorer(teamCount, { winExponent = 2, lossExponent = 0.5 } = 
   const M3 = teamCount + 1;
 
   return function gameScore(diff, opponentRank) {
-    // Win:  ((M3 - opp_rank) / M2)^winExponent  * diff
-    // Loss: (opp_rank / M2)^lossExponent * diff , diff is negative here
+    // The margin is bucketed first, so what scales the opponent multiplier is
+    // how many scores separated the teams rather than the raw differential.
+    const credit = marginValue(diff);
+    if (credit === 0) return 0;
     return diff > 0
-      ? curve((M3 - opponentRank) / M2, winExponent) * diff
-      : curve(opponentRank / M2, lossExponent) * diff;
+      ? curve((M3 - opponentRank) / M2, winExponent) * credit
+      : curve(opponentRank / M2, lossExponent) * -credit;
   };
 }
 
