@@ -1317,3 +1317,7 @@
   color: var(--navy);
   font-variant-numeric: tabular-nums;
 }
+
+/* This team's rank after a given week, inside the game log */
+.pr-mt-own { font-weight: 700; color: var(--navy); white-space: nowrap; }
+.pr-mt-own .pr-move-up, .pr-mt-own .pr-move-down { font-size: 0.74rem; font-weight: 700; }

@@ -85,6 +85,23 @@ function TeamDetail({ row, upcoming, teamLabels, teamLogos, extraRecords = [], w
   // The rank the formula consumed differs from the opponent's shown rank only
   // when the model scores a game against the opponent's record without it.
   const showEff = row.games.some(g => g.effRank != null && g.effRank !== g.oppRank);
+
+  // Where this team sat after the week in question, and the move that got it
+  // there. Reads straight off the weekly snapshots, so it is the rank the model
+  // would have published at the time.
+  const ownRank = week => weekRanks?.history?.[row.team]?.[week];
+  const showOwnRank = weekRanks?.weeks?.length > 0;
+
+  function rankAfter(week) {
+    if (week == null) return null;
+    const now = ownRank(week);
+    if (now == null) return null;
+    const idx = weekRanks.weeks.indexOf(week);
+    const before = idx > 0 ? ownRank(weekRanks.weeks[idx - 1]) : null;
+    const delta = before == null ? null : before - now;
+    return { now, delta };
+  }
+
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose(); }
     document.addEventListener('keydown', onKey);
@@ -142,6 +159,7 @@ function TeamDetail({ row, upcoming, teamLabels, teamLogos, extraRecords = [], w
                   <th className="pr-mt-num">Score</th>
                   <th className="pr-mt-res">Res</th>
                   <th className="pr-mt-num">Points</th>
+                  {showOwnRank && <th className="pr-mt-num" title="This team's rank after that week">Their Rank</th>}
                 </tr>
               </thead>
               <tbody>
@@ -166,15 +184,35 @@ function TeamDetail({ row, upcoming, teamLabels, teamLogos, extraRecords = [], w
                     <td className={`pr-mt-num ${g.value >= 0 ? 'pr-score--pos' : 'pr-score--neg'}`}>
                       {fmt(g.value)}
                     </td>
+                    {showOwnRank && (() => {
+                      const r = rankAfter(g.week);
+                      return (
+                        <td className="pr-mt-num pr-mt-own">
+                          {r == null ? '\u2013' : (
+                            <>
+                              {r.now}
+                              {r.delta != null && r.delta !== 0 && (
+                                <span className={r.delta > 0 ? 'pr-move-up' : 'pr-move-down'}>
+                                  {' '}{r.delta > 0 ? '\u25b2' : '\u25bc'}{Math.abs(r.delta)}
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </td>
+                      );
+                    })()}
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan={5}>Total</td>
+                  {/* Wk, Opponent, Rank, [Eff], Score, Res all sit before the
+                      Points column the total belongs under. */}
+                  <td colSpan={showEff ? 6 : 5}>Total</td>
                   <td className={`pr-mt-num ${row.score >= 0 ? 'pr-score--pos' : 'pr-score--neg'}`}>
                     {fmt(row.score)}
                   </td>
+                  {showOwnRank && <td />}
                 </tr>
               </tfoot>
             </table>
