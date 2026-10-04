@@ -524,6 +524,7 @@ function Explainer({ rankings, pooled, pooledNote, curve }) {
 // ── Main view ─────────────────────────────────────────────────────────────────
 export default function PowerRankings({
   rankings,
+  rankHistory,
   upcomingGames,
   tableHeading,
   caption,
@@ -542,6 +543,27 @@ export default function PowerRankings({
   rankBadgeCutoffs,
 }) {
   const [search, setSearch] = useState('');
+
+  const weeks = rankHistory?.weeks ?? [];
+  const rankByWeek = rankHistory?.history;
+  const thisWeek = weeks[weeks.length - 1];
+  const lastWeek = weeks[weeks.length - 2];
+  const showMovement = rankByWeek != null && lastWeek != null;
+
+  // Measured against the previous completed week. A team without a rank in both
+  // weeks shows nothing rather than a misleading arrow.
+  function movementCell(team) {
+    const before = rankByWeek?.[team]?.[lastWeek];
+    const after = rankByWeek?.[team]?.[thisWeek];
+    if (before == null || after == null) return <span className="pr-idle">–</span>;
+    const delta = before - after;
+    if (delta === 0) return <span className="pr-move-flat">0</span>;
+    return (
+      <span className={delta > 0 ? 'pr-move-up' : 'pr-move-down'}>
+        {delta > 0 ? '▲' : '▼'}{Math.abs(delta)}
+      </span>
+    );
+  }
   const [conferenceFilter, setConferenceFilter] = useState('all');
   const [divisionFilter, setDivisionFilter] = useState('all');
   const [rankFilter, setRankFilter] = useState('all');
@@ -708,7 +730,7 @@ export default function PowerRankings({
           <thead>
             <tr>
               <th className="pr-th-rank">Rank</th>
-              {history && <th className="pr-th-move" title="Change since last week">+/-</th>}
+              {showMovement && <th className="pr-th-move" title="Change since last week">+/-</th>}
               <th className="pr-th-team">Team</th>
               <th className="pr-th-record">Record</th>
               {extraRecords.map(r => (
@@ -736,6 +758,7 @@ export default function PowerRankings({
                 <td>
                   <span className={rankBadgeClass(row.rank, rankBadgeCutoffs)}>{row.rank}</span>
                 </td>
+                {showMovement && <td className="pr-td-move">{movementCell(row.team)}</td>}
                 <td className="pr-td-team">
                   <span className="pr-team-cell">
                     <span>{teamLabel(row.team, teamLabels)}</span>
@@ -774,7 +797,7 @@ export default function PowerRankings({
 
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={4 + extraRecords.length + (history ? 1 : 0)} className="pr-empty">
+                <td colSpan={4 + extraRecords.length + (showMovement ? 1 : 0)} className="pr-empty">
                   {hasTableFilters
                     ? 'No teams match the selected filters.'
                     : `No teams match "${search}"`}
