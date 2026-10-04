@@ -221,7 +221,6 @@ export default function NcaaFootball() {
         {tab === 'standings' && (
           <ConferenceStandings
             rankings={rankings}
-          rankHistory={rankHistory}
             games={INITIAL_GAMES}
             conferences={CONFERENCES}
             teamConference={TEAM_CONFERENCE}
@@ -266,6 +265,7 @@ export default function NcaaFootball() {
         <div hidden={tab !== 'teams'}>
         <PowerRankings
           rankings={rankings}
+          rankHistory={rankHistory}
           upcomingGames={UPCOMING_GAMES}
           extraRecords={CFB_RECORDS}
           pooled={POOLED}

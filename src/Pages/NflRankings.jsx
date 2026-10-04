@@ -226,7 +226,6 @@ export default function NflRankings() {
         {tab === 'conference' && (
           <GroupRankings
             rankings={rankings}
-          rankHistory={rankHistory}
             games={NFL_GAMES}
             groups={NFL_CONFERENCES}
             extraRecords={NFL_RECORDS}
@@ -266,6 +265,7 @@ export default function NflRankings() {
         <div hidden={tab !== 'teams'}>
         <PowerRankings
           rankings={rankings}
+          rankHistory={rankHistory}
           extraRecords={NFL_RECORDS}
           curve={CURVE_LINEAR}
           upcomingGames={NFL_UPCOMING}
