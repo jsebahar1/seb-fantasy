@@ -7,7 +7,7 @@ import GroupRankings from '../components/GroupRankings';
 import {
   NFL_CONFERENCES, NFL_DIVISIONS, TEAM_CONFERENCE, TEAM_DIVISION,
 } from '../data/nflStructure';
-import { buildRankings, CURVE_LINEAR } from '../lib/powerRankings';
+import { buildRankings, buildRankHistory, CURVE_LINEAR } from '../lib/powerRankings';
 import { NFL_TEAMS, NFL_GAMES } from '../data/nflGames';
 import { NFL_UPCOMING } from '../data/nflSchedule';
 import { NFL_LOGOS } from '../data/nflLogos';
@@ -41,6 +41,12 @@ export default function NflRankings() {
   const [tab, setTab] = useState('teams');
   const rankings = useMemo(
     () => buildRankings(NFL_TEAMS, NFL_GAMES, {
+      curve: CURVE_LINEAR,
+      effectiveOpponentRank: true,
+    }), [],
+  );
+  const rankHistory = useMemo(
+    () => buildRankHistory(NFL_TEAMS, NFL_GAMES, {
       curve: CURVE_LINEAR,
       effectiveOpponentRank: true,
     }), [],
@@ -220,6 +226,7 @@ export default function NflRankings() {
         {tab === 'conference' && (
           <GroupRankings
             rankings={rankings}
+          rankHistory={rankHistory}
             games={NFL_GAMES}
             groups={NFL_CONFERENCES}
             extraRecords={NFL_RECORDS}

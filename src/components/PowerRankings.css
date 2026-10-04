@@ -1259,3 +1259,61 @@
 }
 
 .pr-margin-label { color: var(--text-muted); }
+
+/* ── Weekly movement and rank history ──────────────────────── */
+.pr-th-move, .pr-td-move {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.pr-td-move { font-size: 0.8rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pr-move-up { color: #3d7a04; }
+.pr-move-down { color: #b52020; }
+.pr-move-flat { color: var(--text-muted); }
+
+.pr-history {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1.5px solid var(--border-mid);
+}
+
+.pr-history-head {
+  margin: 0 0 9px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.pr-history-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pr-history-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 46px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  background: rgba(13, 45, 98, 0.045);
+}
+
+.pr-history-week {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.pr-history-rank {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+}

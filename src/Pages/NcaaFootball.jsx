@@ -6,7 +6,7 @@ import GroupRankings from '../components/GroupRankings';
 import ConferenceStandings from '../components/ConferenceStandings';
 import PlayoffBracket from '../components/PlayoffBracket';
 import RankingPrinciples from '../components/RankingPrinciples';
-import { buildRankings } from '../lib/powerRankings';
+import { buildRankings, buildRankHistory } from '../lib/powerRankings';
 import { TEAMS, INITIAL_GAMES } from '../data/cfbGames';
 import { UPCOMING_GAMES } from '../data/cfbSchedule';
 import { CONFERENCES, TEAM_CONFERENCE } from '../data/cfbConferences';
@@ -32,6 +32,12 @@ export default function NcaaFootball() {
   const [tab, setTab] = useState('teams');
   const rankings = useMemo(
     () => buildRankings(TEAMS, INITIAL_GAMES, {
+      pooled: POOLED,
+      effectiveOpponentRank: true,
+    }), [],
+  );
+  const rankHistory = useMemo(
+    () => buildRankHistory(TEAMS, INITIAL_GAMES, {
       pooled: POOLED,
       effectiveOpponentRank: true,
     }), [],
@@ -215,6 +221,7 @@ export default function NcaaFootball() {
         {tab === 'standings' && (
           <ConferenceStandings
             rankings={rankings}
+          rankHistory={rankHistory}
             games={INITIAL_GAMES}
             conferences={CONFERENCES}
             teamConference={TEAM_CONFERENCE}

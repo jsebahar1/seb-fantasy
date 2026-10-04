@@ -385,3 +385,28 @@ export function buildRankings(teams, games, { pooled = [], curve: shape, effecti
     hasGames: logs[t].length > 0,
   })).sort((a, b) => a.rank - b.rank);
 }
+
+/**
+ * Rank for every team as it stood at the end of each week.
+ *
+ * Each snapshot re-solves the model from scratch using only the games played up
+ * to that point, so a past week's rank is what the model would have said at the
+ * time rather than a back-projection from today's ratings. Week 0 games are
+ * folded into the week 1 snapshot, since on their own they cover too few teams
+ * to rank meaningfully.
+ */
+export function buildRankHistory(teams, games, options = {}) {
+  const weeks = [...new Set(games.map(g => g.week).filter(w => w != null && w > 0))]
+    .sort((a, b) => a - b);
+
+  const history = {};
+  teams.forEach(t => { history[t] = {}; });
+
+  for (const week of weeks) {
+    const played = games.filter(g => g.week != null && g.week <= week);
+    for (const row of buildRankings(teams, played, options)) {
+      if (row.hasGames) history[row.team][week] = row.rank;
+    }
+  }
+  return { weeks, history };
+}

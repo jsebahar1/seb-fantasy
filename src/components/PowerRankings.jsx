@@ -81,7 +81,7 @@ function divisionsForConference(options, divisionMap, conferenceMap, conference)
 }
 
 // ── Team detail dialog ────────────────────────────────────────────────────────
-function TeamDetail({ row, upcoming, teamLabels, teamLogos, extraRecords = [], onClose }) {
+function TeamDetail({ row, upcoming, teamLabels, teamLogos, extraRecords = [], weekRanks, onClose }) {
   // The rank the formula consumed differs from the opponent's shown rank only
   // when the model scores a game against the opponent's record without it.
   const showEff = row.games.some(g => g.effRank != null && g.effRank !== g.oppRank);
@@ -178,6 +178,23 @@ function TeamDetail({ row, upcoming, teamLabels, teamLogos, extraRecords = [], o
                 </tr>
               </tfoot>
             </table>
+          </div>
+        )}
+
+        {weekRanks?.weeks?.length > 1 && (
+          <div className="pr-history">
+            <p className="pr-history-head">Rank by week</p>
+            <div className="pr-history-row">
+              {weekRanks.weeks.map(w => {
+                const r = weekRanks.history?.[row.team]?.[w];
+                return (
+                  <div key={w} className="pr-history-cell">
+                    <span className="pr-history-week">Wk {w}</span>
+                    <span className="pr-history-rank">{r ?? '\u2013'}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -691,6 +708,7 @@ export default function PowerRankings({
           <thead>
             <tr>
               <th className="pr-th-rank">Rank</th>
+              {history && <th className="pr-th-move" title="Change since last week">+/-</th>}
               <th className="pr-th-team">Team</th>
               <th className="pr-th-record">Record</th>
               {extraRecords.map(r => (
@@ -756,7 +774,7 @@ export default function PowerRankings({
 
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={4 + extraRecords.length} className="pr-empty">
+                <td colSpan={4 + extraRecords.length + (history ? 1 : 0)} className="pr-empty">
                   {hasTableFilters
                     ? 'No teams match the selected filters.'
                     : `No teams match "${search}"`}
@@ -776,6 +794,7 @@ export default function PowerRankings({
           teamLabels={teamLabels}
           teamLogos={teamLogos}
           extraRecords={extraRecords}
+          weekRanks={rankHistory}
           onClose={() => setSelected(null)}
         />
       )}
