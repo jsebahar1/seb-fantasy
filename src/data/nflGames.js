@@ -79,4 +79,18 @@ export const NFL_GAMES = [
   { home: 'Chicago Bears',         away: 'Philadelphia Eagles',  homePoints: 27, awayPoints:  7, week: 3 },
   // Week 4
   { home: 'Cleveland Browns',      away: 'Pittsburgh Steelers',  homePoints: 27, awayPoints: 24, week: 4 },
+  { home: 'Carolina Panthers',     away: 'Detroit Lions',        homePoints: 32, awayPoints: 26, week: 4 },
+  { home: 'Washington Commanders', away: 'Indianapolis Colts',   homePoints: 13, awayPoints: 30, week: 4 },
+  { home: 'New York Giants',       away: 'Arizona Cardinals',    homePoints: 36, awayPoints: 24, week: 4 },
+  { home: 'Buffalo Bills',         away: 'New England Patriots', homePoints: 26, awayPoints: 29, week: 4 },
+  { home: 'Chicago Bears',         away: 'New York Jets',        homePoints: 23, awayPoints: 12, week: 4 },
+  { home: 'Houston Texans',        away: 'Dallas Cowboys',       homePoints: 30, awayPoints: 34, week: 4 },
+  { home: 'Philadelphia Eagles',   away: 'Los Angeles Rams',     homePoints: 20, awayPoints: 24, week: 4 },
+  { home: 'Tampa Bay Buccaneers',  away: 'Green Bay Packers',    homePoints: 14, awayPoints: 17, week: 4 },
+  { home: 'Baltimore Ravens',      away: 'Tennessee Titans',     homePoints: 24, awayPoints: 18, week: 4 },
+  { home: 'Cincinnati Bengals',    away: 'Jacksonville Jaguars', homePoints: 17, awayPoints: 22, week: 4 },
+  { home: 'Minnesota Vikings',     away: 'Miami Dolphins',       homePoints: 15, awayPoints: 10, week: 4 },
+  { home: 'Las Vegas Raiders',     away: 'Kansas City Chiefs',   homePoints: 27, awayPoints: 30, week: 4 },
+  { home: 'Seattle Seahawks',      away: 'Los Angeles Chargers', homePoints: 30, awayPoints: 23, week: 4 },
+  { home: 'San Francisco 49ers',   away: 'Denver Broncos',       homePoints: 24, awayPoints: 14, week: 4 },
 ];
