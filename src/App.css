@@ -929,3 +929,14 @@ blockquote.post-pullquote {
 
 .bp-move-up { background: rgba(61, 122, 4, 0.13); color: #3d7a04; }
 .bp-move-down { background: rgba(181, 32, 32, 0.11); color: #b52020; }
+
+/* Blog: first teams out, lighter than the ranked rows */
+.bp-rank-head--out { margin-top: 14px; padding-top: 11px; }
+.bp-rank-head--out .bp-rank-team { font-size: 0.98rem; }
+.bp-rank-num--out {
+  min-width: 32px;
+  height: 32px;
+  font-size: 0.88rem;
+  background: rgba(13, 45, 98, 0.055);
+  color: var(--text-soft);
+}
