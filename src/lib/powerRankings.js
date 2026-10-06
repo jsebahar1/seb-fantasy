@@ -131,8 +131,81 @@ function headToHead(games, teamSet) {
   return beatenBy;
 }
 
-function rankOrder(teams, scores, beatenBy) {
-  const order = [...teams].sort((a, b) => scores[b] - scores[a]);
+/**
+ * Comparator used only when two teams finish on exactly the same rating.
+ *
+ * Bucketed margins and a linear curve produce simple fractions, so exact ties
+ * are common rather than freakish, and leaving them to the sort order means the
+ * answer is arbitrary. The chain is head-to-head when the two actually played,
+ * then record, then conference record, then division record, then points
+ * scored, then fewest points allowed.
+ */
+function buildTiebreak(teams, games, teamSet, conferenceMap, divisionMap, beatenBy) {
+  const blank = () => ({ w: 0, l: 0, t: 0 });
+  const overall = {}, conf = {}, div = {}, scored = {}, allowed = {};
+  teams.forEach(t => {
+    overall[t] = blank(); conf[t] = blank(); div[t] = blank();
+    scored[t] = 0; allowed[t] = 0;
+  });
+
+  const credit = (rec, r) => { if (r > 0) rec.w++; else if (r < 0) rec.l++; else rec.t++; };
+
+  for (const { home, away, homePoints, awayPoints } of games) {
+    if (!teamSet.has(home) || !teamSet.has(away)) continue;
+    const diff = homePoints - awayPoints;
+    credit(overall[home], diff);
+    credit(overall[away], -diff);
+    scored[home] += homePoints; allowed[home] += awayPoints;
+    scored[away] += awayPoints; allowed[away] += homePoints;
+
+    if (conferenceMap && conferenceMap[home] && conferenceMap[home] === conferenceMap[away]) {
+      credit(conf[home], diff); credit(conf[away], -diff);
+    }
+    if (divisionMap && divisionMap[home] && divisionMap[home] === divisionMap[away]) {
+      credit(div[home], diff); credit(div[away], -diff);
+    }
+  }
+
+  const pct = ({ w, l, t }) => {
+    const played = w + l + t;
+    return played ? (w + t / 2) / played : 0;
+  };
+  // Better percentage, then more wins, then fewer losses, so a 3-0 outranks a
+  // 1-0 and a 0-1 outranks a 0-2 the way it does in a standings table.
+  const byRecord = (x, y) => {
+    const p = pct(y) - pct(x);
+    if (Math.abs(p) > 1e-9) return p;
+    if (y.w !== x.w) return y.w - x.w;
+    return x.l - y.l;
+  };
+
+  return (a, b) => {
+    // 1. the result on the field, whenever these two met and did not split
+    if (beatenBy?.has(a + H2H_SEP + b)) return 1;
+    if (beatenBy?.has(b + H2H_SEP + a)) return -1;
+
+    let c = byRecord(overall[a], overall[b]);
+    if (c !== 0) return c;
+    if (conferenceMap) {
+      c = byRecord(conf[a], conf[b]);
+      if (c !== 0) return c;
+    }
+    if (divisionMap) {
+      c = byRecord(div[a], div[b]);
+      if (c !== 0) return c;
+    }
+    if (scored[b] !== scored[a]) return scored[b] - scored[a];
+    if (allowed[a] !== allowed[b]) return allowed[a] - allowed[b];
+    return 0;
+  };
+}
+
+function rankOrder(teams, scores, beatenBy, tiebreak) {
+  const order = [...teams].sort((a, b) => {
+    const gap = scores[b] - scores[a];
+    if (Math.abs(gap) > 1e-9) return gap;
+    return tiebreak ? tiebreak(a, b) : 0;
+  });
 
   // Head-to-head outranks a score gap between neighbours, whatever its size.
   // Two teams that played each other have ratings that depend on each other's
@@ -175,7 +248,7 @@ const VALUE_DAMPING = 0.2;
  * breaks the loop, so the result reflects who beat whom rather than the order
  * the feedback happened to settle into.
  */
-function solveEffective(teams, games, teamSet, gameScore, beatenBy) {
+function solveEffective(teams, games, teamSet, gameScore, beatenBy, tiebreak) {
   const N = teams.length;
   const index = Object.fromEntries(teams.map((t, i) => [t, i]));
 
@@ -243,7 +316,7 @@ function solveEffective(teams, games, teamSet, gameScore, beatenBy) {
   total();
 
   const scores = Object.fromEntries(teams.map((t, i) => [t, score[i]]));
-  const ranks = rankOrder(teams, scores, beatenBy);
+  const ranks = rankOrder(teams, scores, beatenBy, tiebreak);
 
   // effective opponent rank per game side, keyed for the log builder
   const effective = new Map();
@@ -253,7 +326,7 @@ function solveEffective(teams, games, teamSet, gameScore, beatenBy) {
   return { ranks, scores, effective };
 }
 
-function solveRanks(teams, games, teamSet, gameScore, beatenBy) {
+function solveRanks(teams, games, teamSet, gameScore, beatenBy, tiebreak) {
   // Every team starts at the midpoint so nobody is assumed strong or weak.
   const mid = Math.ceil(teams.length / 2);
   const rating = {};
@@ -282,6 +355,7 @@ function solveRanks(teams, games, teamSet, gameScore, beatenBy) {
     teams,
     Object.fromEntries(teams.map(t => [t, -rating[t]])),
     beatenBy,
+    tiebreak,
   );
   let scores = scoreAll(teams, games, teamSet, ranks, gameScore);
 
@@ -299,7 +373,7 @@ function solveRanks(teams, games, teamSet, gameScore, beatenBy) {
     if (seen.has(key)) break; // cycling; keep the best state seen
     seen.add(key);
 
-    const next = rankOrder(teams, scores, beatenBy);
+    const next = rankOrder(teams, scores, beatenBy, tiebreak);
     if (teams.every(t => next[t] === ranks[t])) break;
     ranks = next;
     scores = scoreAll(teams, games, teamSet, ranks, gameScore);
@@ -333,13 +407,17 @@ function countInversions(teams, ranks, scores, beatenBy) {
  *                         shape. Pass CURVE_LINEAR for a league with less spread.
  * @returns rows sorted by rank, each with a per-game log that sums to `score`
  */
-export function buildRankings(teams, games, { pooled = [], curve: shape, effectiveOpponentRank = false } = {}) {
+export function buildRankings(teams, games, {
+  pooled = [], curve: shape, effectiveOpponentRank = false,
+  conferenceMap, divisionMap,
+} = {}) {
   const teamSet = new Set(teams);
   const gameScore = makeScorer(teams.length, shape);
   const beatenBy = headToHead(games, teamSet);
+  const tiebreak = buildTiebreak(teams, games, teamSet, conferenceMap, divisionMap, beatenBy);
   const solved = effectiveOpponentRank
-    ? solveEffective(teams, games, teamSet, gameScore, beatenBy)
-    : solveRanks(teams, games, teamSet, gameScore, beatenBy);
+    ? solveEffective(teams, games, teamSet, gameScore, beatenBy, tiebreak)
+    : solveRanks(teams, games, teamSet, gameScore, beatenBy, tiebreak);
   const { ranks, scores, effective } = solved;
 
   const logs = {};

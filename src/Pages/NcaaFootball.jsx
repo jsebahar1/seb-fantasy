@@ -34,12 +34,14 @@ export default function NcaaFootball() {
     () => buildRankings(TEAMS, INITIAL_GAMES, {
       pooled: POOLED,
       effectiveOpponentRank: true,
+      conferenceMap: TEAM_CONFERENCE,
     }), [],
   );
   const rankHistory = useMemo(
     () => buildRankHistory(TEAMS, INITIAL_GAMES, {
       pooled: POOLED,
       effectiveOpponentRank: true,
+      conferenceMap: TEAM_CONFERENCE,
     }), [],
   );
 
