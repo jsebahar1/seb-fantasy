@@ -4,6 +4,7 @@ import PowerRankings from '../components/PowerRankings';
 import RelatedRankings from '../components/RelatedRankings';
 import RankingPrinciples from '../components/RankingPrinciples';
 import GroupRankings from '../components/GroupRankings';
+import ConferenceStandings from '../components/ConferenceStandings';
 import {
   NFL_CONFERENCES, NFL_DIVISIONS, TEAM_CONFERENCE, TEAM_DIVISION,
 } from '../data/nflStructure';
@@ -214,6 +215,7 @@ export default function NflRankings() {
             { id: 'teams', label: 'Team Rankings' },
             { id: 'conference', label: 'Conference Rankings' },
             { id: 'division', label: 'Division Rankings' },
+            { id: 'standings', label: 'Standings' },
           ].map(t => (
             <button
               key={t.id}
@@ -226,6 +228,49 @@ export default function NflRankings() {
             </button>
           ))}
         </div>
+
+        {tab === 'standings' && (
+          <>
+            <ConferenceStandings
+              rankings={rankings}
+              games={NFL_GAMES}
+              conferences={NFL_DIVISIONS}
+              teamConference={TEAM_DIVISION}
+              teamLogos={NFL_LOGOS}
+              season={SEASON}
+              orderBy="overall"
+              heading={`${SEASON} NFL Division Standings`}
+              extraRecords={[
+                { label: 'Div', map: TEAM_DIVISION },
+                { label: 'Conf', map: TEAM_CONFERENCE },
+              ]}
+              note={
+                'Ordered by overall record, the way the standings actually work. Ties go to ' +
+                'head-to-head first, then record against the other teams on the same record, ' +
+                'then division record, then power rating. The division leader is highlighted.'
+              }
+            />
+            <ConferenceStandings
+              rankings={rankings}
+              games={NFL_GAMES}
+              conferences={NFL_CONFERENCES}
+              teamConference={TEAM_CONFERENCE}
+              teamLogos={NFL_LOGOS}
+              season={SEASON}
+              orderBy="overall"
+              heading={`${SEASON} AFC and NFC Standings`}
+              extraRecords={[
+                { label: 'Conf', map: TEAM_CONFERENCE },
+                { label: 'Div', map: TEAM_DIVISION },
+              ]}
+              note={
+                'All 16 teams in each conference, ordered by overall record. Conference record ' +
+                'is the column that decides seeding once records are level, so it is worth ' +
+                'watching separately from the overall mark.'
+              }
+            />
+          </>
+        )}
 
         {tab === 'conference' && (
           <GroupRankings

@@ -66,7 +66,14 @@ function recordAgainst(team, group, games, teamConference) {
   return rec;
 }
 
-export function buildStandings({ rankings, games, conferences, teamConference, exclude = [] }) {
+/**
+ * @param orderBy 'group' sorts on the in-group record first, which is how a
+ *   college conference table reads. 'overall' sorts on the overall record
+ *   first, which is how NFL division and conference standings read.
+ */
+export function buildStandings({
+  rankings, games, conferences, teamConference, exclude = [], orderBy = 'group',
+}) {
   const skip = new Set(exclude);
   const byTeam = Object.fromEntries(rankings.map(r => [r.team, r]));
   const { conf, overall, beat } = tallyConference(rankings, games, teamConference);
@@ -74,19 +81,22 @@ export function buildStandings({ rankings, games, conferences, teamConference, e
   return Object.entries(conferences).map(([name, teams]) => {
     const members = teams.filter(t => byTeam[t] && !skip.has(t));
 
-    const sorted = [...members].sort((a, b) => {
-      // 1. conference winning percentage
-      const p = pct(conf[b]) - pct(conf[a]);
+    // Better percentage, then more wins, then fewer losses. Early in a season
+    // teams have played different numbers of games, so 2-0 and 1-0 both read as
+    // 1.000; without the second and third steps a tiebreaker would decide an
+    // order that the record alone settles.
+    const byRecord = (x, y) => {
+      const p = pct(y) - pct(x);
       if (Math.abs(p) > 1e-9) return p;
+      if (y.w !== x.w) return y.w - x.w;
+      return x.l - y.l;
+    };
 
-      // 2. more conference wins, then fewer conference losses. Early in the
-      // season teams have played different numbers of league games, so 2-0 and
-      // 1-0 both read as 1.000 and 0-1 and 0-2 both read as .000. Without this
-      // the tiebreakers below would decide an order that record alone settles.
-      const w = conf[b].w - conf[a].w;
-      if (w !== 0) return w;
-      const l = conf[a].l - conf[b].l;
-      if (l !== 0) return l;
+    const sorted = [...members].sort((a, b) => {
+      const first = orderBy === 'overall'
+        ? byRecord(overall[a], overall[b])
+        : byRecord(conf[a], conf[b]);
+      if (first !== 0) return first;
 
       // 3. head to head, when one of the tied pair beat the other
       if (beat[a].has(b) && !beat[b].has(a)) return -1;
@@ -101,9 +111,11 @@ export function buildStandings({ rankings, games, conferences, teamConference, e
         if (Math.abs(c) > 1e-9) return c;
       }
 
-      // 5. overall record, then 6. the power rating
-      const o = pct(overall[b]) - pct(overall[a]);
-      if (Math.abs(o) > 1e-9) return o;
+      // the record not used as the primary sort, then the power rating
+      const second = orderBy === 'overall'
+        ? byRecord(conf[a], conf[b])
+        : byRecord(overall[a], overall[b]);
+      if (second !== 0) return second;
       return byTeam[a].rank - byTeam[b].rank;
     });
 

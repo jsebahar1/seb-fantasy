@@ -229,6 +229,7 @@ export default function NcaaFootball() {
             teamLogos={CFB_LOGOS}
             exclude={POOLED}
             season={SEASON}
+            extraRecords={CFB_RECORDS}
           />
         )}
 
