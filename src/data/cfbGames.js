@@ -429,4 +429,6 @@ export const INITIAL_GAMES = [
   { home: 'Hawaii',                away: 'San Jose State',       homePoints: 16, awayPoints: 20, week: 5 },
   // Week 6
   { home: 'Troy',                  away: 'Southern Miss',        homePoints: 55, awayPoints: 34, week: 6 },
+  { home: 'Kennesaw State',        away: 'Jacksonville State',   homePoints: 26, awayPoints: 27, week: 6 },
+  { home: 'FIU',                   away: 'New Mexico State',     homePoints: 22, awayPoints:  3, week: 6 },
 ];
