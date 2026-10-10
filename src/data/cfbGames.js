@@ -435,4 +435,10 @@ export const INITIAL_GAMES = [
   { home: 'Western Kentucky',      away: 'Missouri State',       homePoints: 34, awayPoints: 13, week: 6 },
   { home: 'UTSA',                  away: 'South Florida',        homePoints: 31, awayPoints: 24, week: 6 },
   { home: 'Arkansas State',        away: 'South Alabama',        homePoints: 49, awayPoints: 56, week: 6 },
+  { home: 'BYU',                   away: 'Iowa State',           homePoints: 24, awayPoints: 10, week: 6 },
+  { home: 'Washington',            away: 'Iowa',                 homePoints: 24, awayPoints: 41, week: 6 },
+  { home: 'Louisville',            away: 'Florida State',        homePoints: 44, awayPoints: 20, week: 6 },
+  { home: 'San Jose State',        away: 'Wyoming',              homePoints: 13, awayPoints: 16, week: 6 },
+  { home: 'Utah State',            away: 'Washington State',     homePoints: 17, awayPoints: 16, week: 6 },
+
 ];

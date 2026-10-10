@@ -17,6 +17,10 @@
  *
  * `results` rows are [awayName, awayPoints, homeName, homePoints] using whatever
  * names the source listing uses; the alias map normalises them.
+ *
+ * Pass `pagePath` and the promote call also bumps that page's LAST_UPDATED, so
+ * the visible "Updated" date and the dateModified in structured data cannot
+ * drift behind the data. Omit `today` to use the current date.
  */
 import fs from 'fs';
 
@@ -51,7 +55,23 @@ export function nflAlias(teams) {
   return out;
 }
 
-export function promote({ results, week, schedPath, gamesPath, teams, alias = {}, pooled = 'FCS' }) {
+/**
+ * Rewrite a page's LAST_UPDATED constant. Returns the date written, or null if
+ * the file already carried it.
+ */
+export function bumpLastUpdated(pagePath, today = new Date().toISOString().slice(0, 10)) {
+  const src = fs.readFileSync(pagePath, 'utf8');
+  const m = src.match(/^const LAST_UPDATED = '(\d{4}-\d{2}-\d{2})';$/m);
+  if (!m) throw new Error(`no LAST_UPDATED constant found in ${pagePath}`);
+  if (m[1] === today) return null;
+  fs.writeFileSync(pagePath, src.replace(m[0], `const LAST_UPDATED = '${today}';`));
+  return today;
+}
+
+export function promote({
+  results, week, schedPath, gamesPath, teams, alias = {}, pooled = 'FCS',
+  pagePath, today,
+}) {
   const known = new Set(teams);
   const resolve = n => {
     const a = alias[n] ?? n;
@@ -63,9 +83,22 @@ export function promote({ results, week, schedPath, gamesPath, teams, alias = {}
   const gameLines = gamesSrc.split('\n');
 
   const promoted = [], skipped = [], conflicts = [], problems = [];
+  const inBatch = new Map();
 
   for (const [awayRaw, ap, homeRaw, hp] of results) {
     const home = resolve(homeRaw), away = resolve(awayRaw);
+
+    // the same game listed more than once in one paste
+    const batchKey = `${home}|${away}`;
+    const prior = inBatch.get(batchKey);
+    if (prior) {
+      if (prior.hp !== hp || prior.ap !== ap) {
+        conflicts.push(`${away} at ${home} wk${week}: listed twice as ${prior.ap}-${prior.hp} and ${ap}-${hp}`);
+      }
+      continue;
+    }
+    inBatch.set(batchKey, { hp, ap });
+
     const tags = [`home: '${home}',`, `away: '${away}',`, `week: ${week} `];
     const has = l => tags.every(t => l.includes(t));
 
@@ -111,7 +144,12 @@ export function promote({ results, week, schedPath, gamesPath, teams, alias = {}
   const i = gamesSrc.lastIndexOf('];');
   fs.writeFileSync(gamesPath, gamesSrc.slice(0, i) + insert + gamesSrc.slice(i));
 
-  return { promoted: promoted.length, skipped };
+  // Only touch the date when something actually landed, so a batch of pure
+  // repeats does not claim the page was refreshed.
+  let dateBumped = null;
+  if (pagePath && promoted.length) dateBumped = bumpLastUpdated(pagePath, today);
+
+  return { promoted: promoted.length, skipped, dateBumped };
 }
 
 /** Append scheduled matchups, as [awayName, homeName] pairs, to a schedule file. */
